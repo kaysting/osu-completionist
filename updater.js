@@ -12,7 +12,7 @@ const getOsuApiInstance = async () => {
 };
 
 // Function to fetch new beatmaps(ets)
-const FETCH_ALL_MAPS = true;
+const FETCH_ALL_MAPS = false;
 const fetchNewMaps = async () => {
     try {
         // Initialize API
@@ -308,26 +308,20 @@ const updateUserRecents = async (userId) => {
     }
 };
 
-// Function to update user data
-// Perform one update cycle for the user who has gone the longest without an update
-// Then recurse
+// Function that initializes scheduled user update tasks
+// If it's been less than 24 hours since last user pass update,
+// only update using their recent scores. Otherwise, scrape their
+// whole map pass history.
 const updateUsers = async () => {
-    try {
-        const tasks = db.prepare(`SELECT * FROM user_update_tasks ORDER BY time_queued ASC`).all();
-        for (const task of tasks) {
-            // If it's been less than 24 hours since last user pass update,
-            // only update using their recent scores. Otherwise, scrape their
-            // whole map pass history.
-            if ((Date.now() - userEntry.last_score_update) < 1000 * 60 * 60 * 24) {
-                await updateUserRecents(task.user_id);
-            } else {
-                await updateUserAllPasses(task.user_id);
-            }
+    const tasks = db.prepare(`SELECT * FROM user_update_tasks ORDER BY time_queued ASC`).all();
+    for (const task of tasks) {
+        const msSinceLastUpdate = Date.now() - userEntry.last_score_update;
+        if (msSinceLastUpdate < 1000 * 60 * 60 * 24) {
+            await updateUserRecents(task.user_id);
+        } else {
+            await updateUserAllPasses(task.user_id);
         }
-    } catch (error) {
-        log('Error while updating user data:', error);
     }
-    // Recurse
     setTimeout(updateUsers, 1000);
 };
 
