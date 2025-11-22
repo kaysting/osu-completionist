@@ -16,15 +16,6 @@ CREATE TABLE IF NOT EXISTS "user_passes" (
 	"is_convert"	INTEGER NOT NULL,
 	PRIMARY KEY("user_id","mapset_id","map_id")
 );
-CREATE TABLE IF NOT EXISTS "user_stats" (
-	"user_id"	INTEGER,
-	"mode"	TEXT,
-	"status"	TEXT,
-	"include_converts"	INTEGER,
-	"count"	INTEGER DEFAULT 0,
-	"rank"	INTEGER DEFAULT -1,
-	PRIMARY KEY("user_id","mode","status","include_converts")
-);
 CREATE TABLE IF NOT EXISTS "user_update_tasks" (
 	"user_id"	INTEGER NOT NULL UNIQUE,
 	"time_queued"	INTEGER DEFAULT 0,
@@ -42,13 +33,6 @@ CREATE TABLE IF NOT EXISTS "beatmaps" (
 	"is_convert"	INTEGER NOT NULL,
 	PRIMARY KEY("id","mapset_id","mode")
 );
-CREATE TABLE IF NOT EXISTS "beatmap_stats" (
-	"mode"	TEXT,
-	"status"	TEXT,
-	"include_converts"	INTEGER,
-	"count"	INTEGER,
-	PRIMARY KEY("mode","status","include_converts")
-);
 CREATE TABLE IF NOT EXISTS "beatmapsets" (
 	"id"	INTEGER,
 	"status"	TEXT,
@@ -56,4 +40,20 @@ CREATE TABLE IF NOT EXISTS "beatmapsets" (
 	"artist"	TEXT,
 	"time_ranked"	INTEGER NOT NULL,
 	PRIMARY KEY("id")
+);
+CREATE TABLE IF NOT EXISTS "beatmap_stats" (
+	"mode"	TEXT,
+	"includes_loved"	TEXT,
+	"includes_converts"	INTEGER,
+	"count"	INTEGER,
+	PRIMARY KEY("mode","includes_loved","includes_converts")
+);
+CREATE TABLE IF NOT EXISTS "user_stats" (
+	"user_id"	INTEGER,
+	"mode"	TEXT,
+	"includes_loved"	TEXT,
+	"includes_converts"	INTEGER,
+	"count"	INTEGER DEFAULT 0,
+	"rank"	INTEGER DEFAULT -1,
+	PRIMARY KEY("user_id","mode","includes_loved","includes_converts")
 );

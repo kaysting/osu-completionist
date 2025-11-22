@@ -11,6 +11,74 @@ const getOsuApiInstance = async () => {
     return await osuApi.API.createAsync(config.osu_client_id, config.osu_api_token);
 };
 
+// Function to update beatmap stats and totals in the database
+const updateBeatmapStats = () => {
+    try {
+        for (const mode of ['osu', 'taiko', 'fruits', 'mania']) {
+            for (const includesLoved of [1, 0]) {
+                for (const includesConverts of [1, 0]) {
+                    const where = [];
+                    where.push(`mode = '${mode}'`);
+                    if (includesLoved) {
+                        where.push(`status IN ('ranked', 'approved', 'loved')`);
+                    } else {
+                        where.push(`status IN ('ranked', 'approved')`);
+                    }
+                    if (!includesConverts) {
+                        where.push(`is_convert = 0`);
+                    }
+                    const count = db.prepare(
+                        `SELECT COUNT(*) AS count
+                                FROM beatmaps
+                                WHERE ${where.join(' AND ')}`
+                    ).get().count;
+                    db.prepare(`INSERT OR REPLACE INTO beatmap_stats (mode, includes_loved, includes_converts, count) VALUES (?, ?, ?, ?)`).run(
+                        mode, includesLoved, includesConverts, count
+                    );
+                }
+            }
+        }
+        log('Updated beatmap stats');
+    } catch (error) {
+        log('Error while updating beatmap stats:', error);
+    }
+};
+
+// Function to update user stats and totals in the database
+const updateUserStats = async (userId) => {
+    try {
+        const userEntry = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
+        for (const mode of ['osu', 'taiko', 'fruits', 'mania']) {
+            for (const includesLoved of [1, 0]) {
+                for (const includesConverts of [1, 0]) {
+                    const where = [];
+                    where.push(`user_id = ${userId}`);
+                    where.push(`mode = '${mode}'`);
+                    if (includesLoved) {
+                        where.push(`status IN ('ranked', 'approved', 'loved')`);
+                    } else {
+                        where.push(`status IN ('ranked', 'approved')`);
+                    }
+                    if (!includesConverts) {
+                        where.push(`is_convert = 0`);
+                    }
+                    const count = db.prepare(
+                        `SELECT COUNT(*) AS count
+                                FROM user_passes
+                                WHERE ${where.join(' AND ')}`
+                    ).get().count;
+                    db.prepare(`INSERT OR REPLACE INTO user_stats (user_id, mode, includes_loved, includes_converts, count) VALUES (?, ?, ?, ?, ?)`).run(
+                        userId, mode, includesLoved, includesConverts, count
+                    );
+                }
+            }
+        }
+        log('Updated user stats for', userEntry?.name || userId);
+    } catch (error) {
+        log('Error while updating user stats:', error);
+    }
+};
+
 // Function to fetch new beatmaps(ets)
 const FETCH_ALL_MAPS = false;
 const fetchNewMaps = async () => {
@@ -80,29 +148,7 @@ const fetchNewMaps = async () => {
         }
         // Update beatmap status
         if (true || didUpdateStorage) {
-            for (const mode of ['osu', 'taiko', 'fruits', 'mania']) {
-                for (const status of ['ranked', 'loved', 'approved']) {
-                    for (const includeConverts of [1, 0]) {
-                        let count = 0;
-                        if (includeConverts) {
-                            count = db.prepare(
-                                `SELECT COUNT(*) AS count
-                                FROM beatmaps
-                                WHERE mode = ? AND status = ?`
-                            ).get(mode, status).count;
-                        } else {
-                            count = db.prepare(
-                                `SELECT COUNT(*) AS count
-                                FROM beatmaps
-                                WHERE mode = ? AND status = ? AND is_convert = 0`
-                            ).get(mode, status).count;
-                        }
-                        db.prepare(`INSERT OR REPLACE INTO beatmap_stats (mode, status, include_converts, count) VALUES (?, ?, ?, ?)`).run(
-                            mode, status, includeConverts, count
-                        );
-                    }
-                }
-            }
+            updateBeatmapStats();
         }
     } catch (error) {
         log('Error while updating stored beatmap data:', error);
@@ -198,11 +244,12 @@ const updateUserAllPasses = async (userId) => {
             const transaction = db.transaction((maps) => {
                 let newCount = 0;
                 for (const map of maps) {
-                    // Skip if we already have this pass saved
+                    // Skip if we already have this pass saved or if map is not ranked
                     const existingPass = db.prepare(`SELECT 1 FROM user_passes WHERE user_id = ? AND map_id = ? AND mode = ? LIMIT 1`).get(
                         user.id, map.id, map.mode
                     );
-                    if (existingPass) continue;
+                    const isRanked = ['ranked', 'loved', 'approved'].includes(map.status);
+                    if (existingPass || !isRanked) continue;
                     // Save the pass
                     db.prepare(`INSERT OR IGNORE INTO user_passes (user_id, mapset_id, map_id, mode, status, is_convert) VALUES (?, ?, ?, ?, ?, ?)`).run(
                         user.id, map.beatmapset_id, map.id, map.mode, map.status, map.convert ? 1 : 0
@@ -230,6 +277,8 @@ const updateUserAllPasses = async (userId) => {
             ).get(userId).count;
             log(`Now storing ${passCount} map passes for ${user.username}`);
         }
+        // Update user stats
+        await updateUserStats(userId);
     } catch (error) {
         log('Error while updating user with full pass history:', error);
     }
@@ -272,7 +321,8 @@ const updateUserRecents = async (userId) => {
                 const existingPass = db.prepare(`SELECT * FROM user_passes WHERE user_id = ? AND map_id = ? AND mode = ? LIMIT 1`).get(
                     user.id, score.beatmap.id, score.beatmap.mode
                 );
-                if (!existingPass) {
+                const isRanked = ['ranked', 'loved', 'approved'].includes(score.beatmap.status);
+                if (!existingPass && isRanked) {
                     scores.push(score);
                     newCount++;
                 }
@@ -311,6 +361,8 @@ const updateUserRecents = async (userId) => {
                     WHERE user_id = ?`
         ).get(userId).count;
         log(`Now storing ${passCount} map passes for ${user.username}`);
+        // Update user stats
+        await updateUserStats(userId);
     } catch (error) {
         log('Error while updating user recent scores:', error);
     }
@@ -340,9 +392,9 @@ const updateUsers = async () => {
 };
 
 // Queue users for update if they haven't been updated recently
-const queueUsers = () => {
+const queueUsers = (init = false) => {
     try {
-        const minLastUpdate = Date.now() - (1000 * 60 * 60 * 16);
+        const minLastUpdate = init ? Date.now() : Date.now() - (1000 * 60 * 60 * 16);
         const usersToQueue = db.prepare(
             `SELECT id, name FROM users
              WHERE last_score_update < ?
@@ -367,4 +419,4 @@ const queueUsers = () => {
 log(`Starting update processes...`);
 fetchNewMaps();
 updateUsers();
-queueUsers();
+queueUsers(true);
