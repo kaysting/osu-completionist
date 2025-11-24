@@ -18,16 +18,67 @@ app.set('view engine', 'ejs');
 app.use(express.static('public'));
 
 app.get('/', (req, res) => {
+    return res.redirect(`/leaderboard/osu`);
     res.render('layout', {
         page: 'home'
     });
 });
 
 app.get('/leaderboard', (req, res) => {
+    res.redirect(`/leaderboard/osu?loved=true`);
+});
+
+app.get('/leaderboard/:mode', (req, res) => {
+    // Get params
     const page = parseInt(req.query.p) || 1;
+    const mode = req.params.mode || 'osu';
+    const includeConverts = req.query.converts === 'true' || false;
+    const includeLoved = req.query.loved === 'true' || false;
+    const limit = 50;
+    const offset = (page - 1) * limit;
+    // Check params
+    const validModes = ['osu', 'taiko', 'catch', 'mania'];
+    if (!validModes.includes(mode)) {
+        return res.redirect('/leaderboard/osu?loved=true');
+    }
+    // Get leaderboard entries
+    const entries = db.prepare(
+        `SELECT u.id, u.name, u.avatar_url, us.count FROM users u
+         JOIN user_stats us ON u.id = us.user_id
+         WHERE us.mode = ? AND us.includes_loved = ? AND us.includes_converts = ?
+         ORDER BY us.count DESC
+         LIMIT ? OFFSET ?`
+    ).all(mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0, limit, offset);
+    // Get total number of beatmaps
+    const totalMapCount = db.prepare(
+        `SELECT count FROM beatmap_stats
+         WHERE mode = ? AND includes_loved = ? AND includes_converts = ?`
+    ).get(mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0).count;
+    // Get total number of players
+    const totalPlayers = db.prepare(
+        `SELECT COUNT(*) AS total FROM user_stats
+         WHERE mode = ? AND includes_loved = ? AND includes_converts = ? AND count > 0`
+    ).get(mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0).total;
+    // Calculate last page
+    const lastPage = Math.ceil(totalPlayers / limit);
+    // Compile data
+    const leaderboard = entries.map((entry, index) => ({
+        rank: offset + index + 1,
+        id: entry.id,
+        name: entry.name,
+        avatar: entry.avatar_url,
+        completed: entry.count,
+        total: totalMapCount,
+        percentage: totalMapCount > 0 ? ((entry.count / totalMapCount) * 100).toFixed(2) : '0.00'
+    }));
+    // Render
     res.render('layout', {
         title: 'Leaderboard',
-        page: 'leaderboard'
+        page: 'leaderboard',
+        settings: {
+            mode, page, lastPage, includeConverts, includeLoved
+        },
+        leaderboard: leaderboard
     });
 });
 

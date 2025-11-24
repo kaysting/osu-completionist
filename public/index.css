@@ -45,13 +45,12 @@
 
 body {
     --bg: hsl(220, 20%, 10%);
-    --bgCard: hsl(220, 20%, 15%);
     --text: hsl(220, 20%, 95%);
     --textDim: hsl(220, 20%, 65%);
     --accent: hsl(150, 90%, 60%);
     background: var(--bg);
     color: var(--text);
-    font-family: 'Inter', sans-serif;
+    font-family: 'Torus', sans-serif;
     font-size: 15px;
     line-height: 1;
 }
@@ -79,8 +78,15 @@ a:hover {
     height: 100%;
     height: 54px;
     padding: 0px 20px;
+    background: transparent;
+    transition: 0.1s ease-in-out;
+    border-bottom: 1px solid transparent;
+    z-index: 1000;
+}
+
+#topbar.scrolled {
     border-bottom: 1px solid hsl(220, 20%, 20%);
-    background: var(--bgCard);
+    background: var(--bg);
 }
 
 #topbar .container {
@@ -144,10 +150,24 @@ a:hover {
 }
 
 .card {
-    background: var(--bgCard);
+    background: hsl(220, 20%, 15%);
     border-radius: 8px;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
     padding: 8px;
+}
+
+.card.lighter {
+    background: hsl(220, 20%, 18%);
+}
+
+.card .header {
+    font-size: 16px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid var(--accent);
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    display: inline-block;
 }
 
 #footer * {
@@ -159,4 +179,198 @@ a:hover {
 
 #footer a {
     text-decoration: underline;
+}
+
+#error {
+    text-align: center;
+    margin: 30px 0px;
+}
+
+#error h1 {
+    font-size: 64px;
+    color: var(--textDim);
+    font-weight: 200;
+    margin-bottom: 16px;
+}
+
+#leaderboard {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 16px;
+}
+
+#leaderboard .entries {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+#leaderboard .entry {
+    position: relative;
+    border-radius: 8px;
+    background: hsl(220, 20%, 18%);
+    overflow: hidden;
+}
+
+#leaderboard .entry .bg {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 0%;
+    height: 4px;
+    background: hsla(150, 70%, 30%);
+    border-radius: 2px;
+}
+
+#leaderboard .entry .content {
+    height: 50px;
+    display: flex;
+    padding: 2px 8px;
+    align-items: center;
+    gap: 16px;
+}
+
+#leaderboard .entry .profile,
+#leaderboard .entry .stats {
+    display: flex;
+    align-items: center;
+}
+
+#leaderboard .entry .profile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+#leaderboard .entry .stats {
+    gap: 16px;
+    padding-right: 8px;
+}
+
+#leaderboard .entry .rank {
+    min-width: 32px;
+    font-size: 14px;
+    text-align: right;
+    font-weight: 600;
+}
+
+#leaderboard .entry .profile .avatar {
+    height: 40px;
+    border-radius: 8px;
+    background: hsl(220, 20%, 25%);
+    object-fit: cover;
+}
+
+#leaderboard .entry .profile .name {
+    flex-grow: 1;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: -1px;
+}
+
+#leaderboard .entry .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+#leaderboard .entry .stat .name {
+    color: var(--textDim);
+    font-size: 13px;
+    font-weight: 600
+}
+
+#leaderboard .entry .stat .value {
+    color: white;
+    font-size: 20px;
+    font-weight: 400;
+}
+
+#leaderboard .settings {
+    display: flex;
+    gap: 16px 24px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+}
+
+#leaderboard .settings .section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#leaderboard .settings .section .label {
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+#leaderboard .pages {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+#leaderboard .pages .dots {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    color: var(--textDim);
+}
+
+.btn {
+    --bg: hsl(220, 20%, 25%);
+    --bgHover: hsl(220, 20%, 35%);
+    --fg: hsl(220, 20%, 85%);
+    height: 32px;
+    padding: 0px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    background: var(--bg);
+    transition: 0.1s ease-in-out;
+    color: var(--fg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn.primary {
+    --bg: hsl(150, 90%, 50%);
+    --bgHover: hsl(150, 90%, 65%);
+    --fg: hsl(220, 20%, 10%);
+}
+
+.btn.text {
+    --bg: transparent;
+    --bgHover: hsl(220, 20%, 25%);
+    --fg: hsl(220, 20%, 80%);
+}
+
+.btn:hover {
+    background: var(--bgHover);
+    transition: none;
+    text-decoration: none;
+}
+
+.btnGroup {
+    display: flex;
+    gap: 2px;
+}
+
+.btnGroup .btn {
+    border-radius: 2px;
+}
+
+.btnGroup .btn:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.btnGroup .btn:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
 }

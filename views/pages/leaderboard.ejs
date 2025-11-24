@@ -1,1 +1,91 @@
-leaderboard
+<div id="leaderboard" class="card">
+    <div class="settings card lighter">
+        <div class="section">
+            <div class="label">game mode</div>
+            <div class="btnGroup">
+                <a href="/leaderboard/osu?loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
+                    class="btn <%= settings.mode === 'osu' ? 'primary' : '' %>">osu!</a>
+                <a href="/leaderboard/taiko?loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
+                    class="btn <%= settings.mode === 'taiko' ? 'primary' : '' %>">osu!taiko</a>
+                <a href="/leaderboard/catch?loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
+                    class="btn <%= settings.mode === 'catch' ? 'primary' : '' %>">osu!catch</a>
+                <a href="/leaderboard/mania?loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
+                    class="btn <%= settings.mode === 'mania' ? 'primary' : '' %>">osu!mania</a>
+            </div>
+        </div>
+        <div class="section">
+            <div class="label">include loved maps?</div>
+            <div class="btnGroup">
+                <a href="/leaderboard/<%= settings.mode %>?loved=false&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
+                    class="btn <%= !settings.includeLoved ? 'primary' : '' %>">no</a>
+                <a href="/leaderboard/<%= settings.mode %>?loved=true&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
+                    class="btn <%= settings.includeLoved ? 'primary' : '' %>">yes</a>
+            </div>
+        </div>
+        <div class="section">
+            <div class="label">include converted maps?</div>
+            <div class="btnGroup">
+                <a href="/leaderboard/<%= settings.mode %>?loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=false"
+                    class="btn <%= !settings.includeConverts ? 'primary' : '' %>">no</a>
+                <a href="/leaderboard/<%= settings.mode %>?loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=true"
+                    class="btn <%= settings.includeConverts ? 'primary' : '' %>">yes</a>
+            </div>
+        </div>
+    </div>
+    <div class="pages">
+        <% 
+            const total = settings.lastPage;
+            const current = settings.page;
+            let prev = 0;
+            for (let i = 1; i <= total; i++) {
+                if (i === 1 || i === total || Math.abs(i - current) <= 1) {
+                    if (prev && i - prev > 1) { %>
+        <span class="dots">...</span>
+        <% }
+                    prev = i; %>
+        <a href="/leaderboard/<%= settings.mode %>?p=<%= i %>&loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
+            class="btn <%= i === current ? 'primary' : 'text' %>"><%= i %></a>
+        <% }
+            } 
+        %>
+    </div>
+    <div class="entries">
+        <% for (const entry of leaderboard) { %>
+        <div class="entry">
+            <div class="bg" style="width: <%= entry.percentage %>%"></div>
+            <div class="content">
+                <div class="rank"><%= `#${entry.rank}` %></div>
+                <div class="profile">
+                    <img src="<%= entry.avatar %>" class="avatar">
+                    <div class="name"><%= entry.name %></div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="name">% completed</div>
+                            <div class="value"><%= entry.percentage %>%</div>
+                        </div>
+                        <div class="stat">
+                            <div class="name">maps completed</div>
+                            <div class="value"><%= entry.completed.toLocaleString() %></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+    </div>
+    <div class="pages">
+        <% 
+                prev = 0;
+                for (let i = 1; i <= total; i++) {
+                    if (i === 1 || i === total || Math.abs(i - current) <= 1) {
+                        if (prev && i - prev > 1) { %>
+        <span class="dots">...</span>
+        <% }
+                        prev = i; %>
+        <a href="/leaderboard/<%= settings.mode %>?p=<%= i %>&loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
+            class="btn <%= i === current ? 'primary' : 'text' %>"><%= i %></a>
+        <% }
+                } 
+            %>
+    </div>
+</div>
