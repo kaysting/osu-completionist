@@ -2,5 +2,6 @@
     "osu_client_id": "",
     "osu_api_token": "",
     "db_path": "./storage.db",
+    "jwt_secret": "",
     "webserver_port": 8080
 }

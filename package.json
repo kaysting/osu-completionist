@@ -12,6 +12,7 @@
     "better-sqlite3": "^12.4.1",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "osu-api-v2-js": "^2.1.5",
     "osu.js": "^2.0.0"
   }

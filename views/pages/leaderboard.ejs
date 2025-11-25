@@ -4,13 +4,13 @@
             <div class="section">
                 <div class="label">game mode</div>
                 <div class="btnGroup">
-                    <a href="/leaderboard/osu?loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
+                    <a href="/leaderboard/osu/<%= settings.includes.join('-') %>"
                         class="btn <%= settings.mode === 'osu' ? 'primary' : '' %>">osu!</a>
-                    <a href="/leaderboard/taiko?loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
+                    <a href="/leaderboard/taiko/<%= settings.includes.join('-') %>"
                         class="btn <%= settings.mode === 'taiko' ? 'primary' : '' %>">osu!taiko</a>
-                    <a href="/leaderboard/catch?loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
+                    <a href="/leaderboard/catch/<%= settings.includes.join('-') %>"
                         class="btn <%= settings.mode === 'catch' ? 'primary' : '' %>">osu!catch</a>
-                    <a href="/leaderboard/mania?loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
+                    <a href="/leaderboard/mania/<%= settings.includes.join('-') %>"
                         class="btn <%= settings.mode === 'mania' ? 'primary' : '' %>">osu!mania</a>
                 </div>
             </div>
@@ -19,19 +19,19 @@
             <div class="section">
                 <div class="label">include loved maps?</div>
                 <div class="btnGroup">
-                    <a href="/leaderboard/<%= settings.mode %>?loved=false&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
-                        class="btn <%= !settings.includeLoved ? 'primary' : '' %>">no</a>
-                    <a href="/leaderboard/<%= settings.mode %>?loved=true&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
-                        class="btn <%= settings.includeLoved ? 'primary' : '' %>">yes</a>
+                    <a href="/leaderboard/<%= settings.mode %>/ranked<%= settings.includes.includes('converts') ? '-converts' : '' %>"
+                        class="btn <%= !settings.includes.includes('loved') ? 'primary' : '' %>">no</a>
+                    <a href="/leaderboard/<%= settings.mode %>/ranked-loved<%= settings.includes.includes('converts') ? '-converts' : '' %>"
+                        class="btn <%= settings.includes.includes('loved') ? 'primary' : '' %>">yes</a>
                 </div>
             </div>
             <div class="section">
                 <div class="label">include converts?</div>
                 <div class="btnGroup">
-                    <a href="/leaderboard/<%= settings.mode %>?loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=false"
-                        class="btn <%= !settings.includeConverts ? 'primary' : '' %>">no</a>
-                    <a href="/leaderboard/<%= settings.mode %>?loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=true"
-                        class="btn <%= settings.includeConverts ? 'primary' : '' %>">yes</a>
+                    <a href="/leaderboard/<%= settings.mode %>/ranked<%= settings.includes.includes('loved') ? '-loved' : '' %>"
+                        class="btn <%= !settings.includes.includes('converts') ? 'primary' : '' %>">no</a>
+                    <a href="/leaderboard/<%= settings.mode %>/ranked<%= settings.includes.includes('loved') ? '-loved' : '' %>-converts"
+                        class="btn <%= settings.includes.includes('converts') ? 'primary' : '' %>">yes</a>
                 </div>
             </div>
         </div>

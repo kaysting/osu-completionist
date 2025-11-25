@@ -25,21 +25,26 @@ app.get('/', (req, res) => {
 });
 
 app.get('/leaderboard', (req, res) => {
-    res.redirect(`/leaderboard/osu?loved=true`);
+    res.redirect(`/leaderboard/osu/ranked-loved`);
 });
 
 app.get('/leaderboard/:mode', (req, res) => {
+    res.redirect(`/leaderboard/${req.params.mode}/ranked-loved`);
+});
+
+app.get('/leaderboard/:mode/:includes', (req, res) => {
     // Get params
     const page = parseInt(req.query.p) || 1;
     const mode = req.params.mode || 'osu';
-    const includeConverts = req.query.converts === 'true' || false;
-    const includeLoved = req.query.loved === 'true' || false;
+    const includes = req.params.includes?.split('-') || ['ranked', 'loved'];
+    const includeConverts = includes.includes('converts');
+    const includeLoved = includes.includes('loved');
     const limit = 50;
     const offset = (page - 1) * limit;
     // Check params
     const validModes = ['osu', 'taiko', 'catch', 'mania'];
     if (!validModes.includes(mode)) {
-        return res.redirect('/leaderboard/osu?loved=true');
+        return res.redirect('/leaderboard/osu/ranked-loved');
     }
     // Get leaderboard entries
     const entries = db.prepare(
@@ -75,7 +80,7 @@ app.get('/leaderboard/:mode', (req, res) => {
     const includedText = {
         true_true: 'all ranked, loved, and convert maps',
         true_false: 'all ranked and loved maps, without converts',
-        false_true: 'ranked maps only, along with their converts',
+        false_true: 'ranked maps and their converts only',
         false_false: 'ranked maps only'
     }[`${includeLoved.toString()}_${includeConverts.toString()}`];
     res.render('layout', {
@@ -83,7 +88,7 @@ app.get('/leaderboard/:mode', (req, res) => {
         description: `View the players who have passed the most osu!${mode != 'osu' ? `${mode}` : ''} beatmaps! This leaderboard tracks passes on ${includedText}.`,
         page: 'leaderboard',
         settings: {
-            mode, page, lastPage, includeConverts, includeLoved
+            mode, page, lastPage, includes
         },
         leaderboard: leaderboard
     });
