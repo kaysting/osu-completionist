@@ -36,7 +36,7 @@ app.get('/leaderboard/:mode/:includes', (req, res) => {
     const includes = req.params.includes?.split('-') || ['ranked', 'loved'];
     const includeConverts = includes.includes('converts');
     const includeLoved = includes.includes('loved');
-    const limit = 50;
+    const limit = 100;
     const offset = (page - 1) * limit;
     // Check params
     const validModes = ['osu', 'taiko', 'catch', 'mania'];
@@ -63,6 +63,16 @@ app.get('/leaderboard/:mode/:includes', (req, res) => {
     ).get(mode == 'catch' ? 'fruits' : mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0).total;
     // Calculate last page
     const lastPage = Math.ceil(totalPlayers / limit);
+    // Determine what page numbers to show
+    // Always show first and last page, and 2 pages before and after current page
+    const pagesToShow = [];
+    for (let i = 1; i <= lastPage; i++) {
+        if (i === 1 || i === lastPage || (i >= page - 2 && i <= page + 2)) {
+            pagesToShow.push(i);
+        } else if (pagesToShow[pagesToShow.length - 1] !== '...') {
+            pagesToShow.push('...');
+        }
+    }
     // Compile data
     const leaderboard = entries.map((entry, index) => ({
         rank: offset + index + 1,
@@ -85,7 +95,7 @@ app.get('/leaderboard/:mode/:includes', (req, res) => {
         description: `View the players who have passed the most osu!${mode != 'osu' ? `${mode}` : ''} beatmaps! This leaderboard tracks passes on ${includedText}.`,
         page: 'leaderboard',
         settings: {
-            mode, page, lastPage, includes
+            mode, page, pagesToShow, includes
         },
         leaderboard: leaderboard
     });

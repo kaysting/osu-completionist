@@ -37,21 +37,14 @@
         </div>
     </div>
     <div class="pages">
-        <% 
-            const total = settings.lastPage;
-            const current = settings.page;
-            let prev = 0;
-            for (let i = 1; i <= total; i++) {
-                if (i === 1 || i === total || Math.abs(i - current) <= 1) {
-                    if (prev && i - prev > 1) { %>
+        <% for (const num of settings.pagesToShow) { %>
+        <% if (num === '...') { %>
         <span class="dots">...</span>
-        <% }
-                    prev = i; %>
-        <a href="/leaderboard/<%= settings.mode %>?p=<%= i %>&loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
-            class="btn <%= i === current ? 'primary' : 'text' %>"><%= i %></a>
-        <% }
-            } 
-        %>
+        <% } else { %>
+        <a href="/leaderboard/<%= settings.mode %>/<%= settings.includes.join('-')%>?p=<%= num %>"
+            class="btn <%= num === settings.page ? 'primary' : 'text' %>"><%= num %></a>
+        <% } %>
+        <% } %>
     </div>
     <div class="entries">
         <% for (const entry of leaderboard) { %>
@@ -78,18 +71,13 @@
         <% } %>
     </div>
     <div class="pages">
-        <% 
-                prev = 0;
-                for (let i = 1; i <= total; i++) {
-                    if (i === 1 || i === total || Math.abs(i - current) <= 1) {
-                        if (prev && i - prev > 1) { %>
+        <% for (const num of settings.pagesToShow) { %>
+        <% if (num === '...') { %>
         <span class="dots">...</span>
-        <% }
-                        prev = i; %>
-        <a href="/leaderboard/<%= settings.mode %>?p=<%= i %>&loved=<%= settings.includeLoved ? 'true' : 'false' %>&converts=<%= settings.includeConverts ? 'true' : 'false' %>"
-            class="btn <%= i === current ? 'primary' : 'text' %>"><%= i %></a>
-        <% }
-                } 
-            %>
+        <% } else { %>
+        <a href="/leaderboard/<%= settings.mode %>/<%= settings.includes.join('-')%>?p=<%= num %>"
+            class="btn <%= num === settings.page ? 'primary' : 'text' %>"><%= num %></a>
+        <% } %>
+        <% } %>
     </div>
 </div>
