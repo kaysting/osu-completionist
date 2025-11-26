@@ -294,8 +294,9 @@ const updateUserFromAllPasses = async (userId) => {
         await updateUserStats(userId);
     } catch (error) {
         log('Error while updating user with full pass history:', error);
+    } finally {
+        isAllPassesUpdateRunning = false;
     }
-    isAllPassesUpdateRunning = false;
 };
 
 // Function to update a user's completion data by fetching
@@ -383,8 +384,9 @@ const updateUserFromRecents = async (userId) => {
         await updateUserStats(userId);
     } catch (error) {
         log('Error while updating user recent scores:', error);
+    } finally {
+        isRecentsUpdateRunning = false;
     }
-    isRecentsUpdateRunning = false;
 };
 
 // Function to get scores set recently globally and save new passes
