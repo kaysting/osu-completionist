@@ -54,7 +54,8 @@
                 <div class="rank"><%= `#${entry.rank}` %></div>
                 <div class="profile">
                     <img src="<%= entry.avatar %>" class="avatar">
-                    <div class="name"><%= entry.name %></div>
+                    <a class="name"
+                        href="/u/<%= entry.id %>/<%= settings.mode %>/<%= settings.includes.join('-') %>"><%= entry.name %></a>
                     <div class="stats">
                         <div class="stat">
                             <div class="name">% completed</div>

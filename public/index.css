@@ -340,11 +340,17 @@ b {
     object-fit: cover;
 }
 
-#leaderboard .entry .profile .name {
+#leaderboard .entry .profile>.name {
     flex-grow: 1;
     font-size: 16px;
     font-weight: bold;
     margin-top: -1px;
+    color: white;
+}
+
+#leaderboard .entry .profile>.name:hover {
+    color: var(--accent);
+    text-decoration: underline;
 }
 
 #leaderboard .entry .stat {

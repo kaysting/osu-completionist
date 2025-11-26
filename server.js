@@ -91,8 +91,9 @@ app.get('/leaderboard/:mode/:includes', (req, res) => {
         false_false: 'ranked maps only'
     }[`${includeLoved.toString()}_${includeConverts.toString()}`];
     res.render('layout', {
+        tabTitle: `osu!${mode != 'osu' ? `${mode}` : ''} leaderboard`,
         title: `osu!${mode != 'osu' ? `${mode}` : ''} completionist leaderboard`,
-        description: `View the players who have passed the most osu!${mode != 'osu' ? `${mode}` : ''} beatmaps! This leaderboard tracks passes on ${includedText}.`,
+        description: `View the players who have passed the most osu!${mode != 'osu' ? `${mode}` : ''} beatmaps!`,
         page: 'leaderboard',
         settings: {
             mode, page, pagesToShow, includes
@@ -124,15 +125,60 @@ app.get('/search', (req, res) => {
 });
 
 app.get('/u/:id', ensureUserExists, (req, res) => {
-
+    res.redirect(`/u/${req.user.id}/${req.user.mode}/ranked-loved`);
 });
 
 app.get('/u/:id/:mode', ensureUserExists, (req, res) => {
-
+    res.redirect(`/u/${req.user.id}/${req.params.mode}/ranked-loved`);
 });
 
 app.get('/u/:id/:mode/:includes', ensureUserExists, (req, res) => {
-
+    const user = req.user;
+    const mode = req.params.mode || 'osu';
+    const includes = req.params.includes?.split('-') || ['ranked', 'loved'];
+    const includeConverts = includes.includes('converts');
+    const includeLoved = includes.includes('loved');
+    // Ensure mode is valid
+    const validModes = ['osu', 'taiko', 'catch', 'mania'];
+    if (!validModes.includes(mode)) {
+        return res.redirect(`/u/${user.id}/osu/ranked-loved`);
+    }
+    // Get user stats
+    const stats = db.prepare(
+        `SELECT count FROM user_stats
+         WHERE user_id = ? AND mode = ? AND includes_loved = ? AND includes_converts = ?`
+    ).get(user.id, mode == 'catch' ? 'fruits' : mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0);
+    const completedCount = stats ? stats.count : 0;
+    // Get total number of beatmaps
+    const totalMapCount = db.prepare(
+        `SELECT count FROM beatmap_stats
+         WHERE mode = ? AND includes_loved = ? AND includes_converts = ?`
+    ).get(mode == 'catch' ? 'fruits' : mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0).count;
+    // Get user rank
+    const rankResult = db.prepare(
+        `SELECT COUNT(*) + 1 AS rank FROM user_stats
+         WHERE mode = ? AND includes_loved = ? AND includes_converts = ? AND count > ?`
+    ).get(mode == 'catch' ? 'fruits' : mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0, completedCount);
+    // Compile user stats
+    const percentage = totalMapCount > 0 ? ((completedCount / totalMapCount) * 100).toFixed(2) : '0.00';
+    user.stats = {
+        completed: completedCount,
+        total: totalMapCount,
+        percentage,
+        rank: rankResult.rank
+    };
+    const includesString = `${includeLoved ? 'ranked and loved' : 'ranked only'}, ${includeConverts ? 'with converts' : 'no converts'}`;
+    // Render
+    res.render('layout', {
+        page: 'profile',
+        tabTitle: req.user.name,
+        title: `${req.user.name}'s osu!${mode != 'osu' ? `${mode}` : ''} completionist profile`,
+        description: `${req.user.name} has passed ${percentage}% of all osu!${mode != 'osu' ? `${mode}` : ''} beatmaps (${includesString})! Click to view more of their completionist stats.`,
+        user,
+        settings: {
+            mode, includes
+        }
+    });
 });
 
 app.use((req, res) => {
