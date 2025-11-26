@@ -1,2 +1,2 @@
 # osu!completion
-An osu! completionist tracker and leaderboard featuring support for all game modes, ranked/loved map distinction, and converted difficulties.
+An osu! completionist tracker and leaderboard webapp featuring real-time updates, support for all game modes, ranked and loved maps, and converts.
