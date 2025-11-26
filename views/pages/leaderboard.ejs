@@ -1,84 +1,32 @@
-<div id="leaderboard" class="card">
-    <div class="settings">
-        <div class="card lighter">
-            <div class="section">
-                <div class="label">game mode</div>
-                <div class="btnGroup">
-                    <a href="/leaderboard/osu/<%= settings.includes.join('-') %>"
-                        class="btn <%= settings.mode === 'osu' ? 'primary' : '' %>">osu!</a>
-                    <a href="/leaderboard/taiko/<%= settings.includes.join('-') %>"
-                        class="btn <%= settings.mode === 'taiko' ? 'primary' : '' %>">osu!taiko</a>
-                    <a href="/leaderboard/catch/<%= settings.includes.join('-') %>"
-                        class="btn <%= settings.mode === 'catch' ? 'primary' : '' %>">osu!catch</a>
-                    <a href="/leaderboard/mania/<%= settings.includes.join('-') %>"
-                        class="btn <%= settings.mode === 'mania' ? 'primary' : '' %>">osu!mania</a>
-                </div>
-            </div>
-        </div>
-        <div class="card lighter">
-            <div class="section">
-                <div class="label">include loved maps?</div>
-                <div class="btnGroup">
-                    <a href="/leaderboard/<%= settings.mode %>/ranked<%= settings.includes.includes('converts') ? '-converts' : '' %>"
-                        class="btn <%= !settings.includes.includes('loved') ? 'primary' : '' %>">no</a>
-                    <a href="/leaderboard/<%= settings.mode %>/ranked-loved<%= settings.includes.includes('converts') ? '-converts' : '' %>"
-                        class="btn <%= settings.includes.includes('loved') ? 'primary' : '' %>">yes</a>
-                </div>
-            </div>
-            <div class="section">
-                <div class="label">include converts?</div>
-                <div class="btnGroup">
-                    <a href="/leaderboard/<%= settings.mode %>/ranked<%= settings.includes.includes('loved') ? '-loved' : '' %>"
-                        class="btn <%= !settings.includes.includes('converts') ? 'primary' : '' %>">no</a>
-                    <a href="/leaderboard/<%= settings.mode %>/ranked<%= settings.includes.includes('loved') ? '-loved' : '' %>-converts"
-                        class="btn <%= settings.includes.includes('converts') ? 'primary' : '' %>">yes</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="pages">
-        <% for (const num of settings.pagesToShow) { %>
-        <% if (num === '...') { %>
-        <span class="dots">...</span>
-        <% } else { %>
-        <a href="/leaderboard/<%= settings.mode %>/<%= settings.includes.join('-')%>?p=<%= num %>"
-            class="btn <%= num === settings.page ? 'primary' : 'text' %>"><%= num %></a>
-        <% } %>
-        <% } %>
-    </div>
-    <div class="entries">
-        <% for (const entry of leaderboard) { %>
-        <div class="entry">
-            <div class="bg" style="width: <%= entry.percentage %>%"></div>
-            <div class="content">
-                <div class="rank"><%= `#${entry.rank}` %></div>
-                <div class="profile">
-                    <img src="<%= entry.avatar %>" class="avatar">
-                    <a class="name"
-                        href="/u/<%= entry.id %>/<%= settings.mode %>/<%= settings.includes.join('-') %>"><%= entry.name %></a>
-                    <div class="stats">
-                        <div class="stat">
-                            <div class="name">% completed</div>
-                            <div class="value"><%= entry.percentage %>%</div>
-                        </div>
-                        <div class="stat">
-                            <div class="name">maps completed</div>
-                            <div class="value"><%= entry.completed.toLocaleString() %></div>
+<div id="leaderboard">
+    <%- include('../partials/statSettings') %>
+    <div class="card">
+        <%- include('../partials/pagination') %>
+        <div class="entries">
+            <% for (const entry of leaderboard) { %>
+            <div class="entry">
+                <div class="bg" style="width: <%= entry.percentage %>%"></div>
+                <div class="content">
+                    <div class="rank"><%= `#${entry.rank}` %></div>
+                    <div class="profile">
+                        <img src="<%= entry.avatar %>" class="avatar">
+                        <a class="name"
+                            href="/u/<%= entry.id %>/<%= settings.modeKey %>/<%= settings.includes.join('-') %>"><%= entry.name %></a>
+                        <div class="stats">
+                            <div class="stat">
+                                <div class="name">% completed</div>
+                                <div class="value"><%= entry.percentage %>%</div>
+                            </div>
+                            <div class="stat">
+                                <div class="name">maps completed</div>
+                                <div class="value"><%= entry.completed.toLocaleString() %></div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <% } %>
         </div>
-        <% } %>
-    </div>
-    <div class="pages">
-        <% for (const num of settings.pagesToShow) { %>
-        <% if (num === '...') { %>
-        <span class="dots">...</span>
-        <% } else { %>
-        <a href="/leaderboard/<%= settings.mode %>/<%= settings.includes.join('-')%>?p=<%= num %>"
-            class="btn <%= num === settings.page ? 'primary' : 'text' %>"><%= num %></a>
-        <% } %>
-        <% } %>
+        <%- include('../partials/pagination') %>
     </div>
 </div>

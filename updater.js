@@ -1,15 +1,7 @@
 require('dotenv').config();
 const db = require('./db');
 const osuApi = require('osu-api-v2-js');
-
-const log = (...args) => {
-    const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}]`, ...args);
-};
-
-const getOsuApiInstance = async () => {
-    return await osuApi.API.createAsync(process.env.OSU_CLIENT_ID, process.env.OSU_API_TOKEN);
-};
+const { log, getOsuApiInstance } = require('./utils');
 
 // Function to update beatmap stats and totals in the database
 const updateBeatmapStats = () => {
@@ -122,6 +114,7 @@ const updateSavedMaps = async () => {
     setTimeout(updateSavedMaps, 1000 * 60 * 60);
 };
 
+// Function to log a user's current pass count
 const logUserPassCount = (userId) => {
     const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
     const passCount = db.prepare(
@@ -427,7 +420,7 @@ const updateUsersFromGlobalRecents = async () => {
                 if (existingPass) continue;
                 // Save the pass and log
                 db.prepare(`INSERT OR IGNORE INTO user_passes (user_id, mapset_id, map_id, mode, status, is_convert, time_passed) VALUES (?, ?, ?, ?, ?, ?, ?)`).run(
-                    user.id, map.beatmapset_id, score.beatmap_id, ruleset, map.status, map.convert ? 1 : 0, Date.now()
+                    user.id, map.beatmapset_id, score.beatmap_id, ruleset, map.status, map.convert ? 1 : 0, score.ended_at?.getTime() || Date.now()
                 );
                 log(`Found and saved a new ${ruleset} map pass for ${user.name}`);
                 // Log counts

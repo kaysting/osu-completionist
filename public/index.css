@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght,FILL@300,0..1&display=swap');
 
 @font-face {
     font-family: 'Torus';
@@ -92,7 +92,14 @@ b {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
+}
+
+.btn:hover {
+    color: var(--fgHover);
+    background: var(--bgHover);
+    transition: none;
+    text-decoration: none;
 }
 
 .btn.primary {
@@ -121,11 +128,21 @@ b {
     --fg: var(--accent);
 }
 
-.btn:hover {
-    color: var(--fgHover);
-    background: var(--bgHover);
-    transition: none;
-    text-decoration: none;
+.btn.square {
+    width: 32px;
+    padding: 0px;
+}
+
+.btn .icon {
+    font-family: 'Material Symbols Rounded';
+    font-variation-settings: 'FILL' 0;
+    font-weight: 300;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.btn .icon.filled {
+    font-variation-settings: 'FILL' 1;
 }
 
 .btnGroup {
@@ -253,11 +270,33 @@ b {
     margin-bottom: 16px;
 }
 
-#leaderboard {
+#statSettings {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+#statSettings .section {
+    display: flex;
+    gap: 8px;
+}
+
+#statSettings .section.mode {
+    flex-grow: 1;
+}
+
+#leaderboard,
+#profile {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    padding: 16px 8px;
+}
+
+#leaderboard>.card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 8px;
 }
 
 #leaderboard .entries {
@@ -278,8 +317,8 @@ b {
     bottom: 0px;
     left: 0px;
     width: 0%;
-    height: 4px;
-    background: hsla(150, 70%, 30%);
+    height: 2px;
+    background: hsla(150, 90%, 60%, 50%);
     border-radius: 2px;
 }
 
@@ -369,40 +408,6 @@ b {
     color: white;
     font-size: 20px;
     font-weight: 400;
-}
-
-#leaderboard .settings {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-#leaderboard .settings .card {
-    display: flex;
-    gap: 12px;
-    padding: 12px 16px;
-}
-
-#leaderboard .settings .section {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-#leaderboard .settings .section .label {
-    color: white;
-    font-size: 14px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-}
-
-#leaderboard .settings .section .label ::before {
-    width: 3px;
-    height: 6px;
-    background: var(--accent);
-    border-radius: 2px;
 }
 
 #leaderboard .pages {

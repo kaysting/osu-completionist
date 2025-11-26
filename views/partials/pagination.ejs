@@ -1,0 +1,10 @@
+<div class="pages">
+    <% for (const num of pagination.nav) { %>
+    <% if (num === '...') { %>
+    <span class="dots">...</span>
+    <% } else { %>
+    <a href="<%= pagination.basePath %>?p=<%= num %>"
+        class="btn <%= num === pagination.current ? 'primary' : 'text' %>"><%= num %></a>
+    <% } %>
+    <% } %>
+</div>

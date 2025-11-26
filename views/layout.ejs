@@ -8,8 +8,7 @@
     <meta name="description" content="<%= locals.description || '' %>">
     <meta property="og:site_name" content="osu!completion">
     <meta property="og:title" content="<%= locals.title || 'osu! completionist tracker and leaderboard' %>">
-    <meta property="og:description"
-        content="<%= locals.description || 'Track your osu! completion progress by mode, optionally choosing to include loved and converted maps, and compare your stats with others!' %>">
+    <meta property="og:description" content="<%= locals.description || '' %>">
     <meta property="og:image" content="<%= locals.image || '' %>">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content="<%= locals.image || '' %>">
@@ -28,8 +27,6 @@
             <div class="buttons">
                 <a class="btn <%= page == 'leaderboard' ? 'text bright' : 'text muted' %>"
                     href="/leaderboard">leaderboard</a>
-            </div>
-            <div class="buttons">
                 <a class="btn <%= page == 'search' ? 'text bright' : 'text muted' %>" href="/search">search</a>
             </div>
         </div>

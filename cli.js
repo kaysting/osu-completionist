@@ -1,6 +1,6 @@
 require('dotenv').config();
 const db = require('./db');
-const osuApi = require('osu-api-v2-js');
+const { getOsuApiInstance } = require('./utils');
 
 /**
  * Parses command line arguments from process.argv into a camelCased key-value object.
@@ -98,7 +98,7 @@ const queueUser = async (userId) => {
         console.error('Please provide a user name or ID with --user when using --queue.');
         return;
     }
-    const osu = await osuApi.API.createAsync(process.env.OSU_CLIENT_ID, process.env.OSU_API_TOKEN);
+    const osu = await getOsuApiInstance();
     const user = await osu.getUser(userId);
     if (!user) {
         console.error('User not found.');

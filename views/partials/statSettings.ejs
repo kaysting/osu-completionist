@@ -1,0 +1,27 @@
+<div id="statSettings">
+    <div class="section mode">
+        <div class="btnGroup">
+            <a href="<%= settings.basePath %>/osu/<%= settings.includes.join('-') %>"
+                class="btn <%= settings.modeKey === 'osu' ? 'primary' : '' %>">osu!</a>
+            <a href="<%= settings.basePath %>/taiko/<%= settings.includes.join('-') %>"
+                class="btn <%= settings.modeKey === 'taiko' ? 'primary' : '' %>">osu!taiko</a>
+            <a href="<%= settings.basePath %>/catch/<%= settings.includes.join('-') %>"
+                class="btn <%= settings.modeKey === 'fruits' ? 'primary' : '' %>">osu!catch</a>
+            <a href="<%= settings.basePath %>/mania/<%= settings.includes.join('-') %>"
+                class="btn <%= settings.modeKey === 'mania' ? 'primary' : '' %>">osu!mania</a>
+        </div>
+    </div>
+    <div class="section includes">
+        <a href="<%= settings.basePath %>/<%= settings.mode %>/ranked<%= settings.includes.includes('loved') ? '' : '-loved' %><%= settings.includes.includes('converts') ? '-converts' : '' %>"
+            class="btn <%= settings.includes.includes('loved') ? 'primary' : '' %>">
+            <span class="icon <%= settings.includes.includes('loved') ? 'filled' : '' %>">favorite</span>
+            Include loved
+        </a>
+        <a href="<%= settings.basePath %>/<%= settings.mode %>/ranked<%= settings.includes.includes('loved') ? '-loved' : '' %><%= settings.includes.includes('converts') ? '' : '-converts' %>"
+            class="btn <%= settings.includes.includes('converts') ? 'primary' : '' %>">
+            <span
+                class="icon <%= settings.includes.includes('converts') ? 'filled' : '' %>">swap_horizontal_circle</span>
+            Include converts
+        </a>
+    </div>
+</div>
