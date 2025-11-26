@@ -18,7 +18,7 @@ app.set('view engine', 'ejs');
 app.use(express.static('public'));
 
 app.get('/', (req, res) => {
-    return res.redirect(`/leaderboard/osu`);
+    return res.redirect(`/leaderboard`);
     res.render('layout', {
         page: 'home'
     });
@@ -132,7 +132,7 @@ app.use((err, req, res, next) => {
 
 const port = process.env.WEBSERVER_PORT || 8080;
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    log(`Server is running on port ${port}`);
 });
 
 let shuttingDown = false;
