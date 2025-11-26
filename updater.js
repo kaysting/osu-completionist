@@ -1,7 +1,8 @@
 require('dotenv').config();
 const db = require('./db');
 const osuApi = require('osu-api-v2-js');
-const { log, getOsuApiInstance } = require('./utils');
+const { log, getOsuApiInstance, sleep } = require('./utils');
+const osuApiInstance = getOsuApiInstance();
 
 // Function to update beatmap stats and totals in the database
 const updateBeatmapStats = () => {
@@ -41,7 +42,7 @@ const FETCH_ALL_MAPS = false;
 const updateSavedMaps = async () => {
     try {
         // Initialize API
-        const osu = await getOsuApiInstance();
+        const osu = await osuApiInstance;
         // Create data saving transaction function
         const insertMapset = db.prepare(`INSERT OR REPLACE INTO beatmapsets (id, status, title, artist, time_ranked) VALUES (?, ?, ?, ?, ?)`);
         const insertBeatmap = db.prepare(`INSERT OR REPLACE INTO beatmaps (id, mapset_id, mode, status, name, stars, is_convert) VALUES (?, ?, ?, ?, ?, ?, ?)`);
@@ -162,28 +163,37 @@ const updateUserStats = async (userId) => {
 
 // Function to fetch a user's profile and update their stored data
 // Returns the fetched user data
-const updateUserProfile = async (userId) => {
+const updateUserProfile = async (userId, userObj) => {
     try {
-        const osu = await getOsuApiInstance();
-        const user = await osu.getUser(userId);
-        // Update stored user data
+        const osu = await osuApiInstance;
+        const user = userObj || await osu.getUser(userId);
+        // Check if a user entry already exists
         const existingUser = db.prepare(`SELECT * FROM users WHERE id = ?`).get(user.id);
         if (existingUser) {
+            // Update user profile data
             db.prepare(
                 `UPDATE users
                 SET name = ?,
                     avatar_url = ?,
-                    banner_url = ?,
-                    mode = ?
+                    banner_url = ?
                 WHERE id = ?`
-            ).run(user.username, user.avatar_url, user.cover.url, user.playmode, user.id);
+            ).run(user.username, user.avatar_url, user.cover.url, user.id);
             log(`Updated stored user data for ${user.username}`);
         } else {
+            // Create new user entry
             db.prepare(
-                `INSERT OR REPLACE INTO users (id, name, avatar_url, banner_url, mode)
-                VALUES (?, ?, ?, ?, ?)`
-            ).run(user.id, user.username, user.avatar_url, user.cover.url, user.playmode);
+                `INSERT INTO users (id, name, avatar_url, banner_url)
+                VALUES (?, ?, ?, ?)`
+            ).run(user.id, user.username, user.avatar_url, user.cover.url);
             log(`Stored user data for ${user.username}`);
+        }
+        // Create/update user play counts
+        for (const mode of ['osu', 'taiko', 'fruits', 'mania']) {
+            const stats = user.statistics_rulesets[mode];
+            db.prepare(
+                `INSERT OR REPLACE INTO user_play_counts (user_id, mode, count)
+                 VALUES (?, ?, ?)`
+            ).run(user.id, mode, stats?.play_count || 0);
         }
         return user;
     } catch (error) {
@@ -203,8 +213,8 @@ const updateUserFromAllPasses = async (userId) => {
             return;
         }
         isAllPassesUpdateRunning = true;
-        const osu = await getOsuApiInstance();
-        const user = await updateUserProfile(userId);
+        const osu = await osuApiInstance;
+        const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
         const countMapsetsTotal = db.prepare(`SELECT COUNT(*) AS count FROM beatmapsets`).get().count;
         while (true) {
             const task = db.prepare(`SELECT * FROM user_update_tasks WHERE user_id = ?`).get(user.id);
@@ -219,7 +229,7 @@ const updateUserFromAllPasses = async (userId) => {
                 // All done updating this user
                 db.prepare(`UPDATE users SET last_score_update = ? WHERE id = ?`).run(Date.now(), user.id);
                 db.prepare(`DELETE FROM user_update_tasks WHERE user_id = ?`).run(user.id);
-                log(`Completed full pass history update for ${user.username}`);
+                log(`Completed full pass history update for ${user.name}`);
                 break;
             }
             // Calculate progress
@@ -228,8 +238,9 @@ const updateUserFromAllPasses = async (userId) => {
             ).get(task.last_mapset_id).count;
             const percentage = ((countMapsetsTotal - countMapsetsRemaining) / countMapsetsTotal * 100);
             // Log
-            log(`[${percentage.toFixed(2)}%] Fetching passed maps for ${user.username}...`);
+            log(`[${percentage.toFixed(2)}%] Fetching passed maps for ${user.name}...`);
             // Fetch passed maps for each mapset
+            // This is FAR from an ideal approach but we work with what we've got
             let maps = [];
             while (true) {
                 try {
@@ -241,7 +252,7 @@ const updateUserFromAllPasses = async (userId) => {
                 } catch (error) {
                     if (error.status_code == 429) {
                         // Wait for rate limit to clear
-                        await new Promise(resolve => setTimeout(resolve, 5000));
+                        await sleep(5000);
                     } else {
                         throw error;
                     }
@@ -265,7 +276,7 @@ const updateUserFromAllPasses = async (userId) => {
                 }
                 // Log
                 if (newCount > 0)
-                    log(`[${percentage.toFixed(2)}%] Found ${newCount} new map passes for ${user.username}`);
+                    log(`[${percentage.toFixed(2)}%] Found ${newCount} new map passes for ${user.name}`);
                 // Update task info
                 db.prepare(`
                         UPDATE user_update_tasks
@@ -275,7 +286,7 @@ const updateUserFromAllPasses = async (userId) => {
                     `).run(newCount, mapsetIds.pop(), percentage, user.id);
             });
             transaction(maps);
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            await sleep(1500);
             // Log pass count
             logUserPassCount(userId);
         }
@@ -296,9 +307,9 @@ const updateUserFromRecents = async (userId) => {
             return;
         }
         isRecentsUpdateRunning = true;
-        const osu = await getOsuApiInstance();
-        const user = await updateUserProfile(userId);
-        log(`Fetching recent scores for ${user.username}`);
+        const osu = await osuApiInstance;
+        const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
+        log(`Fetching recent scores for ${user.name}`);
         // Fetch all available recent scores for all game modes
         const updateTime = Date.now();
         let limit = 100;
@@ -333,7 +344,7 @@ const updateUserFromRecents = async (userId) => {
                 }
             }
             if (newCount > 0)
-                log(`Found ${newCount} new ${ruleset} map passes for ${user.username}`);
+                log(`Found ${newCount} new ${ruleset} map passes for ${user.name}`);
             // Update new score count
             db.prepare(`UPDATE user_update_tasks SET count_new_passes = count_new_passes + ? WHERE user_id = ?`).run(newCount, user.id);
             // Update ruleset when we reach the end of a set of scores
@@ -363,7 +374,7 @@ const updateUserFromRecents = async (userId) => {
             }
             db.prepare(`UPDATE users SET last_score_update = ? WHERE id = ?`).run(updateTime, user.id);
             db.prepare(`DELETE FROM user_update_tasks WHERE user_id = ?`).run(user.id);
-            log(`Completed recent score update for ${user.username}`);
+            log(`Completed recent score update for ${user.name}`);
         });
         transaction(scores);
         // Log counts
@@ -378,6 +389,7 @@ const updateUserFromRecents = async (userId) => {
 
 // Function to get scores set recently globally and save new passes
 // from users who we are tracking
+// THIS RUNS RECURSIVELY
 const globalRecentCursors = {
     osu: null,
     taiko: null,
@@ -386,7 +398,7 @@ const globalRecentCursors = {
 };
 const updateUsersFromGlobalRecents = async () => {
     try {
-        const osu = await getOsuApiInstance();
+        const osu = await osuApiInstance;
         // Loop for each game mode
         for (const ruleset of ['osu', 'taiko', 'fruits', 'mania']) {
             // Fetch global recent scores
@@ -429,20 +441,21 @@ const updateUsersFromGlobalRecents = async () => {
                 await updateUserStats(user.id);
             }
             // Wait a second for rate limiting
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await sleep(1000);
         }
     } catch (error) {
         log('Error while updating users from global recents:', error);
     }
     // Wait and check again
-    setTimeout(updateUsersFromGlobalRecents, 1000 * 10);
+    setTimeout(updateUsersFromGlobalRecents, 1000 * 15);
 };
 
 // Function that starts scheduled user update tasks
 // If it's been less than 24 hours since last user pass update,
 // only update using their recent scores. Otherwise, scrape their
 // whole map pass history.
-const updateUsers = async () => {
+// THIS RUNS RECURSIVELY
+const startQueuedUserUpdates = async () => {
     try {
         const tasks = db.prepare(`SELECT * FROM user_update_tasks ORDER BY time_queued ASC`).all();
         for (const task of tasks) {
@@ -457,36 +470,79 @@ const updateUsers = async () => {
     } catch (error) {
         log('Error while initializing user update tasks:', error);
     }
-    setTimeout(updateUsers, 1000);
+    setTimeout(startQueuedUserUpdates, 1000);
 };
 
-// Queue users for update if they haven't been updated recently
-const queueUsers = (init = false) => {
+// Function to check the current play counts of all users
+// and compare them to saved values. If values have changed,
+// queue the user for updates. If their play counts haven't changed,
+// mark them as up to date as-is.
+// THIS RUNS RECURSIVELY
+const queueActiveUsers = async () => {
     try {
-        const minLastUpdate = init ? Date.now() : Date.now() - (1000 * 60 * 60 * 16);
-        const usersToQueue = db.prepare(
-            `SELECT id, name FROM users
-             WHERE last_score_update < ?
-             AND id NOT IN (SELECT user_id FROM user_update_tasks)
-             ORDER BY last_score_update ASC`
-        ).all(minLastUpdate);
-        const insertTask = db.prepare(
-            `INSERT INTO user_update_tasks (user_id, time_queued)
-             VALUES (?, 0)`
-        );
-        for (const user of usersToQueue) {
-            insertTask.run(user.id);
-            log(`Queued ${user.name} for update`);
+        const osu = await osuApiInstance;
+        let countInactiveUsers = 0;
+        let countQueuedUsers = 0;
+        let offset = 0;
+        let limit = 50;
+        log('Checking for active users to queue for updates...');
+        while (true) {
+            // Select batch of users
+            const userIds = db.prepare(
+                `SELECT id, last_score_update FROM users LIMIT ? OFFSET ?`
+            ).all(limit, offset).map(u => u.id);
+            if (userIds.length === 0) break;
+            offset += limit;
+            // Fetch user data in bulk
+            const users = await osu.getUsers(userIds);
+            // Loop through users
+            for (const user of users) {
+                let didPlayCountsChange = false;
+                // Check fetched stats to see if play counts changed
+                for (const mode in user.statistics_rulesets) {
+                    const stats = user.statistics_rulesets[mode];
+                    const currentCount = stats.play_count;
+                    const storedCount = db.prepare(
+                        `SELECT count FROM user_play_counts
+                         WHERE user_id = ? AND mode = ?`
+                    ).get(user.id, mode)?.count || 0;
+                    if (currentCount !== storedCount) {
+                        didPlayCountsChange = true;
+                        break;
+                    }
+                }
+                if (didPlayCountsChange) {
+                    // Queue user for update if they aren't already queued
+                    const existingTask = db.prepare(`SELECT 1 FROM user_update_tasks WHERE user_id = ? LIMIT 1`).get(user.id);
+                    if (!existingTask) {
+                        db.prepare(
+                            `INSERT OR IGNORE INTO user_update_tasks
+                             (user_id, time_queued, last_mapset_id, count_new_passes, percent_complete)
+                             VALUES (?, ?, 0, 0, 0)`
+                        ).run(user.id, Date.now());
+                        log(`Queued ${user.username} for update due to changed play counts`);
+                        await updateUserProfile(user.id, user);
+                        countQueuedUsers++;
+                    }
+                } else {
+                    // Mark user as up to date
+                    db.prepare(`UPDATE users SET last_score_update = ? WHERE id = ?`).run(Date.now(), user.id);
+                    countInactiveUsers++;
+                }
+            }
         }
+        // Log inactive user count
+        log(`Queued ${countQueuedUsers} active users for updates and skipped ${countInactiveUsers} inactive users`);
     } catch (error) {
-        log('Error while queuing users for update:', error);
+        log('Error while queuing active users for update:', error);
     }
-    setTimeout(queueUsers, 1000 * 60);
+    // Run again in an hour
+    setTimeout(queueActiveUsers, 1000 * 60 * 60);
 };
 
 // Start update processes
 log(`Starting update processes...`);
 updateSavedMaps();
-updateUsers();
-queueUsers();
+startQueuedUserUpdates();
 updateUsersFromGlobalRecents();
+queueActiveUsers();

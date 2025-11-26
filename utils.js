@@ -53,7 +53,9 @@ const utils = {
             default:
                 return null;
         }
-    }
+    },
+
+    sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
 
 };
 
