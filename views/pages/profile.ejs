@@ -1,5 +1,21 @@
 <div id="profile">
     <%- include('../partials/statSettings') %>
+    <% if (user.updating) { %>
+    <div class="card warning">
+        <div class="icon"><%= user.updating.percent_complete ? 'update' : 'hourglass' %></div>
+        <div class="text">
+            <% if (user.updating.percent_complete) { %>
+            <p><b>Scraping all beatmaps for passes</b>
+                <br><%= user.updating.percent_complete.toFixed(2) %>% complete, discovered
+                <%= user.updating.count_new_passes.toLocaleString() %> new passes so far.
+            </p>
+            <% } else { %>
+            <p><b>Queued for update</b><br>This profile might be out of date and is queued for updates. Check back
+                soon!</p>
+            <% } %>
+        </div>
+    </div>
+    <% } %>
     <div class="card">
         <div class="top">
             <img src="<%= user.banner_url %>" class="banner">

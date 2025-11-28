@@ -67,6 +67,11 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
         colorDiff: starsToColor(pass.stars),
         colorText: pass.stars > 7.1 ? 'hsl(45, 95%, 70%)' : 'black'
     }));
+    // Get queue status
+    user.updating = db.prepare(
+        `SELECT * FROM user_update_tasks
+         WHERE user_id = ?`
+    ).get(user.id);
     // Compile user stats
     const percentage = totalMapCount > 0 ? ((completedCount / totalMapCount) * 100).toFixed(2) : '0.00';
     user.stats = {

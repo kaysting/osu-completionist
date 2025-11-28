@@ -279,7 +279,7 @@ const updateUserFromAllPasses = async (userId) => {
                 }
                 // Log
                 if (newCount > 0)
-                    log(`[${percentage.toFixed(2)}%] Found ${newCount} new map passes for ${user.name}`);
+                    log(`Found ${newCount} new map passes for ${user.name}`);
                 // Update task info
                 db.prepare(`
                         UPDATE user_update_tasks
@@ -289,18 +289,16 @@ const updateUserFromAllPasses = async (userId) => {
                     `).run(newCount, mapsetIds.pop(), percentage, user.id);
             });
             transaction(maps);
+            // Wait before looping
             await sleep(1500);
-            // Log pass count
-            logUserPassCount(userId);
         }
         // Update user stats
         await updateUserStats(userId);
     } catch (error) {
         log('Error while updating user with full pass history:', error);
         await sleep(5000);
-    } finally {
-        isAllPassesUpdateRunning = false;
     }
+    isAllPassesUpdateRunning = false;
 };
 
 // Function to update a user's completion data by fetching
@@ -389,9 +387,8 @@ const updateUserFromRecents = async (userId) => {
     } catch (error) {
         log('Error while updating user recent scores:', error);
         await sleep(5000);
-    } finally {
-        isRecentsUpdateRunning = false;
     }
+    isRecentsUpdateRunning = false;
 };
 
 // Function to get scores set recently globally and save new passes
@@ -508,8 +505,12 @@ const queueActiveUsers = async () => {
             const users = await osu.getUsers(userIds);
             // Loop through users
             for (const user of users) {
-                let didPlayCountsChange = false;
+                // If user hasn't had a full score update, skip them
+                if (!user.last_score_update) {
+                    continue;
+                }
                 // Check fetched stats to see if play counts changed
+                let didPlayCountsChange = false;
                 for (const mode in user.statistics_rulesets) {
                     const stats = user.statistics_rulesets[mode];
                     const currentCount = stats.play_count;
@@ -531,7 +532,7 @@ const queueActiveUsers = async () => {
                              (user_id, time_queued, last_mapset_id, count_new_passes, percent_complete)
                              VALUES (?, ?, 0, 0, 0)`
                         ).run(user.id, Date.now());
-                        log(`Queued ${user.username} for update due to changed play counts`);
+                        log(`Queued ${user.username} for update`);
                         await updateUserProfile(user.id, user);
                         countQueuedUsers++;
                     }
@@ -556,5 +557,5 @@ const queueActiveUsers = async () => {
 log(`Starting update processes...`);
 updateSavedMaps();
 startQueuedUserUpdates();
-//savePassesFromGlobalRecents();
+savePassesFromGlobalRecents();
 queueActiveUsers();

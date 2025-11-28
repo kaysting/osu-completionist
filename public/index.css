@@ -42,6 +42,7 @@
     padding: 0;
     line-height: 1;
     flex-shrink: 0;
+    min-width: 0px;
 }
 
 body {
@@ -240,10 +241,49 @@ img {
     border-radius: 16px;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
     padding: 8px;
+    overflow: hidden;
 }
 
 .card.lighter {
     background: hsl(220, 20%, 18%);
+}
+
+.card.warning {
+    background: hsl(40, 90%, 70%);
+    color: hsl(40, 90%, 20%);
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card.warning>.icon {
+    font-family: 'Material Symbols Rounded';
+    font-weight: 300;
+    font-size: 32px;
+    line-height: 1;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.card.warning>.text {
+    display: block;
+    min-width: 0;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+    text-overflow: clip;
+    overflow: visible;
+    flex-shrink: 1;
+}
+
+.card.warning p {
+    line-height: 1.2;
+    margin: 0px;
+}
+
+.card.warning b {
+    color: inherit;
 }
 
 .card .header {
@@ -478,7 +518,7 @@ img {
     color: var(--textDim);
 }
 
-#profile .card {
+#profile>.card:not(.warning) {
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -679,7 +719,8 @@ img {
         font-size: 22px;
     }
 
-    #profile .stats {
+    #profile .stats,
+    #profile .stats .group {
         gap: 8px 16px;
         flex-wrap: wrap;
     }
