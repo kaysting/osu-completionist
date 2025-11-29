@@ -39,20 +39,21 @@ const updateBeatmapStats = () => {
 
 // Function to fetch new beatmaps(ets)
 const FETCH_ALL_MAPS = false;
+const REPLACE_EXISTING_MAPS = false;
 const updateSavedMaps = async () => {
     try {
         // Initialize API
         const osu = await osuApiInstance;
         // Create data saving transaction function
         const insertMapset = db.prepare(`INSERT OR REPLACE INTO beatmapsets (id, status, title, artist, time_ranked) VALUES (?, ?, ?, ?, ?)`);
-        const insertBeatmap = db.prepare(`INSERT OR REPLACE INTO beatmaps (id, mapset_id, mode, status, name, stars, is_convert) VALUES (?, ?, ?, ?, ?, ?, ?)`);
+        const insertBeatmap = db.prepare(`INSERT OR REPLACE INTO beatmaps (id, mapset_id, mode, status, name, stars, is_convert, duration_secs) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
         let didUpdateStorage = false;
         const save = db.transaction((mapset) => {
             // Save mapset
             insertMapset.run(mapset.id, mapset.status, mapset.title, mapset.artist, mapset.ranked_date?.getTime() || mapset.submitted_date?.getTime());
             // Loop through maps and converts and save
             for (const map of [...mapset.beatmaps, ...(mapset.converts || [])]) {
-                insertBeatmap.run(map.id, mapset.id, map.mode, map.status, map.version, map.difficulty_rating, map.convert ? 1 : 0);
+                insertBeatmap.run(map.id, mapset.id, map.mode, map.status, map.version, map.difficulty_rating, map.convert ? 1 : 0, map.total_length);
                 //log(`Stored beatmap: [${map.mode}] ${mapset.artist} - ${mapset.title} [${map.version}] (ID: ${map.id})`);
             }
             didUpdateStorage = true;
@@ -83,7 +84,7 @@ const updateSavedMaps = async () => {
                 if (existingMapset && !FETCH_ALL_MAPS) {
                     foundExistingMapset = true;
                     break;
-                } else if (existingMapset) {
+                } else if (existingMapset && !REPLACE_EXISTING_MAPS) {
                     continue;
                 }
                 // Fetch full mapset again to get converts
@@ -93,7 +94,7 @@ const updateSavedMaps = async () => {
                 countNewlySaved++;
             }
             // Log counts
-            if (countNewlySaved > 0) {
+            if (countNewlySaved > 0 || FETCH_ALL_MAPS) {
                 const countSavedMapsets = db.prepare(`SELECT COUNT(*) AS count FROM beatmapsets`).get().count;
                 const countSavedMaps = db.prepare(`SELECT COUNT(*) AS count FROM beatmaps`).get().count;
                 log(`Now storing data for ${countSavedMapsets} beatmapsets and ${countSavedMaps} beatmaps`);
@@ -497,7 +498,9 @@ const queueActiveUsers = async () => {
         while (true) {
             // Select batch of users
             const userIds = db.prepare(
-                `SELECT id, last_score_update FROM users LIMIT ? OFFSET ?`
+                `SELECT id, last_score_update FROM users
+                WHERE last_score_update != 0
+                LIMIT ? OFFSET ?`
             ).all(limit, offset).map(u => u.id);
             if (userIds.length === 0) break;
             offset += limit;
@@ -505,10 +508,6 @@ const queueActiveUsers = async () => {
             const users = await osu.getUsers(userIds);
             // Loop through users
             for (const user of users) {
-                // If user hasn't had a full score update, skip them
-                if (!user.last_score_update) {
-                    continue;
-                }
                 // Check fetched stats to see if play counts changed
                 let didPlayCountsChange = false;
                 for (const mode in user.statistics_rulesets) {

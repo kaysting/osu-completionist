@@ -22,39 +22,76 @@
     </div>
     <% } %>
     <div class="card">
-        <div class="top">
-            <img src="<%= user.banner_url %>" class="banner">
-            <div class="basics">
-                <img src="<%= user.avatar_url %>" class="avatar">
-                <div class="text">
-                    <div class="name"><%= user.name %></div>
-                </div>
+        <div class="banner" style="background-image: url('<%= user.banner_url %>')">
+            <div class="buttons">
+                <!-- <a class="btn translucent" href="/u/<%= user.id %>/update">
+                    <span class="icon">update</span>
+                    <span>request update</span>
+                </a> -->
+                <button class="btn translucent" onClick="shareCopy(`<%= user.stats.copyable %>`)">
+                    <span class="icon">share</span>
+                    <span>share/copy stats</span>
+                </button>
             </div>
         </div>
-        <div class="stats">
-            <div class="group grow">
-                <div class="stat">
+        <div class="basics">
+            <img src="<%= user.avatar_url %>" class="avatar">
+            <div class="text">
+                <div class="name"><%= user.name %></div>
+            </div>
+            <div class="stats">
+                <div class="stat big">
                     <div class="key">global rank</div>
                     <div class="value">#<%= user.stats.rank %></div>
                 </div>
-                <div class="stat">
+                <div class="stat big">
                     <div class="key">% completed</div>
                     <div class="value"><%= user.stats.percentage %>%</div>
                 </div>
-                <div class="stat">
+                <div class="stat big">
                     <div class="key">maps completed</div>
                     <div class="value"><%= user.stats.completed.toLocaleString() %></div>
                 </div>
             </div>
-            <div class="group">
+        </div>
+        <div class="card lighter progress">
+            <div class="top">
+                <span class="header">completion progress</span>
+            </div>
+            <div class="stats">
                 <div class="stat">
                     <div class="key">maps to complete</div>
                     <div class="value"><%= (user.stats.total - user.stats.completed).toLocaleString() %></div>
                 </div>
                 <div class="stat">
+                    <div class="key">playtime to completion</div>
+                    <div class="value"><%= user.stats.timeToComplete %></div>
+                </div>
+                <div class="stat">
                     <div class="key">total maps</div>
                     <div class="value"><%= user.stats.total.toLocaleString() %></div>
                 </div>
+            </div>
+            <div>
+                <span class="header">completion by year</span>
+            </div>
+            <div class="yearly">
+                <% for (const yearData of user.stats.yearly) { %>
+                <div class="entry">
+                    <div class="year"><%= yearData.year %></div>
+                    <div class="content">
+                        <div class="values">
+                            <div class="percent"><%= yearData.percentage %>%</div>
+                            <div class="count"><%= yearData.completed.toLocaleString() %> /
+                                <%= yearData.total.toLocaleString() %></div>
+                        </div>
+                        <div class="bar">
+                            <div class="filling"
+                                style="width: <%= yearData.percentage %>%; background: <%= yearData.color %>"></div>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
             </div>
         </div>
         <div class="card lighter passes">

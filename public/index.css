@@ -92,6 +92,7 @@ img {
     --fgHover: white;
     height: 32px;
     padding: 0px 12px;
+    font-family: 'Torus', sans-serif;
     font-size: 14px;
     font-weight: 600;
     border-radius: 8px;
@@ -103,6 +104,9 @@ img {
     justify-content: center;
     gap: 8px;
     user-select: none;
+    outline: none;
+    border: none;
+    cursor: pointer;
 }
 
 .btn:hover {
@@ -117,6 +121,13 @@ img {
     --bgHover: hsl(150, 90%, 75%);
     --fg: hsl(220, 20%, 10%);
     --fgHover: hsl(220, 20%, 5%);
+}
+
+.btn.translucent {
+    --bg: hsla(220, 20%, 20%, 50%);
+    --bgHover: hsla(220, 20%, 20%, 70%);
+    --fg: white;
+    --fgHover: white;
 }
 
 .btn.text {
@@ -521,89 +532,183 @@ img {
 #profile>.card:not(.warning) {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 8px;
 }
 
 #profile .banner {
     width: 100%;
-    border-radius: 8px;
+    min-height: 100px;
+    aspect-ratio: 4 / 1;
+    border-radius: 8px 8px 16px 16px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#profile .banner .buttons {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    padding: 8px;
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 #profile .basics {
     display: flex;
     gap: 16px;
-    padding: 0px 32px;
-    align-items: flex-end;
+    padding: 8px 16px;
+    align-items: center;
 }
 
-#profile .basics>.text {
+#profile .basics .avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 32px;
+    background: hsl(220, 20%, 25%);
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+#profile .basics .text {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 16px 0px;
-}
-
-#profile .basics * {
+    flex-grow: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-#profile .avatar {
-    width: 128px;
-    height: 128px;
-    margin-top: -64px;
-    border-radius: 32px;
-    border: 4px solid hsl(220, 20%, 15%);
-    background: hsl(220, 20%, 25%);
-}
-
-#profile .basics .name {
+#profile .basics .text .name {
     font-size: 28px;
     font-weight: bold;
     color: white;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#profile .basics .stats {
+    gap: 8px 24px;
 }
 
 #profile .stats {
-    padding: 0px 32px;
     display: flex;
-    gap: 16px 32px;
+    gap: 16px;
     flex-wrap: wrap;
-}
-
-#profile .stats .group {
-    display: flex;
-    gap: 16px 32px;
-    flex-wrap: wrap;
-    flex-shrink: 1;
 }
 
 #profile .stats .stat {
     display: flex;
     flex-direction: column;
-}
-
-#profile .stats .group.grow {
-    flex-grow: 1;
+    gap: 2px;
 }
 
 #profile .stats .stat .key {
     color: var(--textDim);
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 600;
 }
 
 #profile .stats .stat .value {
     color: white;
+    font-size: 20px;
+    font-weight: 300;
+}
+
+#profile .stats .stat.big {
+    gap: 0px;
+    font-size: 16px;
+}
+
+#profile .stats .stat.big .key {
+    font-size: 16px;
+}
+
+#profile .stats .stat.big .value {
     font-size: 32px;
     font-weight: 200;
 }
 
-#profile .passes {
+#profile .passes,
+#profile .progress {
     display: flex;
     flex-direction: column;
     gap: 16px;
     padding: 16px 12px 12px 12px;
+}
+
+#profile .yearly {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(225px, 1fr));
+    gap: 2px;
+}
+
+#profile .yearly .entry {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background: hsl(220, 20%, 22%);
+    border-radius: 8px;
+    align-items: center;
+}
+
+#profile .yearly .entry .year {
+    font-size: 14px;
+    color: white;
+    width: 40px;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+#profile .yearly .entry .content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-grow: 1;
+}
+
+#profile .yearly .entry .content .values {
+    display: flex;
+    gap: 0px 4px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+#profile .yearly .entry .content .values .percent {
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    flex-grow: 1;
+}
+
+#profile .yearly .entry .content .values .count {
+    font-size: 14px;
+    color: var(--textDim);
+}
+
+#profile .yearly .entry .content .bar {
+    width: 100%;
+    height: 4px;
+    background: hsl(220, 20%, 15%);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+#profile .yearly .entry .content .bar .filling {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
 }
 
 #profile .passes .entries {
@@ -702,38 +807,31 @@ img {
     flex-shrink: 0;
 }
 
-@media (max-width: 550px) {
+@media (max-width: 700px) {
 
-    #profile .basics,
-    #profile .stats {
-        padding: 0px 16px;
-    }
-
-    #profile .avatar {
-        width: 96px;
-        height: 96px;
-        margin-top: -48px;
+    #profile .basics {
+        padding: 8px 16px;
+        flex-wrap: wrap;
     }
 
     #profile .basics .name {
         font-size: 22px;
     }
 
-    #profile .stats,
-    #profile .stats .group {
-        gap: 8px 16px;
-        flex-wrap: wrap;
+    #profile .basics .stats {
+        flex-basis: 100%;
+        justify-content: center;
     }
 
-    #profile .stats .stat {
+    #profile .stats .stat.big {
         gap: 2px;
     }
 
-    #profile .stats .stat .key {
+    #profile .stats .stat.big .key {
         font-size: 14px;
     }
 
-    #profile .stats .stat .value {
+    #profile .stats .stat.big .value {
         font-size: 24px;
     }
 
@@ -745,4 +843,5 @@ img {
     #profile .passes .entry .time {
         flex-basis: 100%;
     }
+
 }

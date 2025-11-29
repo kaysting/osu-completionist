@@ -114,6 +114,81 @@ const utils = {
             }
         }
         return 'rgb(128, 128, 128)';
+    },
+
+    secsToDuration: (secs, rounded = false) => {
+        if (rounded) {
+            if (secs < 60) {
+                return `${secs}s`;
+            } else if (secs < 3600) {
+                const minutes = Math.floor(secs / 60);
+                return `${minutes}m`;
+            } else if (secs < 86400) {
+                const hours = Math.floor(secs / 3600);
+                return `${hours}h`;
+            } else {
+                const days = Math.floor(secs / 86400);
+                return `${days}d`;
+            }
+        } else {
+            const days = Math.floor(secs / 86400);
+            secs %= 86400;
+            const hours = Math.floor(secs / 3600);
+            secs %= 3600;
+            const minutes = Math.floor(secs / 60);
+            secs %= 60;
+            let result = '';
+            if (days > 0) result += `${days}d `;
+            if (hours > 0 || days > 0) result += `${hours}h `;
+            if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m `;
+            result += `${secs}s`;
+            return result.trim();
+        }
+    },
+
+    /**
+     * Interpolates between an array of colors based on a percentage.
+     * @param {number} percentage - value between 0 and 1
+     * @param {Array<Array<number>>} colors - Array of [r, g, b] arrays
+     * @returns {string} - CSS rgb string, e.g., "rgb(255, 0, 0)"
+     */
+    interpolateColors: (percentage, colors) => {
+        // 1. Safety checks
+        if (!colors || colors.length === 0) return 'rgb(0,0,0)';
+        if (colors.length === 1) {
+            const c = colors[0];
+            return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+        }
+
+        // 2. Clamp percentage between 0 and 1
+        const p = Math.max(0, Math.min(1, percentage));
+
+        // 3. Calculate which segment of the color array we are in
+        //    If we have N colors, we have N-1 segments.
+        //    Example: 3 colors (0, 1, 2). 0.5 maps to exactly color[1].
+        const scaled = p * (colors.length - 1);
+
+        // 4. Get the index of the start color for this segment
+        let index = Math.floor(scaled);
+
+        // 5. Calculate the local percentage (t) within that segment (0 to 1)
+        let t = scaled - index;
+
+        // Handle the edge case where percentage is exactly 1.0
+        if (index >= colors.length - 1) {
+            index = colors.length - 2;
+            t = 1;
+        }
+
+        const startColor = colors[index];
+        const endColor = colors[index + 1];
+
+        // 6. Interpolate R, G, and B individually
+        const r = Math.round(startColor[0] + (endColor[0] - startColor[0]) * t);
+        const g = Math.round(startColor[1] + (endColor[1] - startColor[1]) * t);
+        const b = Math.round(startColor[2] + (endColor[2] - startColor[2]) * t);
+
+        return `rgb(${r}, ${g}, ${b})`;
     }
 
 };
