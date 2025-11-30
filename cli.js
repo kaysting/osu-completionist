@@ -216,7 +216,7 @@ const showLeaderboard = async (mode, includeLoved, includeConverts, page, limit)
 
 const showHelp = () => {
     console.log([
-        'osu!completion CLI',
+        'osu!complete CLI',
         'Usage: node cli.js [options]',
         '',
         'Options:',

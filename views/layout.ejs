@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= locals.tabTitle ? `${tabTitle} - ` : '' %>osu!completion</title>
+    <title><%= locals.tabTitle ? `${tabTitle} - ` : '' %>osu!complete</title>
     <meta name="description" content="<%= locals.description || '' %>">
-    <meta property="og:site_name" content="osu!completion">
+    <meta property="og:site_name" content="osu!complete">
     <meta property="og:title" content="<%= locals.title || 'osu! completionist tracker and leaderboard' %>">
     <meta property="og:description" content="<%= locals.description || '' %>">
     <meta property="og:image" content="<%= locals.image || '' %>">
@@ -22,7 +22,7 @@
     <div id="topbar">
         <div class="container">
             <div id="logo">
-                <span class="white">osu!</span><span class="green">completion</span>
+                <span class="white">osu!</span><span class="green">complete</span>
             </div>
             <div class="buttons">
                 <a class="btn <%= page == 'leaderboard' ? 'text bright' : 'text muted' %>"
