@@ -38,6 +38,18 @@
             <img src="<%= user.avatar_url %>" class="avatar">
             <div class="text">
                 <div class="name"><%= user.name %></div>
+                <div class="flags">
+                    <div class="country">
+                        <img src="<%= user.country.flag_url %>" class="flag">
+                        <span class="label"><%= user.country.name %></span>
+                    </div>
+                    <% if (user.team_id) { %>
+                    <div class="team">
+                        <img src="<%= user.team_flag_url %>" class="flag">
+                        <span class="label"><%= user.team_name %></span>
+                    </div>
+                    <% } %>
+                </div>
             </div>
             <div class="stats">
                 <div class="stat big">

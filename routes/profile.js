@@ -61,12 +61,8 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
     // Get yearly progress
     const startYear = 2007;
     const currentYear = new Date().getFullYear();
-    const years = [];
-    for (let y = currentYear; y >= startYear; y--) {
-        years.push(y);
-    }
     const yearly = [];
-    for (const year of years) {
+    for (let year = currentYear; year >= startYear; year--) {
         const total = db.prepare(
             `SELECT count FROM beatmap_stats_yearly
              WHERE mode = ? AND year = ? AND includes_loved = ? AND includes_converts = ?`
@@ -92,14 +88,15 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
     // Create copyable text
     const modeName = rulesetKeyToName(modeKey, true);
     const statsText = [
-        `${user.name}'s ${modeName} ${includeLoved ? 'ranked and loved' : 'ranked only'} (${includeConverts ? 'with converts' : 'no converts'}) completion stats:\n`,
-        `Overall: ${percentage}% (${completedCount.toLocaleString()} / ${totalMapCount.toLocaleString()})\n`,
-        `Yearly breakdown:`
+        `${user.name}'s ${modeName} ${includeLoved ? 'ranked and loved' : 'ranked only'} (${includeConverts ? 'with converts' : 'no converts'}) completion stats:\n`
     ];
+    yearly.reverse();
     for (const year of yearly) {
         const checkbox = year.completed === year.total ? '☑' : '☐';
         statsText.push(`${checkbox} ${year.year}: ${year.percentage}% (${year.completed.toLocaleString()} / ${year.total.toLocaleString()})`);
     }
+    statsText.push(`Total: ${percentage}% (${completedCount.toLocaleString()} / ${totalMapCount.toLocaleString()})`);
+    yearly.reverse();
     // Compile user stats
     user.stats = {
         completed: completedCount,

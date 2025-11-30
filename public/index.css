@@ -580,7 +580,7 @@ img {
 #profile .basics .text {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
     flex-grow: 1;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -595,6 +595,25 @@ img {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    line-height: 1.2;
+}
+
+#profile .basics .flags {
+    display: flex;
+    gap: 8px 16px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#profile .basics .flags>* {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+#profile .basics .flags .flag {
+    height: 24px;
+    border-radius: 4px;
 }
 
 #profile .basics .stats {
@@ -813,12 +832,18 @@ img {
 
     #profile .basics {
         padding: 8px 16px;
-        flex-wrap: wrap;
-        justify-content: center;
+        flex-direction: column;
     }
 
     #profile .basics .text {
         flex-grow: 0;
+        justify-content: center;
+        align-items: center;
+        margin-top: -8px;
+    }
+
+    #profile .basics .flags {
+        justify-content: center;
     }
 
     #profile .basics .avatar {
@@ -827,9 +852,8 @@ img {
         border-radius: 16px;
     }
 
-    #profile .basics .name {
+    #profile .basics .text .name {
         font-size: 22px;
-        line-height: 1.2;
     }
 
     #profile .basics .stats {
