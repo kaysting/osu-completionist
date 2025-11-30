@@ -59,6 +59,7 @@ const FETCH_ALL_MAPS = false;
 const REPLACE_EXISTING_MAPS = false;
 const updateSavedMaps = async () => {
     try {
+        log(`Checking for new beatmaps...`);
         // Initialize API
         const osu = await osuApiInstance;
         // Create data saving transaction function
@@ -118,7 +119,7 @@ const updateSavedMaps = async () => {
             }
             // We're done if no more mapsets, or we found an existing one above
             if (!cursor || mapsets.length === 0 || foundExistingMapset) {
-                log('Beatmap database is up to date!');
+                log('Beatmap database is up to date');
                 break;
             }
         }
@@ -270,6 +271,7 @@ const updateUserFromAllPasses = async (userId) => {
         isAllPassesUpdateRunning = true;
         const osu = await osuApiInstance;
         const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
+        log(`Starting full pass history update for ${user.name}`);
         const countMapsetsTotal = db.prepare(`SELECT COUNT(*) AS count FROM beatmapsets`).get().count;
         while (true) {
             const task = db.prepare(`SELECT * FROM user_update_tasks WHERE user_id = ?`).get(user.id);
@@ -364,7 +366,7 @@ const updateUserFromRecents = async (userId) => {
         isRecentsUpdateRunning = true;
         const osu = await osuApiInstance;
         const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
-        log(`Fetching recent scores for ${user.name}`);
+        log(`Starting recent score update for ${user.name}`);
         // Fetch all available recent scores for all game modes
         const updateTime = Date.now();
         let limit = 100;
