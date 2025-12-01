@@ -6,18 +6,18 @@ const { rulesetNameToKey, rulesetKeyToName } = require('../utils.js');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-    res.redirect(`/leaderboard/osu/ranked-loved`);
+    res.redirect(`/leaderboard/osu/ranked`);
 });
 
 router.get('/:mode', (req, res) => {
-    res.redirect(`/leaderboard/${req.params.mode}/ranked-loved`);
+    res.redirect(`/leaderboard/${req.params.mode}/ranked`);
 });
 
 router.get('/:mode/:includes', (req, res) => {
     // Get params
     const page = parseInt(req.query.p) || 1;
     const mode = req.params.mode || 'osu';
-    const includes = req.params.includes?.split('-') || ['ranked', 'loved'];
+    const includes = req.params.includes?.split('-') || ['ranked'];
     const includeConverts = includes.includes('converts') ? 1 : 0;
     const includeLoved = includes.includes('loved') ? 1 : 0;
     const limit = 50;

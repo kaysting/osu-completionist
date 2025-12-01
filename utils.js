@@ -10,6 +10,7 @@ const utils = {
     getOsuApiInstance: async () => {
         const instance = await osuApi.API.createAsync(process.env.OSU_CLIENT_ID, process.env.OSU_API_TOKEN);
         instance.headers['User-Agent'] = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0`;
+        instance.timeout = 60;
         return instance;
     },
 

@@ -8,17 +8,17 @@ const { rulesetNameToKey, rulesetKeyToName, getRelativeTimestamp, starsToColor, 
 const router = express.Router();
 
 router.get('/:id', ensureUserExists, (req, res) => {
-    res.redirect(`/u/${req.user.id}/${req.user.mode}/ranked-loved`);
+    res.redirect(`/u/${req.user.id}/${req.user.mode}/ranked`);
 });
 
 router.get('/:id/:mode', ensureUserExists, (req, res) => {
-    res.redirect(`/u/${req.user.id}/${req.params.mode}/ranked-loved`);
+    res.redirect(`/u/${req.user.id}/${req.params.mode}/ranked`);
 });
 
 router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
     const user = req.user;
     const mode = req.params.mode || 'osu';
-    const includes = req.params.includes?.split('-') || ['ranked', 'loved'];
+    const includes = req.params.includes?.split('-') || ['ranked'];
     const includeConverts = includes.includes('converts') ? 1 : 0;
     const includeLoved = includes.includes('loved') ? 1 : 0;
     // Ensure mode is valid
@@ -93,9 +93,9 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
     yearly.reverse();
     for (const year of yearly) {
         const checkbox = year.completed === year.total ? '☑' : '☐';
-        statsText.push(`${checkbox} ${year.year}: ${year.percentage}% (${year.completed.toLocaleString()} / ${year.total.toLocaleString()})`);
+        statsText.push(`${checkbox} ${year.year}: ${year.completed.toLocaleString()} / ${year.total.toLocaleString()} (${year.percentage}%)`);
     }
-    statsText.push(`Total: ${percentage}% (${completedCount.toLocaleString()} / ${totalMapCount.toLocaleString()})`);
+    statsText.push(`\nTotal: ${completedCount.toLocaleString()} / ${totalMapCount.toLocaleString()} (${percentage}%)`);
     yearly.reverse();
     // Compile user stats
     user.stats = {
