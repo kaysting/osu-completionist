@@ -1,6 +1,6 @@
 require('dotenv').config();
 const db = require('./db');
-const { getOsuApiInstance } = require('./utils');
+const osu = require('./osu');
 
 /**
  * Parses command line arguments from process.argv into a camelCased key-value object.
@@ -98,7 +98,6 @@ const queueUser = async (userId) => {
         console.error('Please provide a user name or ID with --user when using --queue.');
         return;
     }
-    const osu = await getOsuApiInstance();
     const user = await osu.getUser(userId);
     if (!user) {
         console.error('User not found.');

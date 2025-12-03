@@ -71,9 +71,11 @@ router.get('/:mode/:includes', (req, res) => {
     // Render
     const modeNameFull = rulesetKeyToName(modeKey, true);
     res.render('layout', {
-        tabTitle: `${modeNameFull} leaderboard`,
-        title: `${modeNameFull} completionist leaderboard`,
-        description: `View the players who have passed the most ${modeNameFull} beatmaps!`,
+        title: `${modeNameFull} leaderboard`,
+        meta: {
+            title: `${modeNameFull} completionist leaderboard`,
+            description: `View the players who have passed the most ${modeNameFull} beatmaps!`
+        },
         page: 'leaderboard',
         settings: {
             modeKey, mode, includes, basePath: '/leaderboard'
@@ -81,7 +83,8 @@ router.get('/:mode/:includes', (req, res) => {
         pagination: {
             current: page, nav: pagesToShow, basePath: `/leaderboard/${mode}/${includes.join('-')}`
         },
-        leaderboard: leaderboard
+        leaderboard: leaderboard,
+        me: req.me
     });
 });
 

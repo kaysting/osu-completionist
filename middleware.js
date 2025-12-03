@@ -1,7 +1,9 @@
 const db = require('./db');
 const fs = require('fs');
+const utils = require('./utils');
 
 const middleware = {
+
     ensureUserExists: (req, res, next) => {
         const userId = req.params.id;
         const user = db.prepare('SELECT * FROM users WHERE id = ? OR name = ?').get(userId, userId);
@@ -10,7 +12,8 @@ const middleware = {
                 title: 'User not found',
                 page: 'error',
                 number: 404,
-                message: `We aren't tracking the user with ID ${userId} yet. If you want to see their completion stats, have them visit this site and log in with osu!.`
+                message: `We aren't tracking the user with ID ${userId} yet. If you want to see their completion stats, have them visit this site and log in with osu!.`,
+                me: req.me
             });
         }
         req.user = user;
@@ -20,7 +23,18 @@ const middleware = {
             req.user.country.flag_url = `/assets/flags/${req.user.country.code.toUpperCase()}.png`;
         }
         next();
+    },
+
+    getAuthenticatedUser: (req, res, next) => {
+        const jwt = req.cookies?.token;
+        const data = utils.verifyJWT(jwt);
+        req.me = null;
+        if (data?.id) {
+            req.me = db.prepare('SELECT * FROM users WHERE id = ?').get(data.id);
+        }
+        next();
     }
+
 };
 
 module.exports = middleware;

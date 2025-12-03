@@ -11,6 +11,12 @@ router.get('/:id', ensureUserExists, (req, res) => {
     res.redirect(`/u/${req.user.id}/${req.user.mode}/ranked`);
 });
 
+router.get('/:id/refresh', async (req, res) => {
+    if (!req.me || req.me.id !== req.user.id) {
+        return res.redirect(`/u/${req.user.id}`);
+    }
+});
+
 router.get('/:id/:mode', ensureUserExists, (req, res) => {
     res.redirect(`/u/${req.user.id}/${req.params.mode}/ranked`);
 });
@@ -148,13 +154,16 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
     // Render
     res.render('layout', {
         page: 'profile',
-        tabTitle: req.user.name,
-        title: `${req.user.name}'s ${modeName} completionist profile`,
-        description: `${req.user.name} has passed ${percentage}% of all ${modeName} beatmaps (${includesString})! Click to view more of their completionist stats.`,
+        title: req.user.name,
+        meta: {
+            title: `${req.user.name}'s ${modeName} completionist profile`,
+            description: `${req.user.name} has passed ${percentage}% of all ${modeName} beatmaps (${includesString})! Click to view more of their completionist stats.`,
+        },
         user,
         settings: {
             modeKey, mode, includes, basePath: `/u/${user.id}`
-        }
+        },
+        me: req.me
     });
 });
 

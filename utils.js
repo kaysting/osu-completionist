@@ -1,4 +1,4 @@
-const osuApi = require('osu-api-v2-js');
+const jwt = require('jsonwebtoken');
 
 const utils = {
 
@@ -7,12 +7,7 @@ const utils = {
         console.log(`[${timestamp}]`, ...args);
     },
 
-    getOsuApiInstance: async () => {
-        const instance = await osuApi.API.createAsync(process.env.OSU_CLIENT_ID, process.env.OSU_API_TOKEN);
-        instance.headers['User-Agent'] = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0`;
-        instance.timeout = 60;
-        return instance;
-    },
+    sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
 
     rulesetNameToKey: name => {
         switch (name.toLowerCase()) {
@@ -57,8 +52,6 @@ const utils = {
                 return null;
         }
     },
-
-    sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
 
     getRelativeTimestamp: (ts, origin = Date.now()) => {
         const diff = ts - origin;
@@ -192,6 +185,18 @@ const utils = {
         const b = Math.round(startColor[2] + (endColor[2] - startColor[2]) * t);
 
         return `rgb(${r}, ${g}, ${b})`;
+    },
+
+    generateJWT: (payload) => {
+        return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+    },
+
+    verifyJWT: (token) => {
+        try {
+            return jwt.verify(token, process.env.JWT_SECRET);
+        } catch (err) {
+            return null;
+        }
     }
 
 };

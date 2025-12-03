@@ -149,9 +149,22 @@ img {
     --fg: var(--accent);
 }
 
+.btn.text.danger {
+    --fg: hsl(340, 80%, 70%);
+}
+
 .btn.square {
     width: 32px;
     padding: 0px;
+}
+
+.btn.square .label {
+    display: none;
+}
+
+.btn.dynamic {
+    height: auto;
+    padding: 4px 12px;
 }
 
 .btn .icon {
@@ -160,6 +173,13 @@ img {
     font-weight: 300;
     font-size: 20px;
     line-height: 1;
+}
+
+.btn img.icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    border-radius: 4px;
 }
 
 .btn .icon.filled {
@@ -212,16 +232,13 @@ img {
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
 }
 
-#logo {
+#logo .text {
     font-family: 'Torus', sans-serif;
     font-weight: 600;
     font-size: 20px;
-    line-height: 1;
-    user-select: none;
-    margin-top: -2px;
 }
 
 #logo .white {
@@ -232,9 +249,15 @@ img {
     color: var(--accent);
 }
 
-#topbar .buttons {
+#topbar .nav,
+#topbar .account {
     display: flex;
-    gap: 8px;
+    gap: 4px;
+    align-items: center;
+}
+
+#topbar .nav {
+    flex-grow: 1;
 }
 
 #main {

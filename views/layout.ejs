@@ -4,16 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= locals.tabTitle ? `${tabTitle} - ` : '' %>osu!complete</title>
-    <meta name="description" content="<%= locals.description || '' %>">
+    <title><%= `${locals.title ? locals.title + ' - ' : ''}` %>osu!complete</title>
+    <meta name="description" content="<%= locals?.meta?.description || '' %>">
     <meta property="og:site_name" content="osu!complete">
-    <meta property="og:title" content="<%= locals.title || 'osu! completionist tracker and leaderboard' %>">
-    <meta property="og:description" content="<%= locals.description || '' %>">
-    <meta property="og:image" content="<%= locals.image || '' %>">
+    <meta property="og:title" content="<%= locals?.meta?.title || '' %>">
+    <meta property="og:description" content="<%= locals?.meta?.description || '' %>">
+    <meta property="og:image" content="<%= locals?.meta?.image || '' %>">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="<%= locals.image || '' %>">
+    <meta name="twitter:image" content="<%= locals?.meta?.image || '' %>">
     <meta name="theme-color" content="#6EF79C">
-    <link rel="icon" type="image/png" href="/icon.png">
+    <link rel="icon" type="image/png" href="/assets/icon.png">
     <link rel="stylesheet" href="/index.css">
     <script src="/index.js" defer></script>
 </head>
@@ -21,13 +21,43 @@
 <body data-page="<%= page %>">
     <div id="topbar">
         <div class="container">
-            <div id="logo">
-                <span class="white">osu!</span><span class="green">complete</span>
+            <a id="logo" href="/" class="btn text">
+                <div class="text">
+                    <span class="white">osu!</span><span class="green">complete</span>
+                </div>
+            </a>
+            <div class="nav">
+                <a class="btn <%= page == 'leaderboard' ? 'text bright' : 'text muted' %>" href="/leaderboard"
+                    title="View top completionists">
+                    <span class="icon filled">leaderboard</span>
+                    leaderboard
+                </a>
+                <!-- <a class="btn <%= page == 'search' ? 'text bright' : 'text muted' %>" href="/search"
+                    title="Search tracked players">search</a> -->
+                <% if (me) { %>
+                <a class="btn <%= page == 'recommended' ? 'text bright' : 'text muted' %>" href="/recommended"
+                    title="View and filter maps you should complete next">
+                    <span class="icon filled">cards_star</span>
+                    play next
+                </a>
+                <% } %>
             </div>
-            <div class="buttons">
-                <a class="btn <%= page == 'leaderboard' ? 'text bright' : 'text muted' %>"
-                    href="/leaderboard">leaderboard</a>
-                <!-- <a class="btn <%= page == 'search' ? 'text bright' : 'text muted' %>" href="/search">search</a> -->
+            <div class="account">
+                <% if (!me) { %>
+                <a class="btn text muted" href="/auth/login">
+                    <span class="icon filled">person</span>
+                    sign in
+                </a>
+                <% } else { %>
+                <a class="btn text dynamic" href="/u/<%= me.id %>" title="View your profile">
+                    <img src="<%= me.avatar_url %>" class="icon" style="width: 32px; height: 32px;">
+                    <span><%= me.name %></span>
+                </a>
+                <a href="/auth/logout" class="btn text danger square" title="Sign out">
+                    <span class="icon filled">logout</span>
+                    <span class="label">sign out</span>
+                </a>
+                <% } %>
             </div>
         </div>
     </div>

@@ -1,6 +1,6 @@
 /node_modules
-/*.db
-/*.db-shm
-/*.db-wal
+/*.db*
 /temp
-.env
+.*
+!.env.example
+!.gitignore

@@ -1,8 +1,9 @@
 require('dotenv').config();
 const db = require('./db');
-const osuApi = require('osu-api-v2-js');
-const { log, getOsuApiInstance, sleep } = require('./utils');
-const osuApiInstance = getOsuApiInstance();
+const osu = require('./osu');
+
+const { log, sleep } = require('./utils');
+const { queueUser, updateUserProfile } = require('./services/userServices');
 
 // Function to update beatmap stats and totals in the database
 const updateBeatmapStats = () => {
@@ -60,15 +61,13 @@ const REPLACE_EXISTING_MAPS = false;
 const updateSavedMaps = async () => {
     try {
         log(`Checking for new beatmaps...`);
-        // Initialize API
-        const osu = await osuApiInstance;
         // Create data saving transaction function
         const insertMapset = db.prepare(`INSERT OR REPLACE INTO beatmapsets (id, status, title, artist, time_ranked) VALUES (?, ?, ?, ?, ?)`);
         const insertBeatmap = db.prepare(`INSERT OR REPLACE INTO beatmaps (id, mapset_id, mode, status, name, stars, is_convert, duration_secs) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
         let didUpdateStorage = false;
         const save = db.transaction((mapset) => {
             // Save mapset
-            insertMapset.run(mapset.id, mapset.status, mapset.title, mapset.artist, mapset.ranked_date?.getTime() || mapset.submitted_date?.getTime());
+            insertMapset.run(mapset.id, mapset.status, mapset.title, mapset.artist, new Date(mapset.ranked_date || mapset.submitted_date || undefined).getTime());
             // Loop through maps and converts and save
             for (const map of [...mapset.beatmaps, ...(mapset.converts || [])]) {
                 insertBeatmap.run(map.id, mapset.id, map.mode, map.status, map.version, map.difficulty_rating, map.convert ? 1 : 0, map.total_length);
@@ -82,11 +81,7 @@ const updateSavedMaps = async () => {
             // Fetch mapsets
             const data = await osu.searchBeatmapsets({
                 cursor_string: cursor,
-                sort: {
-                    by: 'ranked',
-                    in: 'desc'
-                },
-                hide_explicit_content: false
+                nsfw: true
             });
             // Extract data
             cursor = data.cursor_string;
@@ -209,55 +204,6 @@ const updateUserStats = async (userId) => {
     }
 };
 
-// Function to fetch a user's profile and update their stored data
-// Returns the fetched user data
-const updateUserProfile = async (userId, userObj) => {
-    try {
-        const osu = await osuApiInstance;
-        const osuApiImported = require('osu-api-v2-js');
-        /** @type {osuApiImported.User.WithCountryCoverGroupsTeamStatisticsrulesets} */
-        const user = userObj || (await osu.getUsers([userId]))[0];
-        // Check if a user entry already exists
-        const existingUser = db.prepare(`SELECT * FROM users WHERE id = ?`).get(user.id);
-        if (existingUser) {
-            // Update user profile data
-            db.prepare(
-                `UPDATE users
-                SET name = ?,
-                    avatar_url = ?,
-                    banner_url = ?,
-                    country_code = ?,
-                    team_id = ?,
-                    team_name = ?,
-                    team_name_short = ?,
-                    team_flag_url = ?
-                WHERE id = ?`
-            ).run(user.username, user.avatar_url, user.cover.url, user.country.code, user.team?.id, user.team?.name, user.team?.short_name, user.team?.flag_url, user.id);
-            log(`Updated stored user data for ${user.username}`);
-        } else {
-            // Create new user entry
-            db.prepare(
-                `INSERT INTO users (id, name, avatar_url, banner_url, country_code, team_id, team_name, team_name_short, team_flag_url)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-            ).run(user.id, user.username, user.avatar_url, user.cover.url, user.country.code, user.team?.id, user.team?.name, user.team?.short_name, user.team?.flag_url);
-            log(`Stored user data for ${user.username}`);
-        }
-        // Create/update user play counts
-        for (const mode of ['osu', 'taiko', 'fruits', 'mania']) {
-            const stats = user.statistics_rulesets[mode];
-            db.prepare(
-                `INSERT OR REPLACE INTO user_play_counts (user_id, mode, count)
-                 VALUES (?, ?, ?)`
-            ).run(user.id, mode, stats?.play_count || 0);
-        }
-        return user;
-    } catch (error) {
-        log('Error while fetching/updating user profile:', error);
-        await sleep(5000);
-        return null;
-    }
-};
-
 let isAllPassesUpdateRunning = false;
 let isRecentsUpdateRunning = false;
 
@@ -269,7 +215,6 @@ const updateUserFromAllPasses = async (userId) => {
             return;
         }
         isAllPassesUpdateRunning = true;
-        const osu = await osuApiInstance;
         const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
         log(`Starting full pass history update for ${user.name}`);
         const countMapsetsTotal = db.prepare(`SELECT COUNT(*) AS count FROM beatmapsets`).get().count;
@@ -301,13 +246,15 @@ const updateUserFromAllPasses = async (userId) => {
             let maps = [];
             while (true) {
                 try {
-                    maps = await osu.getUserPassedBeatmaps(
-                        user.id, mapsetIds,
-                        { converts: true, no_diff_reduction: false }
-                    );
+                    const res = await osu.getUserBeatmapsPassed(user.id, {
+                        beatmapset_ids: mapsetIds,
+                        exclude_converts: false,
+                        no_diff_reduction: false
+                    });
+                    maps = res.beatmaps_passed;
                     break;
                 } catch (error) {
-                    if (error.status_code == 429) {
+                    if (error.status == 429) {
                         // Wait for rate limit to clear
                         await sleep(5000);
                     } else {
@@ -364,27 +311,24 @@ const updateUserFromRecents = async (userId) => {
             return;
         }
         isRecentsUpdateRunning = true;
-        const osu = await osuApiInstance;
         const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
         log(`Starting recent score update for ${user.name}`);
         // Fetch all available recent scores for all game modes
         const updateTime = Date.now();
         let limit = 100;
         let offset = 0;
-        let ruleset = 'osu';
+        let mode = 'osu';
         const scores = [];
         while (true) {
             // Fetch scores
             let fetchedScores = [];
             try {
-                fetchedScores = await osu.getUserScores(
-                    user, 'recent', osuApi.Ruleset[ruleset],
-                    { fails: false, lazer: true },
-                    { limit, offset }
-                );
+                fetchedScores = await osu.getUserScores(userId, 'recent', {
+                    mode, limit, offset, include_fails: false, legacy_only: false
+                });
             } catch (error) {
                 fetchedScores = [];
-                if (error.status_code != 404) {
+                if (error.status != 404) {
                     throw error;
                 }
             }
@@ -401,15 +345,15 @@ const updateUserFromRecents = async (userId) => {
                 }
             }
             if (newCount > 0)
-                log(`Found ${newCount} new ${ruleset} map passes for ${user.name}`);
+                log(`Found ${newCount} new ${mode} map passes for ${user.name}`);
             // Update new score count
             db.prepare(`UPDATE user_update_tasks SET count_new_passes = count_new_passes + ? WHERE user_id = ?`).run(newCount, user.id);
             // Update ruleset when we reach the end of a set of scores
             if (fetchedScores.length == 0 || fetchedScores.length < limit) {
                 offset = 0;
-                if (ruleset == 'osu') ruleset = 'taiko';
-                else if (ruleset == 'taiko') ruleset = 'fruits';
-                else if (ruleset == 'fruits') ruleset = 'mania';
+                if (mode == 'osu') mode = 'taiko';
+                else if (mode == 'taiko') mode = 'fruits';
+                else if (mode == 'fruits') mode = 'mania';
                 else break;
             } else {
                 offset += fetchedScores.length;
@@ -426,7 +370,7 @@ const updateUserFromRecents = async (userId) => {
                     user.id, score.beatmapset.id, score.beatmap.id,
                     score.beatmap.mode, score.beatmap.status,
                     score.beatmap.convert ? 1 : 0,
-                    score.ended_at?.getTime() || Date.now()
+                    new Date(score.ended_at || undefined).getTime()
                 );
             }
             db.prepare(`UPDATE users SET last_score_update = ? WHERE id = ?`).run(updateTime, user.id);
@@ -456,15 +400,14 @@ const globalRecentCursors = {
 };
 const savePassesFromGlobalRecents = async () => {
     try {
-        const osu = await osuApiInstance;
         // Loop for each game mode
         for (const ruleset of ['osu', 'taiko', 'fruits', 'mania']) {
             // Fetch global recent scores
-            const cursor = globalRecentCursors[ruleset];
-            const res = await osu.getScores({ ruleset, cursor });
-            globalRecentCursors[ruleset] = res.cursor;
+            const cursor_string = globalRecentCursors[ruleset];
+            const res = await osu.getScores({ ruleset, cursor_string });
+            globalRecentCursors[ruleset] = res.cursor_string;
             // If no cursor (first fetch), don't process scores
-            if (!cursor) continue;
+            if (!cursor_string) continue;
             // Loop through scores
             for (const score of res.scores) {
                 // Skip failed scores
@@ -475,9 +418,9 @@ const savePassesFromGlobalRecents = async () => {
                 // Get map and diff info from db and skip if not found
                 const map = db.prepare(
                     `SELECT diff.status, mapset.id AS mapset_id
-                 FROM beatmaps diff
-                 JOIN beatmapsets mapset ON diff.mapset_id = mapset.id
-                 WHERE diff.id = ? AND diff.mode = ?`
+                    FROM beatmaps diff
+                    JOIN beatmapsets mapset ON diff.mapset_id = mapset.id
+                    WHERE diff.id = ? AND diff.mode = ?`
                 ).get(score.beatmap_id, ruleset);
                 if (!map) continue;
                 // Skip if map is unranked
@@ -490,7 +433,7 @@ const savePassesFromGlobalRecents = async () => {
                 if (existingPass) continue;
                 // Save the pass and log
                 db.prepare(`INSERT OR IGNORE INTO user_passes (user_id, mapset_id, map_id, mode, status, is_convert, time_passed) VALUES (?, ?, ?, ?, ?, ?, ?)`).run(
-                    user.id, map.mapset_id, score.beatmap_id, ruleset, map.status, map.convert ? 1 : 0, score.ended_at?.getTime() || Date.now()
+                    user.id, map.mapset_id, score.beatmap_id, ruleset, map.status, map.convert ? 1 : 0, new Date(score.ended_at || undefined).getTime()
                 );
                 log(`Found and saved a new ${ruleset} map pass for ${user.name}`);
                 // Log counts
@@ -542,7 +485,6 @@ const startQueuedUserUpdates = async () => {
 // THIS RUNS RECURSIVELY
 const queueActiveUsers = async () => {
     try {
-        const osu = await osuApiInstance;
         let countInactiveUsers = 0;
         let countQueuedUsers = 0;
         let offset = 0;
@@ -558,9 +500,9 @@ const queueActiveUsers = async () => {
             if (userIds.length === 0) break;
             offset += limit;
             // Fetch user data in bulk
-            const users = await osu.getUsers(userIds);
+            const res = await osu.getUsers({ ids: userIds });
             // Loop through users
-            for (const user of users) {
+            for (const user of res.users) {
                 // Check fetched stats to see if play counts changed
                 let didPlayCountsChange = false;
                 for (const mode in user.statistics_rulesets) {
@@ -577,17 +519,8 @@ const queueActiveUsers = async () => {
                 }
                 if (didPlayCountsChange) {
                     // Queue user for update if they aren't already queued
-                    const existingTask = db.prepare(`SELECT 1 FROM user_update_tasks WHERE user_id = ? LIMIT 1`).get(user.id);
-                    if (!existingTask) {
-                        db.prepare(
-                            `INSERT OR IGNORE INTO user_update_tasks
-                             (user_id, time_queued, last_mapset_id, count_new_passes, percent_complete)
-                             VALUES (?, ?, 0, 0, 0)`
-                        ).run(user.id, Date.now());
-                        log(`Queued ${user.username} for update`);
-                        await updateUserProfile(user.id, user);
-                        countQueuedUsers++;
-                    }
+                    await queueUser(user.id);
+                    countQueuedUsers++;
                 } else {
                     // Mark user as up to date
                     db.prepare(`UPDATE users SET last_score_update = ? WHERE id = ?`).run(Date.now(), user.id);
@@ -605,11 +538,20 @@ const queueActiveUsers = async () => {
     setTimeout(queueActiveUsers, 1000 * 60 * 60);
 };
 
-// Start update processes
-log(`Starting update processes...`);
-updateSavedMaps();
-startQueuedUserUpdates();
-savePassesFromGlobalRecents();
-queueActiveUsers();
+async function main() {
 
-updateBeatmapStats();
+    // Get osu API token
+    log('Authenticating with osu API...');
+    await osu.getToken();
+
+    // Start update processes
+    // Stagger function calls to prevent fetching API token too rapidly
+    log(`Starting update processes...`);
+    updateSavedMaps();
+    startQueuedUserUpdates();
+    savePassesFromGlobalRecents();
+    queueActiveUsers();
+
+}
+
+main();
