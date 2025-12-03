@@ -48,7 +48,11 @@ router.get('/callback', async (req, res) => {
         }
         // Set JWT cookie
         const jwt = utils.generateJWT({ id: user.data.id });
-        res.cookie('token', jwt, { httpOnly: true, secure: true });
+        res.cookie('token', jwt, {
+            httpOnly: true,
+            secure: true,
+            expires: new Date(Date.now() + (1000 * 60 * 60 * 24 * 365))
+        });
         // Redirect to user page
         res.redirect(`/u/${user.data.id}`);
     } catch (error) {

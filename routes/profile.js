@@ -4,17 +4,21 @@ const db = require('../db');
 const { ensureUserExists } = require('../middleware.js');
 const utils = require('../utils.js');
 const { rulesetNameToKey, rulesetKeyToName, getRelativeTimestamp, starsToColor, secsToDuration } = utils;
+const userServices = require('../services/userServices.js');
 
 const router = express.Router();
 
 router.get('/:id', ensureUserExists, (req, res) => {
-    res.redirect(`/u/${req.user.id}/${req.user.mode}/ranked`);
+    res.redirect(`/u/${req.user.id}/osu/ranked`);
 });
 
-router.get('/:id/refresh', async (req, res) => {
-    if (!req.me || req.me.id !== req.user.id) {
-        return res.redirect(`/u/${req.user.id}`);
+router.get('/:id/update', async (req, res) => {
+    if (!req.me || req.me.id != req.params.id) {
+        utils.log(`Unauthorized update request for user ${req.params.id} by ${req.me?.id}`);
+        return res.redirect(`/u/${req.params.id}`);
     }
+    await userServices.queueUser(req.params.id);
+    res.redirect(`/u/${req.params.id}`);
 });
 
 router.get('/:id/:mode', ensureUserExists, (req, res) => {
@@ -30,7 +34,7 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
     // Ensure mode is valid
     const modeKey = rulesetNameToKey(mode);
     if (!modeKey) {
-        return res.redirect(`/u/${user.id}/osu/ranked-loved`);
+        return res.redirect(`/u/${user.id}/osu/ranked`);
     }
     // Get user stats
     const stats = db.prepare(

@@ -24,14 +24,16 @@
     <div class="card">
         <div class="banner" style="background-image: url('<%= user.banner_url %>')">
             <div class="buttons">
-                <!-- <a class="btn translucent" href="/u/<%= user.id %>/update">
-                    <span class="icon">update</span>
-                    <span>request update</span>
-                </a> -->
                 <button class="btn translucent" onClick="copyText(`<%= user.stats.copyable %>`)">
                     <span class="icon">content_copy</span>
                     <span>copy stats</span>
                 </button>
+                <% if (user.id == me?.id && !user.updating) { %>
+                <a class="btn translucent" href="/u/<%= user.id %>/update">
+                    <span class="icon">update</span>
+                    <span>request update</span>
+                </a>
+                <% } %>
             </div>
         </div>
         <div class="basics">

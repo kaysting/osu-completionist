@@ -58,7 +58,7 @@ const queueUser = async (userId) => {
                 (user_id, time_queued, last_mapset_id, count_new_passes, percent_complete)
                 VALUES (?, ?, 0, 0, 0)`
             ).run(userId, Date.now());
-            const user = await updateHelpers.updateUserProfile(userId);
+            const user = await updateUserProfile(userId);
             utils.log(`Queued ${user.username} for update`);
             return true;
         }
