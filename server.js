@@ -8,6 +8,10 @@ const { getAuthenticatedUser } = require('./middleware');
 const app = express();
 
 app.use((req, res, next) => {
+    if (!req.headers['cf-ray']) {
+        res.status(403).send('Forbidden');
+        return;
+    }
     log(req.headers['cf-connecting-ip'], req.method, req.url);
     next();
 });
