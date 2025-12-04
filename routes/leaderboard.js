@@ -29,8 +29,12 @@ router.get('/:mode/:includes', (req, res) => {
     }
     // Get leaderboard entries
     const entries = db.prepare(
-        `SELECT u.id, u.name, u.avatar_url, u.banner_url, us.count FROM users u
+        `SELECT
+            u.id, u.name, u.avatar_url, u.banner_url, us.count,
+            c.name AS country_name, u.country_code, u.team_name, u.team_flag_url
+         FROM users u
          JOIN user_stats us ON u.id = us.user_id
+         JOIN country_names c ON u.country_code = c.code
          WHERE us.mode = ? AND us.includes_loved = ? AND us.includes_converts = ?
          ORDER BY us.count DESC
          LIMIT ? OFFSET ?`
@@ -64,6 +68,14 @@ router.get('/:mode/:includes', (req, res) => {
         name: entry.name,
         avatar: entry.avatar_url,
         banner: entry.banner_url,
+        country: {
+            code: entry.country_code,
+            name: entry.country_name
+        },
+        team: {
+            name: entry.team_name,
+            flag: entry.team_flag_url
+        },
         completed: entry.count,
         total: totalMapCount,
         percentage: totalMapCount > 0 ? ((entry.count / totalMapCount) * 100).toFixed(2) : '0.00'

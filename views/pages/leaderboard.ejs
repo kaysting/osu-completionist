@@ -12,7 +12,21 @@
                     <div class="rank"><%= `#${entry.rank}` %></div>
                     <div class="profile">
                         <img src="<%= entry.avatar %>" class="avatar">
-                        <div class="name"><%= entry.name %></div>
+                        <div class="text">
+                            <div class="name"><%= entry.name %></div>
+                            <div class="flags">
+                                <div class="country" title="<%= entry.country.name %>">
+                                    <img src="/assets/flags/<%= entry.country.code %>.png" class="flag">
+                                    <!-- <div class="name"><%= entry.country.name %></div> -->
+                                </div>
+                                <% if (entry.team.name) { %>
+                                <div class="team" title="<%= entry.team.name %>">
+                                    <img src="<%= entry.team.flag %>" class="flag">
+                                    <!-- <div class="name"><%= entry.team.name %></div> -->
+                                </div>
+                                <% } %>
+                            </div>
+                        </div>
                         <div class="stats">
                             <div class="stat">
                                 <div class="name">% completed</div>

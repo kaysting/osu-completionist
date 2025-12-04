@@ -516,11 +516,42 @@ img {
     object-fit: cover;
 }
 
-#leaderboard .entry .profile>.name {
+#leaderboard .entry .profile .text {
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: -2px;
+}
+
+#leaderboard .entry .profile .text .name {
     font-size: 16px;
     font-weight: bold;
     margin-top: -1px;
+    color: white;
+}
+
+#leaderboard .entry .profile .text .flags {
+    display: flex;
+    gap: 2px 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+#leaderboard .entry .profile .text .flags>div {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+#leaderboard .entry .profile .text .flags>div .flag {
+    height: 16px;
+    border-radius: 4px;
+}
+
+#leaderboard .entry .profile .text .flags>div .name {
+    font-size: 14px;
+    font-weight: 600;
     color: white;
 }
 
