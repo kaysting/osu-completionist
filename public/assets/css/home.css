@@ -73,3 +73,30 @@
 #home .actions .search .textbox {
     width: 300px;
 }
+
+#home .stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+#home .stats .card {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#home .stats .card .value {
+    font-size: 36px;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+#home .stats .card .label {
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--text);
+}

@@ -33,4 +33,18 @@
             </button>
         </form>
     </div>
+    <div class="stats">
+        <div class="card">
+            <div class="value"><%= stats.users.toLocaleString() %></div>
+            <div class="label">tracked players</div>
+        </div>
+        <div class="card">
+            <div class="value"><%= stats.beatmaps.toLocaleString() %></div>
+            <div class="label">unique beatmaps</div>
+        </div>
+        <div class="card">
+            <div class="value"><%= stats.passes.toLocaleString() %></div>
+            <div class="label">map completions</div>
+        </div>
+    </div>
 </div>
