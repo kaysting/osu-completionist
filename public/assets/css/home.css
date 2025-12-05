@@ -68,11 +68,11 @@
     gap: 8px;
     flex-wrap: wrap;
     justify-content: center;
-    max-width: 600px;
+    width: 100%;
 }
 
 #home .actions .search .textbox {
-    width: 300px;
+    max-width: 300px;
 }
 
 #home .stats {

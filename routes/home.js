@@ -1,6 +1,5 @@
 const express = require('express');
 const db = require('../db');
-const utils = require('../utils.js');
 
 const router = express.Router();
 
@@ -15,9 +14,9 @@ router.get('/', (req, res) => {
             description: `Track your osu! completionist progress across all game modes, ranked, loved, and convert maps, and compare your progress with others!`
         },
         stats: {
-            users: utils.formatNumber(countUsers, 0, false),
-            beatmaps: utils.formatNumber(countBeatmaps, 0, false),
-            passes: utils.formatNumber(countPasses, 0, false)
+            users: countUsers.toLocaleString(),
+            beatmaps: countBeatmaps.toLocaleString(),
+            passes: countPasses.toLocaleString()
         },
         me: req.me
     });
