@@ -1,6 +1,36 @@
 <link rel="stylesheet" href="/assets/css/home.css">
 <div id="home">
-    <div class="logo">
-        <span class="white">osu!</span><span class="green">complete</span>
+    <div class="header">
+        <div class="logo">
+            <span class="white">osu!</span><span class="green">complete</span>
+        </div>
+        <div class="slogan">A full-featured osu! completionist tracker and leaderboard</div>
+    </div>
+    <div class="actions">
+        <div class="buttons">
+            <a href="/leaderboard" class="btn large">
+                <span class="icon filled">leaderboard</span>
+                View leaderboard
+            </a>
+            <% if (me) { %>
+            <a href="/u/<%= me.id %>" class="btn large primary">
+                <span class="icon filled">person</span>
+                View your profile
+            </a>
+            <% } else { %>
+            <a href="/auth/login" class="btn large primary">
+                <span class="icon filled">person</span>
+                Sign in with osu!
+            </a>
+            <% } %>
+        </div>
+        <span class="or">OR</span>
+        <form class="search" action="/search" method="GET">
+            <input type="text" class="textbox medium" name="q" placeholder="Search completionists by name...">
+            <button type="submit" class="btn medium primary">
+                <span class="icon filled">search</span>
+                Search
+            </button>
+        </form>
     </div>
 </div>
