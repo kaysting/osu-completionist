@@ -1,4 +1,16 @@
 <link rel="stylesheet" href="/assets/css/home.css">
+<script>
+    initTriangleBackground(document.getElementById('bgCanvas'), {
+        triColor: 'hsl(150, 90%, 60%)',
+        bgColor1: 'hsl(220, 20%, 10%)',
+        bgColor2: 'hsl(220, 20%, 10%)',
+        density: 10000,
+        speed: 0.25,
+        strokeWidth: 1,
+        maxSize: 200,
+        opacity: 0.3
+    });
+</script>
 <div id="home">
     <div class="header">
         <div class="logo">
@@ -24,7 +36,7 @@
             </a>
             <% } %>
         </div>
-        <span class="or">OR</span>
+        <span class="or">or</span>
         <form class="search" action="/search" method="GET">
             <input type="text" class="textbox medium" name="q" placeholder="Search completionists by name...">
             <button type="submit" class="btn medium primary">

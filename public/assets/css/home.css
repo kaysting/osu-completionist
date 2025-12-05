@@ -47,7 +47,7 @@
 #home .actions {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     align-items: center;
 }
 
@@ -60,7 +60,8 @@
 
 #home .actions .or {
     font-size: 18px;
-    color: var(--text);
+    color: var(--textDim);
+    line-height: 1.2;
 }
 
 #home .actions .search {
