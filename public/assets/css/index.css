@@ -325,6 +325,7 @@ img {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    animation: fadeInUp 0.3s ease forwards;
 }
 
 .card {
@@ -435,5 +436,17 @@ img {
 
     #statSettings .section.mode {
         flex-grow: 0;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

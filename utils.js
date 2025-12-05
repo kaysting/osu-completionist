@@ -197,6 +197,19 @@ const utils = {
         } catch (err) {
             return null;
         }
+    },
+
+    formatNumber: (num, decimals = 0, minimal = false) => {
+        if (minimal) {
+            if (num >= 1_000_000_000) {
+                return (num / 1_000_000_000).toFixed(decimals) + 'B';
+            } else if (num >= 1_000_000) {
+                return (num / 1_000_000).toFixed(decimals) + 'M';
+            } else if (num >= 1_000) {
+                return (num / 1_000).toFixed(decimals) + 'K';
+            }
+        }
+        return num.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
     }
 
 };
