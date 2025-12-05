@@ -1,0 +1,384 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght,FILL@300,0..1&display=swap');
+
+@font-face {
+    font-family: 'Torus';
+    src: url('/assets/fonts/torus/Torus-Thin.otf') format('opentype');
+    font-weight: 100;
+}
+
+@font-face {
+    font-family: 'Torus';
+    src: url('/assets/fonts/torus/Torus-Light.otf') format('opentype');
+    font-weight: 200;
+}
+
+@font-face {
+    font-family: 'Torus';
+    src: url('/assets/fonts/torus/Torus-Regular.otf') format('opentype');
+}
+
+@font-face {
+    font-family: 'Torus';
+    src: url('/assets/fonts/torus/Torus-SemiBold.otf') format('opentype');
+    font-weight: 600;
+}
+
+@font-face {
+    font-family: 'Torus';
+    src: url('/assets/fonts/torus/Torus-Bold.otf') format('opentype');
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: 'Torus';
+    src: url('/assets/fonts/torus/Torus-Heavy.otf') format('opentype');
+    font-weight: 800;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+    flex-shrink: 0;
+    min-width: 0px;
+}
+
+body {
+    --bg: hsl(220, 20%, 10%);
+    --text: hsl(220, 20%, 95%);
+    --textDim: hsl(220, 20%, 65%);
+    --accent: hsl(150, 90%, 60%);
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Torus', sans-serif;
+    font-size: 15px;
+    line-height: 1;
+}
+
+p {
+    font-size: 16px;
+    line-height: 1.4;
+    margin-bottom: 0.5em;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+b {
+    font-weight: 600;
+    color: white;
+}
+
+img {
+    user-select: none;
+}
+
+::selection {
+    background: hsla(150, 90%, 70%, 50%);
+}
+
+.btn {
+    --bg: hsl(220, 20%, 25%);
+    --bgHover: hsl(220, 20%, 35%);
+    --fg: hsl(220, 20%, 85%);
+    --fgHover: white;
+    height: 32px;
+    padding: 0px 12px;
+    font-family: 'Torus', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    background: var(--bg);
+    transition: 0.1s ease-in-out;
+    color: var(--fg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    user-select: none;
+    outline: none;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    color: var(--fgHover);
+    background: var(--bgHover);
+    transition: none;
+    text-decoration: none;
+}
+
+.btn.primary {
+    --bg: hsl(150, 90%, 60%);
+    --bgHover: hsl(150, 90%, 75%);
+    --fg: hsl(220, 20%, 10%);
+    --fgHover: hsl(220, 20%, 5%);
+}
+
+.btn.translucent {
+    --bg: hsla(220, 20%, 20%, 50%);
+    --bgHover: hsla(220, 20%, 20%, 70%);
+    --fg: white;
+    --fgHover: white;
+}
+
+.btn.text {
+    --bg: transparent;
+    --bgHover: hsl(220, 20%, 25%);
+    --fg: hsl(220, 20%, 80%);
+    --fgHover: white;
+}
+
+.btn.text.bright {
+    --fg: white;
+}
+
+.btn.text.muted {
+    --fg: hsl(220, 20%, 60%);
+}
+
+.btn.text.accent {
+    --fg: var(--accent);
+}
+
+.btn.text.danger {
+    --fg: hsl(340, 80%, 70%);
+}
+
+.btn.square {
+    width: 32px;
+    padding: 0px;
+}
+
+.btn.square .label {
+    display: none;
+}
+
+.btn.dynamic {
+    height: auto;
+    padding: 4px 12px;
+}
+
+.btn .icon {
+    font-family: 'Material Symbols Rounded';
+    font-variation-settings: 'FILL' 0;
+    font-weight: 300;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.btn img.icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.btn .icon.filled {
+    font-variation-settings: 'FILL' 1;
+}
+
+.btnGroup {
+    display: flex;
+    gap: 2px;
+}
+
+.btnGroup .btn {
+    border-radius: 2px;
+}
+
+.btnGroup .btn:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.btnGroup .btn:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+#topbar {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    height: 54px;
+    padding: 0px 16px;
+    background: hsl(220, 20%, 10%);
+    transition: 0.1s ease-in-out;
+    border-bottom: 1px solid transparent;
+    z-index: 1000;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+#topbar.scrolled {
+    background: hsla(220, 20%, 12%, 70%);
+    border-bottom: 1px solid hsl(220, 20%, 20%);
+    backdrop-filter: blur(8px);
+}
+
+#topbar .container {
+    height: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#logo .text {
+    font-family: 'Torus', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+}
+
+#logo .white {
+    color: white;
+}
+
+#logo .green {
+    color: var(--accent);
+}
+
+#topbar .nav,
+#topbar .account {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+#topbar .nav {
+    flex-grow: 1;
+}
+
+#main {
+    max-width: 1000px;
+    margin: 0 auto;
+    margin-top: calc(54px + 16px);
+    padding: 0px 10px 20px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.card {
+    background: hsl(220, 20%, 15%);
+    border-radius: 16px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    padding: 8px;
+    overflow: hidden;
+}
+
+.card.lighter {
+    background: hsl(220, 20%, 18%);
+    border-radius: 8px;
+}
+
+.card.warning {
+    background: hsl(40, 90%, 70%);
+    color: hsl(40, 90%, 20%);
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card.warning>.icon {
+    font-family: 'Material Symbols Rounded';
+    font-weight: 300;
+    font-size: 32px;
+    line-height: 1;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.card.warning>.text {
+    display: block;
+    min-width: 0;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+    text-overflow: clip;
+    overflow: visible;
+    flex-shrink: 1;
+}
+
+.card.warning p {
+    line-height: 1.2;
+    margin: 0px;
+}
+
+.card.warning b {
+    color: inherit;
+}
+
+.card .header {
+    font-size: 16px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid var(--accent);
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    display: inline-block;
+}
+
+#footer * {
+    color: hsl(220, 20%, 40%);
+    font-size: 13px;
+    text-align: center;
+    margin-top: 20px;
+}
+
+#footer a {
+    text-decoration: underline;
+}
+
+#error {
+    max-width: 600px;
+    text-align: center;
+    margin: 30px auto;
+}
+
+#error h1 {
+    font-size: 64px;
+    color: var(--textDim);
+    font-weight: 200;
+    margin-bottom: 16px;
+}
+
+#statSettings {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#statSettings .section {
+    display: flex;
+    gap: 8px;
+}
+
+#statSettings .section.mode {
+    flex-grow: 1;
+}
+
+@media (max-width: 700px) {
+    #statSettings {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #statSettings .section.mode {
+        flex-grow: 0;
+    }
+}

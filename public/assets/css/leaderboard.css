@@ -1,0 +1,201 @@
+#leaderboard {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#leaderboard>.card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 8px;
+}
+
+#leaderboard .entries {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+#leaderboard .entry {
+    position: relative;
+    border-radius: 8px;
+    background: hsl(220, 20%, 18%);
+    overflow: hidden;
+    color: inherit;
+    user-select: none;
+    text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+#leaderboard .entry .banner {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    max-width: 500px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+#leaderboard .entry .dimming {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    max-width: 500px;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background: radial-gradient(circle at top left, hsla(220, 20%, 18%, 60%), hsl(220, 20%, 18%));
+}
+
+#leaderboard .entry .bar {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 0%;
+    height: 2px;
+    background: hsla(150, 90%, 60%, 50%);
+    border-radius: 2px;
+}
+
+#leaderboard .entry .content {
+    position: relative;
+    height: 50px;
+    display: flex;
+    padding: 2px 8px;
+    align-items: center;
+    gap: 16px;
+    z-index: 2;
+    transition: 0.1s ease-in-out;
+}
+
+#leaderboard .entry:hover {
+    transition: none;
+    text-decoration: none;
+    color: inherit;
+}
+
+#leaderboard .entry:hover .content {
+    background: hsla(220, 20%, 50%, 0.2);
+    transition: none;
+}
+
+#leaderboard .entry .profile,
+#leaderboard .entry .stats {
+    display: flex;
+    align-items: center;
+}
+
+#leaderboard .entry .profile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+#leaderboard .entry .stats {
+    gap: 16px;
+    padding-right: 8px;
+}
+
+@media (max-width: 550px) {
+    /* move stats to their own line */
+
+    #leaderboard .entry .profile {
+        flex-wrap: wrap;
+    }
+
+    #leaderboard .entry .content {
+        height: auto;
+        padding: 8px;
+    }
+
+    #leaderboard .entry .stats {
+        width: 100%;
+    }
+}
+
+#leaderboard .entry .rank {
+    min-width: 32px;
+    font-size: 14px;
+    text-align: right;
+    font-weight: 600;
+}
+
+#leaderboard .entry .profile .avatar {
+    height: 40px;
+    border-radius: 8px;
+    background: hsl(220, 20%, 25%);
+    object-fit: cover;
+}
+
+#leaderboard .entry .profile .text {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: -2px;
+}
+
+#leaderboard .entry .profile .text .name {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: -1px;
+    color: white;
+}
+
+#leaderboard .entry .profile .text .flags {
+    display: flex;
+    gap: 2px 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+#leaderboard .entry .profile .text .flags>div {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+#leaderboard .entry .profile .text .flags>div .flag {
+    height: 16px;
+    border-radius: 4px;
+}
+
+#leaderboard .entry .profile .text .flags>div .name {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+}
+
+#leaderboard .entry .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+#leaderboard .entry .stat .name {
+    color: var(--textDim);
+    font-size: 13px;
+    font-weight: 600
+}
+
+#leaderboard .entry .stat .value {
+    color: white;
+    font-size: 20px;
+    font-weight: 400;
+}
+
+#leaderboard .pages {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+#leaderboard .pages .dots {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    color: var(--textDim);
+}

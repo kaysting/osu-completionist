@@ -1,0 +1,360 @@
+#profile {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#profile>.card:not(.warning) {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#profile .banner {
+    width: 100%;
+    min-height: 100px;
+    aspect-ratio: 4 / 1;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#profile .banner .buttons {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    padding: 8px;
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#profile .basics {
+    display: flex;
+    gap: 16px;
+    padding: 8px 16px;
+    align-items: center;
+    overflow: hidden;
+}
+
+#profile .basics .avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 24px;
+    background: hsl(220, 20%, 25%);
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+#profile .basics .text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 1;
+}
+
+#profile .basics .text .name {
+    font-size: 28px;
+    font-weight: bold;
+    color: white;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
+#profile .basics .flags {
+    display: flex;
+    gap: 8px 16px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#profile .basics .flags>* {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+#profile .basics .flags .flag {
+    height: 24px;
+    border-radius: 4px;
+}
+
+#profile .basics .stats {
+    gap: 8px 24px;
+}
+
+#profile .stats {
+    display: flex;
+    gap: 8px 16px;
+    flex-wrap: wrap;
+}
+
+#profile .stats .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+#profile .stats .stat .key {
+    color: var(--textDim);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#profile .stats .stat .value {
+    color: white;
+    font-size: 22px;
+    font-weight: 200;
+}
+
+#profile .stats .stat.big {
+    gap: 0px;
+    font-size: 16px;
+}
+
+#profile .stats .stat.big .key {
+    font-size: 16px;
+}
+
+#profile .stats .stat.big .value {
+    font-size: 32px;
+    font-weight: 200;
+}
+
+#profile .passes,
+#profile .progress {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 12px 12px 12px;
+}
+
+#profile .yearly {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(225px, 1fr));
+    gap: 2px;
+}
+
+#profile .yearly .entry {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background: hsl(220, 20%, 22%);
+    border-radius: 4px;
+    align-items: center;
+}
+
+#profile .yearly .entry .year {
+    font-size: 14px;
+    width: 40px;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+#profile .yearly .entry .content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-grow: 1;
+}
+
+#profile .yearly .entry .content .values {
+    display: flex;
+    gap: 0px 4px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+#profile .yearly .entry .content .values .percent {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    flex-grow: 1;
+}
+
+#profile .yearly .entry .content .values .count {
+    font-size: 14px;
+    color: var(--textDim);
+}
+
+#profile .yearly .entry .content .bar {
+    width: 100%;
+    height: 4px;
+    background: hsl(220, 20%, 15%);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+#profile .yearly .entry .content .bar .filling {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+}
+
+#profile .passes .entries {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+#profile .passes .entry {
+    padding: 8px;
+    border-radius: 8px;
+    display: flex;
+    gap: 8px;
+    background: hsl(220, 20%, 22%);
+    align-items: center;
+}
+
+#profile .passes .entry>.icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+#profile .passes .entry .details {
+    display: flex;
+    gap: 8px;
+    flex-grow: 1;
+    align-items: center;
+}
+
+#profile .passes .entry * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0px;
+    flex-shrink: 1;
+}
+
+#profile .passes .entry .map {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-grow: 1;
+}
+
+#profile .passes .entry .map .title {
+    font-weight: bold;
+    color: white;
+    font-size: 16px;
+}
+
+#profile .passes .entry .map .artist {
+    color: var(--textDim);
+    font-size: 12px;
+    margin-left: 2px;
+}
+
+#profile .passes .entry .map .diff {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#profile .passes .entry .map .stars {
+    padding: 2px 8px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+#profile .passes .entry .map .stars .icon {
+    font-family: 'Material Symbols Rounded';
+    font-variation-settings: 'FILL' 1;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 1;
+    margin-left: -2px;
+}
+
+#profile .passes .entry .map .stars .value {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+#profile .passes .entry .map .name {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#profile .passes .entry .time {
+    font-size: 14px;
+    color: var(--textDim);
+    flex-shrink: 0;
+}
+
+@media (max-width: 700px) {
+
+    #profile .basics {
+        padding: 8px 16px;
+        flex-direction: column;
+    }
+
+    #profile .basics .text {
+        flex-grow: 0;
+        justify-content: center;
+        align-items: center;
+        margin-top: -8px;
+    }
+
+    #profile .basics .flags {
+        justify-content: center;
+    }
+
+    #profile .basics .avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+    }
+
+    #profile .basics .text .name {
+        font-size: 22px;
+    }
+
+    #profile .basics .stats {
+        flex-basis: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    #profile .stats .stat.big {
+        gap: 2px;
+    }
+
+    #profile .stats .stat.big .key {
+        font-size: 14px;
+    }
+
+    #profile .stats .stat.big .value {
+        font-size: 24px;
+    }
+
+    #profile .passes .entry .details {
+        flex-wrap: wrap;
+        gap: 2px;
+    }
+
+    #profile .passes .entry .time {
+        flex-basis: 100%;
+    }
+
+}
