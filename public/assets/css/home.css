@@ -16,7 +16,7 @@
     justify-content: center;
     align-items: center;
     gap: 48px;
-    padding: 80px 16px 24px 16px;
+    padding: calc(54px + 48px) 16px 24px 16px;
     filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.2));
 }
 
@@ -31,7 +31,6 @@
 #home .logo {
     font-weight: 600;
     font-size: 54px;
-    display: flex;
 }
 
 #home .logo .white {
@@ -54,6 +53,7 @@
     flex-direction: column;
     gap: 12px;
     align-items: center;
+    position: relative;
 }
 
 #home .actions .buttons {
@@ -72,7 +72,6 @@
 #home .actions .search {
     display: flex;
     gap: 8px;
-    flex-wrap: wrap;
     justify-content: center;
     width: 100%;
 }

@@ -16,7 +16,11 @@
         <div class="logo">
             <span class="white">osu!</span><span class="green">complete</span>
         </div>
+        <% if (me) { %>
+        <div class="slogan">Welcome back, <%= me.name %>!</div>
+        <% } else { %>
         <div class="slogan">A full-featured osu! completionist tracker and leaderboard</div>
+        <% } %>
     </div>
     <div class="actions">
         <div class="buttons">
@@ -50,12 +54,12 @@
             <div class="label">tracked players</div>
         </div>
         <div class="card">
-            <div class="value"><%= stats.beatmaps %></div>
-            <div class="label">unique beatmaps</div>
+            <div class="value"><%= stats.passes %></div>
+            <div class="label">total beatmap passes</div>
         </div>
         <div class="card">
-            <div class="value"><%= stats.passes %></div>
-            <div class="label">map completions</div>
+            <div class="value"><%= stats.beatmaps %></div>
+            <div class="label">unique beatmaps</div>
         </div>
     </div>
 </div>
