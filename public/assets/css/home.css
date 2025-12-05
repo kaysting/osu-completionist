@@ -5,6 +5,10 @@
     min-height: 100vh;
 }
 
+#topbar {
+    background: transparent;
+}
+
 #home {
     flex-grow: 1;
     display: flex;
@@ -13,6 +17,7 @@
     align-items: center;
     gap: 48px;
     padding: 80px 16px 24px 16px;
+    filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 #home .header {
@@ -89,17 +94,18 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    box-shadow: none;
 }
 
 #home .stats .card .value {
     font-size: 36px;
-    font-weight: 600;
+    font-weight: 400;
     color: var(--accent);
 }
 
 #home .stats .card .label {
     font-size: 18px;
-    font-weight: 400;
+    font-weight: 600;
     color: var(--text);
 }
 

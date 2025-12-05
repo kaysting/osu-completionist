@@ -1,13 +1,13 @@
 <link rel="stylesheet" href="/assets/css/home.css">
 <script>
     initTriangleBackground(document.getElementById('bgCanvas'), {
-        triColor: 'hsl(150, 90%, 60%)',
+        triColor: 'hsl(140, 30%, 50%)',
         bgColor1: 'hsl(220, 20%, 10%)',
         bgColor2: 'hsl(220, 20%, 10%)',
-        density: 10000,
+        density: 20000,
         speed: 0.25,
-        strokeWidth: 1,
-        maxSize: 200,
+        strokeWidth: 2,
+        maxSize: 150,
         opacity: 0.3
     });
 </script>
@@ -22,26 +22,25 @@
         <div class="buttons">
             <a href="/leaderboard" class="btn large">
                 <span class="icon filled">leaderboard</span>
-                View leaderboard
+                leaderboard
             </a>
             <% if (me) { %>
             <a href="/u/<%= me.id %>" class="btn large primary">
                 <span class="icon filled">person</span>
-                View your profile
+                my profile
             </a>
             <% } else { %>
             <a href="/auth/login" class="btn large primary">
                 <span class="icon filled">person</span>
-                Sign in with osu!
+                sign in with osu!...
             </a>
             <% } %>
         </div>
         <span class="or">or</span>
         <form class="search" action="/search" method="GET">
-            <input type="text" class="textbox medium" name="q" placeholder="Search completionists by name...">
-            <button type="submit" class="btn medium primary">
+            <input type="text" class="textbox medium" name="q" placeholder="search tracked players by name...">
+            <button type="submit" class="btn medium primary square">
                 <span class="icon filled">search</span>
-                Search
             </button>
         </form>
     </div>
