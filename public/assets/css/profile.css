@@ -59,7 +59,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    flex-shrink: 1;
 }
 
 #profile .basics .text .name {
@@ -92,6 +91,7 @@
 
 #profile .basics .stats {
     gap: 8px 24px;
+    flex-shrink: 0;
 }
 
 #profile .stats {

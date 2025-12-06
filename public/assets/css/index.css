@@ -279,32 +279,65 @@ img {
     width: 100%;
     height: 100%;
     height: 54px;
-    padding: 0px 16px;
     background: var(--bg);
     transition: 0.1s ease-in-out;
     border-bottom: 1px solid transparent;
     z-index: 1000;
-    overflow-x: auto;
-    scrollbar-width: thin;
+    overflow: hidden;
 }
 
-#topbar.scrolled {
-    background: hsla(220, 20%, 12%, 70%);
+#topbar.scrolled,
+#topbar.overflowing.open {
+    background: hsl(220, 20%, 12%);
     border-bottom: 1px solid hsl(220, 20%, 20%);
-    backdrop-filter: blur(8px);
+}
+
+#topbar.overflowing.open {
+    max-height: 100vh;
+    overflow: auto;
 }
 
 #topbar .container {
     height: 100%;
+    width: 100%;
     max-width: 1000px;
     margin: 0 auto;
-    width: 100%;
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 0px 16px;
+}
+
+#topbar.overflowing .container {
+    flex-direction: column;
+    gap: 16px;
+    padding: 10px 16px 16px 16px;
+    align-items: flex-start;
+}
+
+#topbar .top,
+#topbar .left,
+#topbar .right {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+#navToggleMenu .icon::before {
+    content: 'menu';
+}
+
+#topbar.open #navToggleMenu .icon::before {
+    content: 'close';
+}
+
+#topbar:not(.overflowing) #navToggleMenu {
+    display: none;
 }
 
 #logo .text {
+    margin-top: -3px;
     font-family: 'Torus', sans-serif;
     font-weight: 600;
     font-size: 20px;
@@ -318,16 +351,37 @@ img {
     color: var(--accent);
 }
 
-#topbar .nav,
-#topbar .account {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-    flex-shrink: 0;
+#topbar .left {
+    flex-grow: 1;
 }
 
-#topbar .nav {
+#topbar .left .btn .icon {
+    display: none;
+}
+
+#topbar.overflowing .left,
+#topbar.overflowing .right {
+    width: 100%;
+}
+
+#topbar.overflowing .left {
+    flex-direction: column;
+    gap: 2px;
+}
+
+#topbar.overflowing .left .btn {
+    width: 100%;
+    gap: 12px;
+    justify-content: flex-start;
+}
+
+#topbar.overflowing .left .btn .icon {
+    display: block;
+}
+
+#topbar.overflowing #navProfile {
     flex-grow: 1;
+    justify-content: flex-start;
 }
 
 #main {
