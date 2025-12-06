@@ -3,8 +3,8 @@ const db = require('../db');
 
 const { ensureUserExists } = require('../middleware.js');
 const utils = require('../utils.js');
-const { rulesetNameToKey, rulesetKeyToName, getRelativeTimestamp, starsToColor, secsToDuration } = utils;
-const userServices = require('../services/userServices.js');
+const { rulesetNameToKey, rulesetKeyToName } = utils;
+const updater = require('../helpers/updaterHelpers.js');
 
 const router = express.Router();
 
@@ -17,7 +17,7 @@ router.get('/:id/update', async (req, res) => {
         utils.log(`Unauthorized update request for user ${req.params.id} by ${req.me?.id}`);
         return res.redirect(`/u/${req.params.id}`);
     }
-    await userServices.queueUser(req.params.id);
+    await updater.queueUser(req.params.id);
     res.redirect(`/u/${req.params.id}`);
 });
 

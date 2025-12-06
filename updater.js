@@ -3,7 +3,7 @@ const db = require('./db');
 const osu = require('./osu');
 
 const { log, sleep } = require('./utils');
-const { queueUser, updateUserProfile } = require('./services/userServices');
+const { queueUser, updateUserProfile } = require('./helpers/updaterHelpers');
 
 // Function to update beatmap stats and totals in the database
 const updateBeatmapStats = () => {
