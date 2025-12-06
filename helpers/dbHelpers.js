@@ -48,26 +48,40 @@ const getBulkUserCompletionStats = (userIds, mode, includeLoved, includeConverts
         `SELECT count FROM beatmap_stats
          WHERE mode = ? AND includes_loved = ? AND includes_converts = ?`
     ).get(mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0)?.count || 0;
-    const rows = db.prepare(
-        `SELECT * FROM user_stats WHERE user_id IN (${userIds.map(() => '?').join(',')})
-         AND mode = ? AND includes_loved = ? AND includes_converts = ?`
-    ).all(...userIds, mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0);
+    const rows = db.prepare(`
+        SELECT s1.*,
+               (SELECT COUNT(*) FROM user_stats s2
+                WHERE s2.mode = s1.mode
+                AND s2.includes_loved = s1.includes_loved
+                AND s2.includes_converts = s1.includes_converts
+                AND s2.count > s1.count
+               ) + 1 AS rank
+        FROM user_stats s1
+        WHERE s1.user_id IN (${userIds.map(() => '?').join(',')})
+        AND s1.mode = ? AND s1.includes_loved = ? AND s1.includes_converts = ?
+    `).all(...userIds, mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0);
     const statsByUserId = {};
     for (const row of rows) {
         statsByUserId[row.user_id] = {
-            count_complete: row.count,
+            count_completed: row.count,
             count_total: totalMaps,
-            percentage_completed: totalMaps > 0 ? ((row.count / totalMaps) * 100) : 0
+            percentage_completed: totalMaps > 0 ? ((row.count / totalMaps) * 100) : 0,
+            rank: row.rank
         };
     }
     return rows.map(row => ({
         id: row.user_id,
         stats: statsByUserId[row.user_id] || {
-            count_complete: 0,
+            count_completed: 0,
             count_total: totalMaps,
-            percentage_completed: 0
+            percentage_completed: 0,
+            rank: -1
         }
     }));
+};
+
+const getUserCompletionStats = (userId, mode, includeLoved, includeConverts) => {
+    return getBulkUserCompletionStats([userId], mode, includeLoved, includeConverts)?.[0]?.stats || null;
 };
 
 const getLeaderboard = (mode, includeLoved, includeConverts, limit = 100, offset = 0) => {
@@ -101,24 +115,158 @@ const getLeaderboard = (mode, includeLoved, includeConverts, limit = 100, offset
     return entries;
 };
 
+const getBulkUserYearlyCompletionStats = (userIds, mode, includeLoved, includeConverts) => {
+    if (userIds.length === 0) {
+        return [];
+    }
+    const totalsRows = db.prepare(
+        `SELECT year, count FROM beatmap_stats_yearly
+         WHERE mode = ? AND includes_loved = ? AND includes_converts = ?`
+    ).all(mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0);
+    const yearToTotalCount = {};
+    for (const row of totalsRows) {
+        yearToTotalCount[row.year] = row.count;
+    }
+    const completedRows = db.prepare(
+        `SELECT user_id, year, count FROM user_stats_yearly
+         WHERE user_id IN (${userIds.map(() => '?').join(',')})
+         AND mode = ? AND includes_loved = ? AND includes_converts = ?`
+    ).all(...userIds, mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0);
+    const userIdToYearlyCompletions = {};
+    for (const row of completedRows) {
+        if (!userIdToYearlyCompletions[row.user_id]) {
+            userIdToYearlyCompletions[row.user_id] = {};
+        }
+        userIdToYearlyCompletions[row.user_id][row.year] = row.count;
+    }
+    const entries = [];
+    for (const userId of userIds) {
+        const entry = [];
+        for (const year in yearToTotalCount) {
+            entry.push({
+                year: parseInt(year),
+                count_completed: userIdToYearlyCompletions[userId]?.[year] || 0,
+                count_total: yearToTotalCount[year],
+                percentage_completed: yearToTotalCount[year] > 0 ? (((userIdToYearlyCompletions[userId]?.[year] || 0) / yearToTotalCount[year]) * 100) : 0
+            });
+        }
+        entries.push(entry);
+    }
+    return entries;
+};
+
 const getUserYearlyCompletionStats = (userId, mode, includeLoved, includeConverts) => {
-
+    return getBulkUserYearlyCompletionStats([userId], mode, includeLoved, includeConverts)?.[0] || [];
 };
 
-const formatBeatmap = (beatmap, beatmapset) => {
-
+const formatBeatmap = (beatmap) => {
+    return {
+        id: beatmap.id,
+        mapset_id: beatmap.mapset_id,
+        mode: beatmap.mode,
+        name: beatmap.name,
+        stars: beatmap.stars,
+        difficulty_color: utils.starsToColor(beatmap.stars),
+        duration_secs: beatmap.duration_secs,
+        is_convert: !!beatmap.is_convert,
+        status: beatmap.status
+    };
 };
 
-const getBulkBeatmaps = (mapIds) => {
-
+const formatBeatmapset = (beatmapset) => {
+    return {
+        id: beatmapset.id,
+        artist: beatmapset.artist,
+        title: beatmapset.title,
+        time_ranked: beatmapset.time_ranked,
+        status: beatmapset.status
+    };
 };
 
-const getBulkBeatmapsets = (mapsetIds) => {
+const getBulkBeatmapsets = (mapsetIds, includeBeatmaps, includeConverts) => {
+    if (mapsetIds.length === 0) {
+        return [];
+    }
+    const rows = db.prepare(
+        `SELECT * FROM beatmapsets
+         WHERE id IN (${mapsetIds.map(() => '?').join(',')})`
+    ).all(...mapsetIds);
+    const beatmapsets = rows.map(row => formatBeatmapset(row));
+    if (includeBeatmaps) {
+        const mapsetIdToBeatmaps = {};
+        const beatmapRows = db.prepare(
+            `SELECT * FROM beatmaps
+             WHERE mapset_id IN (${mapsetIds.map(() => '?').join(',')})
+             ${includeConverts ? '' : 'AND is_convert = 0'}
+             ORDER BY stars ASC`
+        ).all(...mapsetIds);
+        for (const row of beatmapRows) {
+            const beatmap = formatBeatmap(row);
+            if (!mapsetIdToBeatmaps[beatmap.mapset_id]) {
+                mapsetIdToBeatmaps[beatmap.mapset_id] = [];
+            }
+            mapsetIdToBeatmaps[beatmap.mapset_id].push(beatmap);
+        }
+        for (const mapset of beatmapsets) {
+            mapset.beatmaps = mapsetIdToBeatmaps[mapset.id] || [];
+        }
+    }
+    return beatmapsets;
+};
 
+const getBulkBeatmaps = (mapIds, includeMapset, mode) => {
+    if (mapIds.length === 0) {
+        return [];
+    }
+    const rows = db.prepare(
+        `SELECT * FROM beatmaps
+         WHERE id IN (${mapIds.map(() => '?').join(',')})
+         ${mode ? 'AND mode = ?' : 'AND is_convert = 0'}`
+    ).all(...mapIds, ...(mode ? [mode] : []));
+    const beatmaps = rows.map(row => formatBeatmap(row));
+    if (includeMapset) {
+        const mapsetIds = [...new Set(beatmaps.map(bm => bm.mapset_id))];
+        const mapsets = getBulkBeatmapsets(mapsetIds, false, false);
+        const mapsetIdToMapset = {};
+        for (const mapset of mapsets) {
+            mapsetIdToMapset[mapset.id] = mapset;
+        }
+        for (const map of beatmaps) {
+            map.mapset = mapsetIdToMapset[map.mapset_id] || null;
+        }
+    }
+    return beatmaps;
+};
+
+const getBeatmapset = (mapsetId, includeBeatmaps, includeConverts) => {
+    return getBulkBeatmapsets([mapsetId], includeBeatmaps, includeConverts)?.[0] || null;
+};
+
+const getBeatmap = (mapId, includeMapset) => {
+    return getBulkBeatmaps([mapId], includeMapset)?.[0] || null;
 };
 
 const getUserRecentPasses = (userId, mode, includeLoved, includeConverts, limit = 100, offset = 0) => {
-
+    const rows = db.prepare(
+        `SELECT map_id, time_passed FROM user_passes
+             WHERE user_id = ?
+               AND mode = ?
+               AND ${includeLoved ? `status IN ('ranked', 'approved', 'loved')` : `status IN ('ranked', 'approved')`}
+               ${includeConverts ? '' : 'AND is_convert = 0'}
+             ORDER BY time_passed DESC
+             LIMIT ? OFFSET ?`
+    ).all(userId, mode, limit, offset);
+    const beatmapIdsToMaps = {};
+    const beatmapIds = rows.map(row => row.map_id);
+    const beatmaps = getBulkBeatmaps(beatmapIds, true, mode);
+    for (const map of beatmaps) {
+        beatmapIdsToMaps[map.id] = map;
+    }
+    const passes = rows.map(row => ({
+        time_passed: row.time_passed,
+        beatmap: beatmapIdsToMaps[row.map_id] || null
+    }));
+    return passes;
 };
 
 const getUserRecommendedMaps = (userId, mode, includeLoved, includeConverts, limit = 100, offset = 0, starsMin, starsMax, timeRankedMin, timeRankedMax) => {
@@ -131,5 +279,11 @@ module.exports = {
     getLeaderboard,
     getUserRecentPasses,
     getUserYearlyCompletionStats,
-    getUserRecommendedMaps
+    getUserRecommendedMaps,
+    getUserCompletionStats,
+    getBulkUserProfiles,
+    getBulkBeatmaps,
+    getBulkBeatmapsets,
+    getBeatmap,
+    getBeatmapset
 };

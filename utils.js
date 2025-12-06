@@ -112,6 +112,12 @@ const utils = {
         return 'rgb(128, 128, 128)';
     },
 
+    percentageToColor: percentage => utils.interpolateColors(percentage, [
+        [245, 61, 122], // pinkish red
+        [245, 214, 61], // yellow
+        [61, 245, 153], // blueish
+    ]),
+
     secsToDuration: (secs, rounded = false) => {
         if (rounded) {
             if (secs < 60) {
