@@ -1,0 +1,60 @@
+#recommended {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#recommended .settings {
+    display: flex;
+    gap: 16px;
+    padding: 8px 12px 0px 12px;
+    align-items: flex-end;
+}
+
+#recommended .controls {
+    display: flex;
+    gap: 8px 24px;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-grow: 1;
+}
+
+@media (max-width: 550px) {
+    #recommended .settings {
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+    }
+
+    #recommended .controls {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    #recommended .controls .setting {
+        width: 100%;
+    }
+}
+
+#recommended .setting {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#settingYear,
+#settingMinStars,
+#settingMaxStars {
+    width: 100px;
+}
+
+#recommended .setting .label {
+    font-size: 14px;
+    color: var(--textDim);
+}
+
+#recommended .beatmaps {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}

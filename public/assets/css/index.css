@@ -44,6 +44,7 @@
     flex-shrink: 1;
     min-width: 0px;
     word-break: break-word;
+    max-width: 100%;
 }
 
 body {
@@ -384,6 +385,11 @@ img {
     justify-content: flex-start;
 }
 
+#topbar:not(.overflowing) #navLogout {
+    width: 32px;
+    padding: 0px;
+}
+
 #main {
     max-width: 1000px;
     margin: 0 auto;
@@ -531,7 +537,7 @@ img {
     padding: 8px;
     border-radius: 8px;
     display: flex;
-    gap: 8px;
+    gap: 12px;
     background: hsl(220, 20%, 22%);
     align-items: center;
 }
@@ -541,14 +547,7 @@ img {
     gap: 8px;
     flex-grow: 1;
     align-items: center;
-}
-
-.beatmap * {
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0px;
-    flex-shrink: 1;
 }
 
 .beatmap .map {
@@ -556,15 +555,35 @@ img {
     flex-direction: column;
     gap: 4px;
     flex-grow: 1;
+    overflow: hidden;
 }
 
-.beatmap .map .title {
+.beatmap .map .title,
+.beatmap .map .artist,
+.beatmap .map .name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    line-height: 1.2;
+}
+
+.beatmap .map .set {
+    display: flex;
+    align-items: center;
+    gap: 0px 4px;
+    overflow: hidden;
+    flex-wrap: wrap;
+    align-items: baseline;
+}
+
+.beatmap .map .set .title {
     font-weight: 600;
     color: white;
     font-size: 16px;
 }
 
-.beatmap .map .artist {
+.beatmap .map .set .artist {
     color: var(--textDim);
     font-size: 12px;
     margin-left: 2px;
@@ -574,15 +593,17 @@ img {
     display: flex;
     align-items: center;
     gap: 8px;
+    overflow: hidden;
 }
 
-.beatmap .map .ruleset {
+.beatmap .map .diff .ruleset {
     width: 18px;
     height: 18px;
+    flex-shrink: 0;
 }
 
-.beatmap .map .status,
-.beatmap .map .stars {
+.beatmap .map .diff .status,
+.beatmap .map .diff .stars {
     padding: 0px 8px;
     height: 18px;
     border-radius: 16px;
@@ -593,31 +614,31 @@ img {
     font-weight: 600;
     font-size: 13px;
     color: black;
-
+    flex-shrink: 0;
 }
 
-.beatmap .map .status {
+.beatmap .map .diff .status {
     font-weight: bold;
 }
 
-.beatmap .map .status.ranked,
-.beatmap .map .status.approved {
+.beatmap .map .diff .status.ranked,
+.beatmap .map .diff .status.approved {
     background: hsl(130, 80%, 70%);
 }
 
-.beatmap .map .status.loved {
+.beatmap .map .diff .status.loved {
     background: hsl(340, 80%, 70%);
 }
 
-.beatmap .map .status.qualified {
+.beatmap .map .diff .status.qualified {
     background: hsl(200, 80%, 70%);
 }
 
-.beatmap .map .status.graveyard {
+.beatmap .map .diff .status.graveyard {
     background: hsl(0, 0%, 70%);
 }
 
-.beatmap .map .stars .icon {
+.beatmap .map .diff .stars .icon {
     font-family: 'Material Symbols Rounded';
     font-variation-settings: 'FILL' 1;
     font-weight: 300;
@@ -626,7 +647,7 @@ img {
     margin-left: -2px;
 }
 
-.beatmap .map .name {
+.beatmap .map .diff .name {
     font-size: 14px;
     font-weight: 600;
 }
@@ -635,4 +656,27 @@ img {
     font-size: 14px;
     color: var(--textDim);
     flex-shrink: 0;
+}
+
+.beatmap .buttons {
+    display: flex;
+    gap: 2px 4px;
+    flex-shrink: 0;
+}
+
+.beatmap .buttons .btn {
+    flex-shrink: 0;
+    --bgHover: hsl(220, 20%, 30%);
+}
+
+@media (max-width: 600px) {
+    .beatmap .details {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .beatmap .buttons {
+        flex-direction: column;
+    }
 }

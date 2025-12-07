@@ -266,10 +266,14 @@ const getBulkBeatmaps = (mapIds, includeMapset, mode) => {
             mapsetIdToMapset[mapset.id] = mapset;
         }
         for (const map of beatmaps) {
-            map.mapset = mapsetIdToMapset[map.mapset_id] || null;
+            map.beatmapset = mapsetIdToMapset[map.mapset_id] || null;
         }
     }
-    return beatmaps;
+    const mapIdToBeatmap = {};
+    for (const map of beatmaps) {
+        mapIdToBeatmap[map.id] = map;
+    }
+    return mapIds.map(id => mapIdToBeatmap[id] || null);
 };
 
 const getBeatmapset = (mapsetId, includeBeatmaps, includeConverts) => {
@@ -327,8 +331,90 @@ const getUserUpdateStatus = (userId) => {
     }
 };
 
-const getUserRecommendedMaps = (userId, mode, includeLoved, includeConverts, limit = 100, offset = 0, starsMin, starsMax, timeRankedMin, timeRankedMax) => {
-
+const getUserRecommendedMaps = (userId, mode, includeLoved, includeConverts, limit = 100, offset = 0, sort, starsMin, starsMax, timeRankedMin, timeRankedMax) => {
+    const convertsSql = includeConverts ? '' : 'AND b.is_convert = 0';
+    const statusSql = includeLoved ? `b.status IN ('ranked', 'approved', 'loved')` : `b.status IN ('ranked', 'approved')`;
+    // Get min/max values
+    const minStars = 0;
+    const maxStars = db.prepare(
+        `SELECT MAX(b.stars) AS max_stars FROM beatmaps b
+        WHERE b.mode = ? AND ${statusSql} ${convertsSql}`
+    ).get(mode)?.max_stars || 0;
+    const minTimeRanked = db.prepare(
+        `SELECT MIN(bs.time_ranked) AS min_time FROM beatmapsets bs
+        JOIN beatmaps b ON bs.id = b.mapset_id
+        WHERE b.mode = ? AND ${statusSql} ${convertsSql}`
+    ).get(mode)?.min_time || 0;
+    const maxTimeRanked = db.prepare(
+        `SELECT MAX(bs.time_ranked) AS max_time FROM beatmapsets bs
+        JOIN beatmaps b ON bs.id = b.mapset_id
+        WHERE b.mode = ? AND ${statusSql} ${convertsSql}`
+    ).get(mode)?.max_time || 0;
+    // Build base query
+    let sql = `
+        SELECT b.id FROM beatmaps b
+        JOIN beatmapsets bs ON b.mapset_id = bs.id
+        LEFT JOIN user_passes up ON b.id = up.map_id AND up.user_id = ?
+        WHERE up.map_id IS NULL
+        AND b.mode = ? AND ${statusSql} ${convertsSql}
+    `;
+    const params = [userId, mode];
+    // Add stars filtering
+    if (starsMin) {
+        sql += ` AND b.stars >= ?`;
+        params.push(starsMin);
+    }
+    if (starsMax) {
+        sql += ` AND b.stars < ?`;
+        params.push(starsMax);
+    }
+    // Add time ranked filtering
+    if (timeRankedMin) {
+        sql += ` AND bs.time_ranked >= ?`;
+        params.push(timeRankedMin);
+    }
+    if (timeRankedMax) {
+        sql += ` AND bs.time_ranked < ?`;
+        params.push(timeRankedMax);
+    }
+    // Add sort
+    switch (sort) {
+        case 'stars_asc':
+            sql += ` ORDER BY b.stars ASC`;
+            break;
+        case 'stars_desc':
+            sql += ` ORDER BY b.stars DESC`;
+            break;
+        case 'time_ranked_asc':
+            sql += ` ORDER BY bs.time_ranked ASC`;
+            break;
+        case 'time_ranked_desc':
+            sql += ` ORDER BY bs.time_ranked DESC`;
+            break;
+        case 'random':
+        default:
+            sql += ` ORDER BY RANDOM()`;
+    }
+    // Add limit and offset
+    sql += ` LIMIT ? OFFSET ?`;
+    params.push(limit, offset);
+    // Execute query and fetch results
+    const rows = db.prepare(sql).all(...params);
+    const beatmapIds = rows.map(row => row.id);
+    const beatmaps = getBulkBeatmaps(beatmapIds, true, mode);
+    return {
+        min_max: {
+            stars: {
+                min: minStars,
+                max: maxStars
+            },
+            time_ranked: {
+                min: minTimeRanked,
+                max: maxTimeRanked
+            }
+        },
+        beatmaps
+    };
 };
 
 module.exports = {

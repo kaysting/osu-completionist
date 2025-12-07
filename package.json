@@ -12,6 +12,7 @@
     "axios": "^1.13.2",
     "better-sqlite3": "^12.4.1",
     "cookie-parser": "^1.4.7",
+    "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
     "express": "^5.1.0",

@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const db = require('./db');
 const { log } = require('./utils');
 const { getAuthenticatedUser } = require('./middleware');
+const dayjs = require('dayjs');
 
 const app = express();
 
@@ -15,6 +16,8 @@ app.use((req, res, next) => {
     log(req.headers['cf-connecting-ip'], req.method, req.url);
     next();
 });
+
+app.locals.dayjs = dayjs;
 
 app.set('view engine', 'ejs');
 app.use(cookieParser());
