@@ -1,30 +1,30 @@
 const db = require('../db');
 const utils = require('../utils');
 
-const formatUserEntry = (entry) => {
-    return {
-        id: entry.id,
-        name: entry.name,
-        avatar_url: entry.avatar_url,
-        banner_url: entry.banner_url,
-        country: {
-            code: entry.country_code,
-            name: entry.country_name
-        },
-        team: {
-            id: entry.team_id,
-            name: entry.team_name,
-            flag_url: entry.team_flag_url
-        }
-    };
-};
+const formatUserEntry = (entry) => ({
+    id: entry.id,
+    name: entry.name,
+    avatar_url: entry.avatar_url,
+    banner_url: entry.banner_url,
+    country: {
+        code: entry.country_code,
+        name: entry.country_name,
+        flag_url: `/assets/flags/${entry.country_code.toUpperCase()}.png`
+    },
+    team: {
+        id: entry.team_id,
+        name: entry.team_name,
+        flag_url: entry.team_flag_url
+    },
+    last_score_update_time: entry.last_score_update
+});
 
 const getBulkUserProfiles = (userIds) => {
     if (userIds.length === 0) {
         return [];
     }
     const rows = db.prepare(
-        `SELECT u.id, u.name, u.avatar_url, u.banner_url, u.country_code, u.team_id, u.team_name, u.team_flag_url, c.name AS country_name
+        `SELECT u.id, u.name, u.avatar_url, u.banner_url, u.country_code, u.team_id, u.team_name, u.team_flag_url, c.name AS country_name, u.last_score_update
          FROM users u
          LEFT JOIN country_names c ON u.country_code = c.code
          WHERE u.id IN (${userIds.map(() => '?').join(',')})`
@@ -80,11 +80,46 @@ const getBulkUserCompletionStats = (userIds, mode, includeLoved, includeConverts
     }));
 };
 
+const getUserExtendedCompletionStats = (userId, mode, includeLoved, includeConverts) => {
+    const totalTime = db.prepare(
+        `SELECT SUM(duration_secs) AS secs FROM beatmaps
+         WHERE mode = ? AND ${includeLoved ? `status IN ('ranked', 'approved', 'loved')` : `status IN ('ranked', 'approved')`}
+               ${includeConverts ? '' : 'AND is_convert = 0'}`
+    ).get(mode)?.secs || 0;
+    const passedTime = db.prepare(
+        `SELECT SUM(b.duration_secs) AS secs FROM user_passes up
+         JOIN beatmaps b ON up.map_id = b.id
+         WHERE up.user_id = ?
+           AND up.mode = ?
+           AND ${includeLoved ? `up.status IN ('ranked', 'approved', 'loved')` : `up.status IN ('ranked', 'approved')`}
+           ${includeConverts ? '' : 'AND b.is_convert = 0'}`
+    ).get(userId, mode)?.secs || 0;
+    return {
+        total_time_secs: totalTime,
+        spent_time_secs: passedTime,
+        remaining_time_secs: Math.max(0, totalTime - passedTime)
+    };
+};
+
 const getUserCompletionStats = (userId, mode, includeLoved, includeConverts) => {
-    return getBulkUserCompletionStats([userId], mode, includeLoved, includeConverts)?.[0]?.stats || null;
+    const stats = getBulkUserCompletionStats([userId], mode, includeLoved, includeConverts)?.[0]?.stats || null;
+    if (stats) {
+        const extendedStats = getUserExtendedCompletionStats(userId, mode, includeLoved, includeConverts);
+        return {
+            ...stats,
+            ...extendedStats
+        };
+    }
+    return null;
 };
 
 const getLeaderboard = (mode, includeLoved, includeConverts, limit = 100, offset = 0) => {
+    const totalRows = db.prepare(
+        `SELECT COUNT(*) AS count
+         FROM user_stats
+         WHERE mode = ? AND includes_loved = ? AND includes_converts = ?`
+    ).get(mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0);
+    const totalPlayers = totalRows.count;
     const rows = db.prepare(
         `SELECT u.id
          FROM users u
@@ -107,12 +142,15 @@ const getLeaderboard = (mode, includeLoved, includeConverts, limit = 100, offset
         userIdToStats[entry.id] = entry.stats;
     }
     // Build result
-    const entries = rows.map((row, i) => ({
+    const leaderboard = rows.map((row, i) => ({
         rank: offset + i + 1,
         user: userIdToProfile[row.id] || null,
         stats: userIdToStats[row.id] || null
     }));
-    return entries;
+    return {
+        total_players: totalPlayers,
+        leaderboard
+    };
 };
 
 const getBulkUserYearlyCompletionStats = (userIds, mode, includeLoved, includeConverts) => {
@@ -159,29 +197,25 @@ const getUserYearlyCompletionStats = (userId, mode, includeLoved, includeConvert
     return getBulkUserYearlyCompletionStats([userId], mode, includeLoved, includeConverts)?.[0] || [];
 };
 
-const formatBeatmap = (beatmap) => {
-    return {
-        id: beatmap.id,
-        mapset_id: beatmap.mapset_id,
-        mode: beatmap.mode,
-        name: beatmap.name,
-        stars: beatmap.stars,
-        difficulty_color: utils.starsToColor(beatmap.stars),
-        duration_secs: beatmap.duration_secs,
-        is_convert: !!beatmap.is_convert,
-        status: beatmap.status
-    };
-};
+const formatBeatmap = (beatmap) => ({
+    id: beatmap.id,
+    mapset_id: beatmap.mapset_id,
+    mode: beatmap.mode,
+    name: beatmap.name,
+    stars: beatmap.stars,
+    difficulty_color: utils.starsToColor(beatmap.stars),
+    duration_secs: beatmap.duration_secs,
+    is_convert: !!beatmap.is_convert,
+    status: beatmap.status
+});
 
-const formatBeatmapset = (beatmapset) => {
-    return {
-        id: beatmapset.id,
-        artist: beatmapset.artist,
-        title: beatmapset.title,
-        time_ranked: beatmapset.time_ranked,
-        status: beatmapset.status
-    };
-};
+const formatBeatmapset = (beatmapset) => ({
+    id: beatmapset.id,
+    artist: beatmapset.artist,
+    title: beatmapset.title,
+    time_ranked: beatmapset.time_ranked,
+    status: beatmapset.status
+});
 
 const getBulkBeatmapsets = (mapsetIds, includeBeatmaps, includeConverts) => {
     if (mapsetIds.length === 0) {
@@ -269,6 +303,30 @@ const getUserRecentPasses = (userId, mode, includeLoved, includeConverts, limit 
     return passes;
 };
 
+const getUserUpdateStatus = (userId) => {
+    const entry = db.prepare(`SELECT * FROM user_update_tasks WHERE user_id = ?`).get(userId);
+    if (entry) {
+        const position = db.prepare(
+            `SELECT COUNT(*) + 1 AS pos FROM user_update_tasks
+             WHERE time_queued < ?`
+        ).get(entry.time_queued)?.pos || 0;
+        return {
+            updating: true,
+            details: {
+                time_queued: entry.time_queued,
+                position,
+                percent_completed: entry.percent_complete,
+                count_new_passes: entry.count_new_passes
+            }
+        };
+    } else {
+        return {
+            updating: false,
+            details: null
+        };
+    }
+};
+
 const getUserRecommendedMaps = (userId, mode, includeLoved, includeConverts, limit = 100, offset = 0, starsMin, starsMax, timeRankedMin, timeRankedMax) => {
 
 };
@@ -285,5 +343,6 @@ module.exports = {
     getBulkBeatmaps,
     getBulkBeatmapsets,
     getBeatmap,
-    getBeatmapset
+    getBeatmapset,
+    getUserUpdateStatus
 };

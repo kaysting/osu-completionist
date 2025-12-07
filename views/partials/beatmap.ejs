@@ -1,0 +1,26 @@
+<div class="beatmap">
+    <div class="details">
+        <div class="map">
+            <div class="set">
+                <span class="title"><%= beatmap.mapset.title %></span> <span class="artist">by
+                    <%= beatmap.mapset.artist %></span>
+            </div>
+            <div class="diff">
+                <img src="/assets/ruleset-icons/<%= beatmap.mode %>.svg" class="ruleset">
+                <span class="status <%= beatmap.status %>"><%= beatmap.status.toUpperCase() %></span>
+                <span class="stars"
+                    style="background: <%= beatmap.difficulty_color %>; color: <%= beatmap.stars < 6.8 ? 'black' : 'white' %>">
+                    <span class="icon">star</span><span class="value"><%= beatmap.stars.toFixed(2) %></span>
+                </span>
+                <span class="name"
+                    style=" color: <%= beatmap.stars < 6.8 ? beatmap.difficulty_color : 'white' %>"><%= beatmap.name %></span>
+            </div>
+        </div>
+        <div class="time"><%= locals.time || `Ranked ${new Date(beatmap.mapset.time_ranked).toLocaleDateString()}` %>
+        </div>
+    </div>
+    <a href="https://osu.ppy.sh/beatmapsets/<%= beatmap.mapset_id %>#<%= beatmap.mode %>/<%= beatmap.id %>"
+        class="btn square text" target="_blank">
+        <div class="icon">open_in_new</div>
+    </a>
+</div>

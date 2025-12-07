@@ -5,25 +5,23 @@
         <%- include('../partials/pagination') %>
         <div class="entries">
             <% for (const entry of leaderboard) { %>
-            <a class="entry" href="/u/<%= entry.id %>/<%= settings.modeKey %>/<%= settings.includes.join('-') %>">
-                <img src="<%= entry.banner %>" class="banner">
+            <a class="entry" href="/u/<%= entry.user.id %>/<%= settings.modeKey %>/<%= settings.includes.join('-') %>">
+                <img src="<%= entry.user.banner_url %>" class="banner">
                 <div class="dimming"></div>
-                <div class="bar" style="width: <%= entry.percentage %>%"></div>
+                <div class="bar" style="width: <%= entry.stats.percentage_completed %>%"></div>
                 <div class="content">
-                    <div class="rank"><%= `#${entry.rank}` %></div>
+                    <div class="rank"><%= `#${entry.stats.rank}` %></div>
                     <div class="profile">
-                        <img src="<%= entry.avatar %>" class="avatar">
+                        <img src="<%= entry.user.avatar_url %>" class="avatar">
                         <div class="text">
-                            <div class="name"><%= entry.name %></div>
+                            <div class="name"><%= entry.user.name %></div>
                             <div class="flags">
-                                <div class="country" title="<%= entry.country.name %>">
-                                    <img src="/assets/flags/<%= entry.country.code %>.png" class="flag">
-                                    <!-- <div class="name"><%= entry.country.name %></div> -->
+                                <div class="country" title="<%= entry.user.country.name %>">
+                                    <img src="/assets/flags/<%= entry.user.country.code %>.png" class="flag">
                                 </div>
-                                <% if (entry.team.name) { %>
-                                <div class="team" title="<%= entry.team.name %>">
-                                    <img src="<%= entry.team.flag %>" class="flag">
-                                    <!-- <div class="name"><%= entry.team.name %></div> -->
+                                <% if (entry.user.team.name) { %>
+                                <div class="team" title="<%= entry.user.team.name %>">
+                                    <img src="<%= entry.user.team.flag_url %>" class="flag">
                                 </div>
                                 <% } %>
                             </div>
@@ -31,11 +29,11 @@
                         <div class="stats">
                             <div class="stat">
                                 <div class="name">% completed</div>
-                                <div class="value"><%= entry.percentage %>%</div>
+                                <div class="value"><%= entry.stats.percentage_completed.toFixed(2) %>%</div>
                             </div>
                             <div class="stat">
                                 <div class="name">maps completed</div>
-                                <div class="value"><%= entry.completed.toLocaleString() %></div>
+                                <div class="value"><%= entry.stats.count_completed.toLocaleString() %></div>
                             </div>
                         </div>
                     </div>

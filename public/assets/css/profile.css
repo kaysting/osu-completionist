@@ -212,96 +212,6 @@
     gap: 2px;
 }
 
-#profile .passes .entry {
-    padding: 8px;
-    border-radius: 8px;
-    display: flex;
-    gap: 8px;
-    background: hsl(220, 20%, 22%);
-    align-items: center;
-}
-
-#profile .passes .entry>.icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-
-#profile .passes .entry .details {
-    display: flex;
-    gap: 8px;
-    flex-grow: 1;
-    align-items: center;
-}
-
-#profile .passes .entry * {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0px;
-    flex-shrink: 1;
-}
-
-#profile .passes .entry .map {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex-grow: 1;
-}
-
-#profile .passes .entry .map .title {
-    font-weight: bold;
-    color: white;
-    font-size: 16px;
-}
-
-#profile .passes .entry .map .artist {
-    color: var(--textDim);
-    font-size: 12px;
-    margin-left: 2px;
-}
-
-#profile .passes .entry .map .diff {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-#profile .passes .entry .map .stars {
-    padding: 2px 8px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-}
-
-#profile .passes .entry .map .stars .icon {
-    font-family: 'Material Symbols Rounded';
-    font-variation-settings: 'FILL' 1;
-    font-weight: 300;
-    font-size: 14px;
-    line-height: 1;
-    margin-left: -2px;
-}
-
-#profile .passes .entry .map .stars .value {
-    font-weight: 600;
-    font-size: 13px;
-}
-
-#profile .passes .entry .map .name {
-    font-size: 14px;
-    font-weight: 600;
-}
-
-#profile .passes .entry .time {
-    font-size: 14px;
-    color: var(--textDim);
-    flex-shrink: 0;
-}
-
 @media (max-width: 700px) {
 
     #profile .basics {
@@ -348,12 +258,12 @@
         font-size: 24px;
     }
 
-    #profile .passes .entry .details {
+    #profile .passes .beatmap .details {
         flex-wrap: wrap;
         gap: 2px;
     }
 
-    #profile .passes .entry .time {
+    #profile .passes .beatmap .time {
         flex-basis: 100%;
     }
 

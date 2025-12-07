@@ -1,12 +1,13 @@
 const db = require('./db');
 const fs = require('fs');
 const utils = require('./utils');
+const { getUserProfile } = require('./helpers/dbHelpers');
 
 const middleware = {
 
     ensureUserExists: (req, res, next) => {
         const userId = req.params.id;
-        const user = db.prepare('SELECT * FROM users WHERE id = ? OR name = ?').get(userId, userId);
+        const user = getUserProfile(userId);
         if (!user) {
             return res.status(404).render('layout', {
                 title: 'User not found',
@@ -17,11 +18,6 @@ const middleware = {
             });
         }
         req.user = user;
-        req.user.country = db.prepare(`SELECT name, code FROM country_names WHERE code = ?`).get(user.country_code) || { name: 'Unknown', code: 'XX' };
-        req.user.country.flag_url = `/assets/flags/fallback.png`;
-        if (fs.existsSync(`./public/assets/flags/${req.user.country.code.toUpperCase()}.png`)) {
-            req.user.country.flag_url = `/assets/flags/${req.user.country.code.toUpperCase()}.png`;
-        }
         next();
     },
 

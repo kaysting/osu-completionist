@@ -526,3 +526,113 @@ img {
     z-index: -1;
     background: var(--bg);
 }
+
+.beatmap {
+    padding: 8px;
+    border-radius: 8px;
+    display: flex;
+    gap: 8px;
+    background: hsl(220, 20%, 22%);
+    align-items: center;
+}
+
+.beatmap .details {
+    display: flex;
+    gap: 8px;
+    flex-grow: 1;
+    align-items: center;
+}
+
+.beatmap * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0px;
+    flex-shrink: 1;
+}
+
+.beatmap .map {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-grow: 1;
+}
+
+.beatmap .map .title {
+    font-weight: 600;
+    color: white;
+    font-size: 16px;
+}
+
+.beatmap .map .artist {
+    color: var(--textDim);
+    font-size: 12px;
+    margin-left: 2px;
+}
+
+.beatmap .map .diff {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.beatmap .map .ruleset {
+    width: 18px;
+    height: 18px;
+}
+
+.beatmap .map .status,
+.beatmap .map .stars {
+    padding: 0px 8px;
+    height: 18px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-weight: 600;
+    font-size: 13px;
+    color: black;
+
+}
+
+.beatmap .map .status {
+    font-weight: bold;
+}
+
+.beatmap .map .status.ranked,
+.beatmap .map .status.approved {
+    background: hsl(130, 80%, 70%);
+}
+
+.beatmap .map .status.loved {
+    background: hsl(340, 80%, 70%);
+}
+
+.beatmap .map .status.qualified {
+    background: hsl(200, 80%, 70%);
+}
+
+.beatmap .map .status.graveyard {
+    background: hsl(0, 0%, 70%);
+}
+
+.beatmap .map .stars .icon {
+    font-family: 'Material Symbols Rounded';
+    font-variation-settings: 'FILL' 1;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 1;
+    margin-left: -2px;
+}
+
+.beatmap .map .name {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.beatmap .time {
+    font-size: 14px;
+    color: var(--textDim);
+    flex-shrink: 0;
+}

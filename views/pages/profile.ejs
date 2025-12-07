@@ -1,23 +1,26 @@
 <link rel="stylesheet" href="/assets/css/profile.css">
 <div id="profile">
     <%- include('../partials/statSettings') %>
-    <% if (user.updating) { %>
+    <% if (user.updateStatus.updating) { %>
     <div class="card warning">
-        <div class="icon"><%= user.updating.percent_complete ? 'update' : 'hourglass' %></div>
+        <div class="icon"><%= user.updateStatus.details.percent_completed ? 'update' : 'hourglass' %></div>
         <div class="text">
-            <% if (user.updating.percent_complete) { %>
-            <p><b>Checking all beatmaps for passes</b>
-                <br><%= user.updating.percent_complete.toFixed(2) %>% complete, discovered
-                <%= user.updating.count_new_passes.toLocaleString() %> new passes so far.
+            <% if (user.updateStatus.details.percent_completed) { %>
+            <p>
+                <b>Checking all beatmaps for passes</b>
+                <br><%= user.updateStatus.details.percent_completed.toFixed(2) %>% complete, discovered
+                <%= user.updateStatus.details.count_new_passes.toLocaleString() %> new passes so far.
             </p>
-            <% } else if (!user.last_score_update) { %>
-            <p><b>Queued for import (position <%= user.updating.pos %> in line)</b>
+            <% } else if (!user.last_score_update_time) { %>
+            <p>
+                <b>Queued for import (position <%= user.updateStatus.details.position %> in line)</b>
                 <br>This profile is pending import from osu! and we'll get to it soon. Stay tuned!
             </p>
             <% } else { %>
-            <p><b>Queued for update (position <%= user.updating.pos %> in line)</b><br>This profile might be out of date
-                and is queued for updates. Check back
-                soon!</p>
+            <p>
+                <b>Queued for update (position <%= user.updateStatus.details.position %> in line)</b>
+                <br>This profile might be out of date and is queued for updates. Check back soon!
+            </p>
             <% } %>
         </div>
     </div>
@@ -25,11 +28,11 @@
     <div class="card">
         <div class="banner" style="background-image: url('<%= user.banner_url %>')">
             <div class="buttons">
-                <button class="btn translucent" onClick="copyText(`<%= user.stats.copyable %>`)">
+                <button class="btn translucent" onClick="copyText(`<%= copyable %>`)">
                     <span class="icon">content_copy</span>
                     <span>copy stats</span>
                 </button>
-                <% if (user.id == me?.id && !user.updating) { %>
+                <% if (user.id == me?.id && !user.updateStatus.updating) { %>
                 <a class="btn translucent" href="/u/<%= user.id %>/update">
                     <span class="icon">update</span>
                     <span>request update</span>
@@ -46,10 +49,10 @@
                         <img src="<%= user.country.flag_url %>" class="flag">
                         <span class="label"><%= user.country.name %></span>
                     </div>
-                    <% if (user.team_id) { %>
+                    <% if (user.team.id) { %>
                     <div class="team">
-                        <img src="<%= user.team_flag_url %>" class="flag">
-                        <span class="label"><%= user.team_name %></span>
+                        <img src="<%= user.team.flag_url %>" class="flag">
+                        <span class="label"><%= user.team.name %></span>
                     </div>
                     <% } %>
                 </div>
@@ -57,15 +60,15 @@
             <div class="stats">
                 <div class="stat big">
                     <div class="key">global rank</div>
-                    <div class="value">#<%= user.stats.rank %></div>
+                    <div class="value">#<%= user.stats.rank == -1 ? '-' : user.stats.rank %></div>
                 </div>
                 <div class="stat big">
                     <div class="key">% completed</div>
-                    <div class="value"><%= user.stats.percentage %>%</div>
+                    <div class="value"><%= user.stats.percentage_completed.toFixed(2) %>%</div>
                 </div>
                 <div class="stat big">
                     <div class="key">maps completed</div>
-                    <div class="value"><%= user.stats.completed.toLocaleString() %></div>
+                    <div class="value"><%= user.stats.count_completed.toLocaleString() %></div>
                 </div>
             </div>
         </div>
@@ -76,33 +79,39 @@
             <div class="stats">
                 <div class="stat">
                     <div class="key">maps to complete</div>
-                    <div class="value"><%= (user.stats.total - user.stats.completed).toLocaleString() %></div>
+                    <div class="value"><%= (user.stats.count_total - user.stats.count_completed).toLocaleString() %>
+                    </div>
                 </div>
                 <div class="stat">
                     <div class="key">playtime to completion</div>
-                    <div class="value"><%= user.stats.timeToComplete %></div>
+                    <div class="value"><%= user.stats.timeToCompletion %></div>
+                </div>
+                <div class="stat">
+                    <div class="key">playtime spent completing</div>
+                    <div class="value"><%= user.stats.timeSpentCompleting %></div>
                 </div>
                 <div class="stat">
                     <div class="key">total maps</div>
-                    <div class="value"><%= user.stats.total.toLocaleString() %></div>
+                    <div class="value"><%= user.stats.count_total.toLocaleString() %></div>
                 </div>
             </div>
             <div>
                 <span class="header">completion by year</span>
             </div>
             <div class="yearly">
-                <% for (const yearData of user.stats.yearly) { %>
+                <% for (const yearData of user.yearly) { %>
                 <div class="entry">
                     <div class="year"><%= yearData.year %></div>
                     <div class="content">
                         <div class="values">
-                            <div class="percent"><%= yearData.percentage %>%</div>
-                            <div class="count"><%= yearData.completed.toLocaleString() %> /
-                                <%= yearData.total.toLocaleString() %></div>
+                            <div class="percent"><%= yearData.percentage_completed.toFixed(2) %>%</div>
+                            <div class="count"><%= yearData.count_completed.toLocaleString() %> /
+                                <%= yearData.count_total.toLocaleString() %></div>
                         </div>
                         <div class="bar">
                             <div class="filling"
-                                style="width: <%= yearData.percentage %>%; background: <%= yearData.color %>"></div>
+                                style="width: <%= yearData.percentage_completed %>%; background: <%= yearData.color %>">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -120,32 +129,7 @@
                 </div>
                 <% } %>
                 <% for (const pass of user.recentPasses) { %>
-                <div class="entry">
-                    <!-- <img src="/assets/ruleset-icons/<%= pass.mode %>.svg" class="icon"
-                        style="background: <%= pass.colorDiff %>"> -->
-                    <div class="details">
-                        <div class="map">
-                            <div class="set">
-                                <span class="title"><%= pass.title %></span> <span class="artist">by
-                                    <%= pass.artist %></span>
-                            </div>
-                            <div class="diff">
-                                <span class="stars"
-                                    style="background: <%= pass.colorDiff %>; color: <%= pass.colorText %>">
-                                    <span class="icon">star</span><span
-                                        class="value"><%= pass.stars.toFixed(2) %></span>
-                                </span>
-                                <span class="name"
-                                    style="color: <%= pass.stars < 7.2 ? pass.colorDiff : pass.colorText %>"><%= pass.diff %></span>
-                            </div>
-                        </div>
-                        <div class="time"><%= pass.timeSincePass %></div>
-                    </div>
-                    <a href="https://osu.ppy.sh/beatmapsets/<%= pass.mapsetId %>#<%= pass.mode %>/<%= pass.mapId %>"
-                        class="btn square text" target="_blank">
-                        <div class="icon">open_in_new</div>
-                    </a>
-                </div>
+                <%- include('../partials/beatmap', { beatmap: pass.beatmap, time: `Passed ${pass.timeSincePass}` }) %>
                 <% } %>
             </div>
         </div>

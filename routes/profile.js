@@ -5,6 +5,7 @@ const { ensureUserExists } = require('../middleware.js');
 const utils = require('../utils.js');
 const { rulesetNameToKey, rulesetKeyToName } = utils;
 const updater = require('../helpers/updaterHelpers.js');
+const dbHelpers = require('../helpers/dbHelpers.js');
 
 const router = express.Router();
 
@@ -36,134 +37,45 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
     if (!modeKey) {
         return res.redirect(`/u/${user.id}/osu/ranked`);
     }
-    // Get user stats
-    const stats = db.prepare(
-        `SELECT count FROM user_stats
-         WHERE user_id = ? AND mode = ? AND includes_loved = ? AND includes_converts = ?`
-    ).get(user.id, modeKey, includeLoved, includeConverts);
-    const completedCount = stats ? stats.count : 0;
-    // Get total number of beatmaps
-    const totalMapCount = db.prepare(
-        `SELECT count FROM beatmap_stats
-         WHERE mode = ? AND includes_loved = ? AND includes_converts = ?`
-    ).get(modeKey, includeLoved, includeConverts).count;
-    // Calculate completion percentage
-    const percentage = totalMapCount > 0 ? ((completedCount / totalMapCount) * 100).toFixed(2) : '0.00';
-    // Get user rank
-    const rank = db.prepare(
-        `SELECT COUNT(*) + 1 AS rank FROM user_stats
-         WHERE mode = ? AND includes_loved = ? AND includes_converts = ? AND count > ?`
-    ).get(modeKey, includeLoved, includeConverts, completedCount)?.rank || -1;
-    // Get time to pass remaining maps
-    const secs = db.prepare(
-        `SELECT SUM(duration_secs) AS secs FROM beatmaps
-         WHERE id NOT IN (
-             SELECT map_id FROM user_passes
-             WHERE user_id = ?
-               AND mode = ?
-               AND ${includeLoved ? `status IN ('ranked', 'approved', 'loved')` : `status IN ('ranked', 'approved')`}
-               ${includeConverts ? '' : 'AND is_convert = 0'}
-         ) AND mode = ?
-           AND ${includeLoved ? `status IN ('ranked', 'approved', 'loved')` : `status IN ('ranked', 'approved')`}
-               ${includeConverts ? '' : 'AND is_convert = 0'}`
-    ).get(user.id, modeKey, modeKey)?.secs || 0;
-    const timeToComplete = utils.secsToDuration(secs);
-    // Get yearly progress
-    const startYear = 2007;
-    const currentYear = new Date().getFullYear();
-    const yearly = [];
-    for (let year = currentYear; year >= startYear; year--) {
-        const total = db.prepare(
-            `SELECT count FROM beatmap_stats_yearly
-             WHERE mode = ? AND year = ? AND includes_loved = ? AND includes_converts = ?`
-        ).get(modeKey, year, includeLoved, includeConverts).count;
-        if (total === 0) continue;
-        const completed = db.prepare(
-            `SELECT count FROM user_stats_yearly
-             WHERE user_id = ? AND mode = ? AND year = ? AND includes_loved = ? AND includes_converts = ?`
-        ).get(user.id, modeKey, year, includeLoved, includeConverts)?.count || 0;
-        const percentage = total > 0 ? completed / total : 0;
-        yearly.push({
-            year,
-            total,
-            completed,
-            percentage: (percentage * 100).toFixed(2),
-            color: utils.interpolateColors(percentage, [
-                [245, 61, 122], // pinkish red
-                [245, 214, 61], // yellow
-                [61, 245, 153], // blueish
-            ])
-        });
+    // Get data
+    const stats = dbHelpers.getUserCompletionStats(req.user.id, modeKey, includeLoved, includeConverts);
+    const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, modeKey, includeLoved, includeConverts);
+    const recentPasses = dbHelpers.getUserRecentPasses(req.user.id, modeKey, includeLoved, includeConverts, 100, 0);
+    const updateStatus = dbHelpers.getUserUpdateStatus(req.user.id);
+    // Format times
+    stats.timeToCompletion = utils.secsToDuration(stats.remaining_time_secs);
+    stats.timeSpentCompleting = utils.secsToDuration(stats.spent_time_secs);
+    // Get completion colors for each year
+    for (const yearData of yearly) {
+        yearData.color = utils.percentageToColor(yearData.percentage_completed / 100);
     }
-    // Create copyable text
+    // Get relative timestamps for recent passes
+    for (const pass of recentPasses) {
+        pass.timeSincePass = utils.getRelativeTimestamp(pass.time_passed);
+    }
+    // Generate copyable text
     const modeName = rulesetKeyToName(modeKey, true);
     const statsText = [
         `${user.name}'s ${modeName} ${includeLoved ? 'ranked and loved' : 'ranked only'} (${includeConverts ? 'with converts' : 'no converts'}) completion stats:\n`
     ];
-    yearly.reverse();
     for (const year of yearly) {
-        const checkbox = year.completed === year.total ? '☑' : '☐';
-        statsText.push(`${checkbox} ${year.year}: ${year.completed.toLocaleString()} / ${year.total.toLocaleString()} (${year.percentage}%)`);
+        const checkbox = year.count_completed === year.count_total ? '☑' : '☐';
+        statsText.push(`${checkbox} ${year.year}: ${year.count_completed.toLocaleString()} / ${year.count_total.toLocaleString()} (${year.percentage_completed}%)`);
     }
-    statsText.push(`\nTotal: ${completedCount.toLocaleString()} / ${totalMapCount.toLocaleString()} (${percentage}%)`);
-    yearly.reverse();
-    // Compile user stats
-    user.stats = {
-        completed: completedCount,
-        total: totalMapCount,
-        percentage,
-        rank,
-        timeToComplete,
-        yearly,
-        copyable: statsText.join('\n').replace(/"/g, '\\"').replace(/`/g, '\\`')
-    };
-    // Get recent passes
-    const recentPasses = db.prepare(
-        `SELECT up.time_passed, bs.title, bs.artist, bm.mode, bm.name, bm.stars, bs.id AS mapset_id, bm.id AS map_id
-             FROM user_passes up
-             JOIN beatmaps bm ON up.map_id = bm.id
-             JOIN beatmapsets bs ON up.mapset_id = bs.id
-             WHERE up.user_id = ?
-               AND up.mode = ?
-               AND bm.mode = up.mode
-               AND ${includeLoved ? `up.status IN ('ranked', 'approved', 'loved')` : `up.status IN ('ranked', 'approved')`}
-               ${includeConverts ? '' : 'AND up.is_convert = 0'}
-             ORDER BY up.time_passed DESC
-             LIMIT 100`
-    ).all(user.id, modeKey);
-    user.recentPasses = recentPasses.map(pass => ({
-        timeSincePass: utils.getRelativeTimestamp(pass.time_passed),
-        title: pass.title,
-        artist: pass.artist,
-        mode: pass.mode,
-        diff: pass.name,
-        stars: pass.stars,
-        mapsetId: pass.mapset_id,
-        mapId: pass.map_id,
-        colorDiff: utils.starsToColor(pass.stars),
-        colorText: pass.stars > 7.1 ? 'hsl(45, 95%, 70%)' : 'black'
-    }));
-    // Get queue status
-    user.updating = db.prepare(
-        `SELECT * FROM user_update_tasks
-         WHERE user_id = ?`
-    ).get(user.id);
-    if (user.updating) {
-        user.updating.pos = db.prepare(
-            `SELECT COUNT(*) AS pos FROM user_update_tasks
-         WHERE time_queued < ?`
-        ).get(user.updating.time_queued)?.pos + 1;
-    }
-    const includesString = `${includeLoved ? 'ranked and loved' : 'ranked only'}, ${includeConverts ? 'with converts' : 'no converts'}`;
+    statsText.push(`\nTotal: ${stats.count_completed.toLocaleString()} / ${stats.count_total.toLocaleString()} (${stats.percentage_completed}%)`);
     // Render
+    const includesString = `${includeLoved ? 'ranked and loved' : 'ranked only'}, ${includeConverts ? 'with converts' : 'no converts'}`;
     res.render('layout', {
         page: 'profile',
         title: req.user.name,
         meta: {
             title: `${req.user.name}'s ${modeName} completionist profile`,
-            description: `${req.user.name} has passed ${percentage}% of all ${modeName} beatmaps (${includesString})! Click to view more of their completionist stats.`,
+            description: `${req.user.name} has passed ${stats.percentage_completed.toFixed(2)}% of all ${modeName} beatmaps (${includesString})! Click to view more of their completionist stats.`,
         },
-        user,
+        user: {
+            ...user, stats, yearly, recentPasses, updateStatus
+        },
+        copyable: statsText.join('\n'),
         settings: {
             modeKey, mode, includes, basePath: `/u/${user.id}`
         },
