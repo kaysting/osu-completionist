@@ -42,7 +42,24 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
     const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, modeKey, includeLoved, includeConverts);
     const recentPasses = dbHelpers.getUserRecentPasses(req.user.id, modeKey, includeLoved, includeConverts, 100, 0);
     const updateStatus = dbHelpers.getUserUpdateStatus(req.user.id);
-    const recommended = req.user.id == req.me?.id ? dbHelpers.getUserRecommendedMaps(req.user.id, modeKey, includeLoved, includeConverts, 5) : null;
+    // If viewing our own profile, get user trends and recommended maps
+    let recommended = null;
+    if (req.me && req.user.id === req.me.id) {
+        let minStars, maxStars, minTime, maxTime = null;
+        let passesToCheck = 20;
+        let passesChecked = 0;
+        for (const pass of recentPasses) {
+            if (passesChecked >= passesToCheck) break;
+            const stars = pass.beatmap.stars;
+            const timeRanked = pass.beatmap.beatmapset.time_ranked;
+            minStars = minStars === undefined || stars < minStars ? stars : minStars;
+            maxStars = maxStars === undefined || stars > maxStars ? stars : maxStars;
+            minTime = minTime === undefined || timeRanked < minTime ? timeRanked : minTime;
+            maxTime = maxTime === undefined || timeRanked > maxTime ? timeRanked : maxTime;
+            passesChecked++;
+        }
+        recommended = dbHelpers.getUserRecommendedMaps(req.user.id, modeKey, includeLoved, includeConverts, 5, 0, 'random', minStars, maxStars, minTime, maxTime);
+    }
     // Format times
     stats.timeToCompletion = utils.secsToDuration(stats.remaining_time_secs);
     stats.timeSpentCompleting = utils.secsToDuration(stats.spent_time_secs);

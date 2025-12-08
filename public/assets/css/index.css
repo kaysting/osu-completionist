@@ -90,7 +90,8 @@ img {
 }
 
 ::selection {
-    background: hsla(150, 90%, 70%, 50%);
+    background: hsla(150, 90%, 70%, 80%);
+    color: black;
 }
 
 .btn {
