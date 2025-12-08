@@ -1,60 +1,67 @@
 <link rel="stylesheet" href="/assets/css/recommended.css">
-<div id="recommended" class="card">
-    <form class="settings">
-        <div class="controls">
-            <div class="setting" id="settingMode">
-                <div class="label">mode</div>
-                <select name="mode" class="textbox">
-                    <option value="osu" <%= settings.modeKey === 'osu' ? 'selected' : '' %>>osu!</option>
-                    <option value="taiko" <%= settings.modeKey === 'taiko' ? 'selected' : '' %>>osu!taiko</option>
-                    <option value="catch" <%= settings.modeKey === 'catch' ? 'selected' : '' %>>osu!catch</option>
-                    <option value="mania" <%= settings.modeKey === 'mania' ? 'selected' : '' %>>osu!mania</option>
-                </select>
+<div id="recommended" class="card flex col gap-16">
+    <form class="settings flex gap-16 align-center">
+        <div class="controls flex col gap-8 flex-grow">
+            <div class="row">
+                <div class="setting" id="settingMode">
+                    <div class="label">mode</div>
+                    <select name="mode" class="textbox">
+                        <option value="osu" <%= settings.modeKey === 'osu' ? 'selected' : '' %>>osu!</option>
+                        <option value="taiko" <%= settings.modeKey === 'taiko' ? 'selected' : '' %>>osu!taiko</option>
+                        <option value="catch" <%= settings.modeKey === 'catch' ? 'selected' : '' %>>osu!catch</option>
+                        <option value="mania" <%= settings.modeKey === 'mania' ? 'selected' : '' %>>osu!mania</option>
+                    </select>
+                </div>
+                <div class="setting" id="settingLoved">
+                    <div class="label">include loved</div>
+                    <select name="loved" class="textbox">
+                        <option value="true" <%= settings.includeLoved ? 'selected' : '' %>>Yes</option>
+                        <option value="" <%= !settings.includeLoved ? 'selected' : '' %>>No</option>
+                    </select>
+                </div>
+                <div class="setting" id="settingConverts">
+                    <div class="label">include converts</div>
+                    <select name="converts" class="textbox">
+                        <option value="true" <%= settings.includeConverts ? 'selected' : '' %>>Yes</option>
+                        <option value="" <%= !settings.includeConverts ? 'selected' : '' %>>No</option>
+                    </select>
+                </div>
             </div>
-            <div class="setting" id="settingLoved">
-                <div class="label">include loved</div>
-                <select name="loved" class="textbox">
-                    <option value="true" <%= settings.includeLoved ? 'selected' : '' %>>Yes</option>
-                    <option value="" <%= !settings.includeLoved ? 'selected' : '' %>>No</option>
-                </select>
-            </div>
-            <div class="setting" id="settingConverts">
-                <div class="label">include converts</div>
-                <select name="converts" class="textbox">
-                    <option value="true" <%= settings.includeConverts ? 'selected' : '' %>>Yes</option>
-                    <option value="" <%= !settings.includeConverts ? 'selected' : '' %>>No</option>
-                </select>
-            </div>
-            <div class="setting" id="settingYear">
-                <div class="label">during year</div>
-                <input type="text" name="year" class="textbox" value="<%= settings.year || '' %>" placeholder="2019">
-            </div>
-            <div class="setting" id="settingMinStars">
-                <div class="label">min. stars</div>
-                <input type="text" name="min_stars" class="textbox" value="<%= settings.minStars || '' %>"
-                    placeholder="5.5">
-            </div>
-            <div class="setting" id="settingMaxStars">
-                <div class="label">max. stars</div>
-                <input type="text" name="max_stars" class="textbox" value="<%= settings.maxStars || '' %>"
-                    placeholder="7">
-            </div>
-            <div class="setting" id="settingSort">
-                <div class="label">sort</div>
-                <select name="sort" class="textbox">
-                    <option value="random" <%= settings.sort === 'random' ? 'selected' : '' %>>Random</option>
-                    <option value="stars_asc" <%= settings.sort === 'stars_asc' ? 'selected' : '' %>>Stars (ascending)
-                    </option>
-                    <option value="stars_desc" <%= settings.sort === 'stars_desc' ? 'selected' : '' %>>Stars
-                        (descending)</option>
-                    <option value="ranked_date_asc" <%= settings.sort === 'ranked_date_asc' ? 'selected' : '' %>>Ranked
-                        date (oldest first)</option>
-                    <option value="ranked_date_desc" <%= settings.sort === 'ranked_date_desc' ? 'selected' : '' %>>
-                        Ranked date (newest first)</option>
-                </select>
+            <div class="row">
+                <div class="setting" id="settingYear">
+                    <div class="label">during year</div>
+                    <input type="text" name="year" class="textbox" value="<%= settings.year || '' %>"
+                        placeholder="2019">
+                </div>
+                <div class="setting" id="settingMinStars">
+                    <div class="label">min. stars</div>
+                    <input type="text" name="min_stars" class="textbox" value="<%= settings.minStars || '' %>"
+                        placeholder="5.5">
+                </div>
+                <div class="setting" id="settingMaxStars">
+                    <div class="label">max. stars</div>
+                    <input type="text" name="max_stars" class="textbox" value="<%= settings.maxStars || '' %>"
+                        placeholder="7">
+                </div>
+                <div class="setting" id="settingSort">
+                    <div class="label">sort</div>
+                    <select name="sort" class="textbox">
+                        <option value="random" <%= settings.sort === 'random' ? 'selected' : '' %>>Random</option>
+                        <option value="stars_asc" <%= settings.sort === 'stars_asc' ? 'selected' : '' %>>Easiest to
+                            hardest
+                        </option>
+                        <option value="stars_desc" <%= settings.sort === 'stars_desc' ? 'selected' : '' %>>Hardest to
+                            easiest</option>
+                        <option value="time_ranked_asc" <%= settings.sort === 'time_ranked_asc' ? 'selected' : '' %>>
+                            Oldest
+                            to newest</option>
+                        <option value="time_ranked_desc" <%= settings.sort === 'time_ranked_desc' ? 'selected' : '' %>>
+                            Newest to oldest</option>
+                    </select>
+                </div>
             </div>
         </div>
-        <button type="submit" class="btn primary">Apply</button>
+        <button type="submit" class="btn medium primary">Apply</button>
     </form>
     <div class="beatmaps card lighter">
         <% for (const beatmap of results.beatmaps) { %>

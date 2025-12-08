@@ -79,6 +79,12 @@ b {
     color: white;
 }
 
+small {
+    font-size: 14px;
+    color: var(--textDim);
+    line-height: 1.2;
+}
+
 img {
     user-select: none;
 }
@@ -679,4 +685,80 @@ img {
     .beatmap .buttons {
         flex-direction: column;
     }
+}
+
+.flex {
+    display: flex;
+}
+
+.row {
+    flex-direction: row;
+}
+
+.col {
+    flex-direction: column;
+}
+
+.align-center {
+    align-items: center;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.align-start {
+    align-items: flex-start;
+}
+
+.justify-start {
+    justify-content: flex-start;
+}
+
+.align-end {
+    align-items: flex-end;
+}
+
+.justify-end {
+    justify-content: flex-end;
+}
+
+.gap-2 {
+    gap: 2px;
+}
+
+.gap-4 {
+    gap: 4px;
+}
+
+.gap-8 {
+    gap: 8px;
+}
+
+.gap-12 {
+    gap: 12px;
+}
+
+.gap-16 {
+    gap: 16px;
+}
+
+.gap-24 {
+    gap: 24px;
+}
+
+.gap-32 {
+    gap: 32px;
+}
+
+.flex-grow {
+    flex-grow: 1;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.flex-no-shrink {
+    flex-shrink: 0;
 }

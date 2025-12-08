@@ -331,7 +331,7 @@ const getUserUpdateStatus = (userId) => {
     }
 };
 
-const getUserRecommendedMaps = (userId, mode, includeLoved, includeConverts, limit = 100, offset = 0, sort, starsMin, starsMax, timeRankedMin, timeRankedMax) => {
+const getUserRecommendedMaps = (userId, mode, includeLoved = false, includeConverts = false, limit = 100, offset = 0, sort, starsMin, starsMax, timeRankedMin, timeRankedMax) => {
     const convertsSql = includeConverts ? '' : 'AND b.is_convert = 0';
     const statusSql = includeLoved ? `b.status IN ('ranked', 'approved', 'loved')` : `b.status IN ('ranked', 'approved')`;
     // Get min/max values

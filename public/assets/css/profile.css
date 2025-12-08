@@ -132,8 +132,7 @@
     font-weight: 200;
 }
 
-#profile .passes,
-#profile .progress {
+#profile .card.lighter {
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -206,7 +205,8 @@
     border-radius: 4px;
 }
 
-#profile .passes .entries {
+#profile .passes .entries,
+#profile .recommended .entries {
     display: flex;
     flex-direction: column;
     gap: 2px;

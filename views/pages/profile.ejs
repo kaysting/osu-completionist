@@ -118,6 +118,32 @@
                 <% } %>
             </div>
         </div>
+        <% if (user.recommended) { %>
+        <div class="card lighter recommended">
+            <div>
+                <span class="header">what to play next</span>
+            </div>
+            <div class="entries">
+                <% if (user.recommended.beatmaps.length === 0) { %>
+                <div class="empty">
+                    <p>Nothing! You've played every map.</p>
+                </div>
+                <% } %>
+                <% for (const beatmap of user.recommended.beatmaps) { %>
+                <%- include('../partials/beatmap', { beatmap }) %>
+                <% } %>
+            </div>
+            <div class="flex row gap-8 justify-center">
+                <div class="flex">
+                    <a href="/recommended?mode=<%= settings.modeKey %>&loved=<%= settings.includes.includes('loved') ? 'true' : '' %>&converts=<%= settings.includes.includes('converts') ? 'true' : '' %>"
+                        class="btn primary">
+                        <span class="icon">cards_star</span>
+                        <span class="label">view more...</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <% } %>
         <div class="card lighter passes">
             <div>
                 <span class="header">recent passes</span>
