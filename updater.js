@@ -250,7 +250,9 @@ const importUser = async (userId) => {
                 let countNewMapsets = 0;
                 for (const entry of res) {
                     const mapsetId = entry.beatmapset.id;
-                    if (!uniqueMapsetIds.includes(mapsetId)) {
+                    const status = entry.beatmapset.status;
+                    const validStatuses = ['ranked', 'approved', 'loved'];
+                    if (!uniqueMapsetIds.includes(mapsetId) && validStatuses.includes(status)) {
                         uniqueMapsetIds.push(mapsetId);
                         mapsetIds.push(mapsetId);
                         countNewMapsets++;
@@ -318,6 +320,8 @@ const importUser = async (userId) => {
         log(`Completed import of ${totalNewPasses} passes for ${userEntry.name}`);
         // Update user stats
         await updateUserStats(userId);
+        // Queue user again to fetch recents and catch any missed passes
+        await queueUser(userId);
     } catch (error) {
         log(`Error while importing user ${userEntry.name}:`, error);
     }
@@ -357,8 +361,8 @@ const updateUserFromRecents = async (userId) => {
             let newCount = 0;
             // Loop through scores and only keep new ones
             for (const score of fetchedScores) {
-                const existingPass = db.prepare(`SELECT * FROM user_passes WHERE user_id = ? AND map_id = ? AND mode = ? LIMIT 1`).get(
-                    user.id, score.beatmap.id, score.beatmap.mode
+                const existingPass = db.prepare(`SELECT * FROM user_passes WHERE user_id = ? AND mapset_id = ? AND map_id = ? AND mode = ? LIMIT 1`).get(
+                    user.id, score.beatmapset.id, score.beatmap.id, score.beatmap.mode
                 );
                 const isRanked = ['ranked', 'loved', 'approved'].includes(score.beatmap.status);
                 if (!existingPass && isRanked) {
@@ -385,14 +389,13 @@ const updateUserFromRecents = async (userId) => {
         const transaction = db.transaction((scores) => {
             for (const score of scores) {
                 db.prepare(
-                    `INSERT OR IGNORE INTO user_passes
+                    `INSERT INTO user_passes
                         (user_id, mapset_id, map_id, mode, status, is_convert, time_passed)
                     VALUES (?, ?, ?, ?, ?, ?, ?)`
                 ).run(
-                    user.id, score.beatmapset.id, score.beatmap.id,
-                    score.beatmap.mode, score.beatmap.status,
-                    score.beatmap.convert ? 1 : 0,
-                    new Date(score.ended_at || undefined).getTime()
+                    user.id, score.beatmapset.id, score.beatmap.id, score.beatmap.mode,
+                    score.beatmap.status, score.beatmap.convert ? 1 : 0,
+                    new Date(score.ended_at || score.created_at || Date.now()).getTime()
                 );
             }
             db.prepare(`UPDATE users SET last_score_update = ? WHERE id = ?`).run(updateTime, user.id);
@@ -449,13 +452,13 @@ const savePassesFromGlobalRecents = async () => {
                 const isRanked = ['ranked', 'loved', 'approved'].includes(map.status);
                 if (!isRanked) continue;
                 // Check for existing pass and skip if found
-                const existingPass = db.prepare(`SELECT 1 FROM user_passes WHERE user_id = ? AND map_id = ? AND mode = ? LIMIT 1`).get(
-                    user.id, score.beatmap_id, ruleset
+                const existingPass = db.prepare(`SELECT 1 FROM user_passes WHERE user_id = ? AND mapset_id = ? AND map_id = ? AND mode = ? LIMIT 1`).get(
+                    user.id, map.mapset_id, score.beatmap_id, ruleset
                 );
                 if (existingPass) continue;
                 // Save the pass and log
                 db.prepare(`INSERT OR IGNORE INTO user_passes (user_id, mapset_id, map_id, mode, status, is_convert, time_passed) VALUES (?, ?, ?, ?, ?, ?, ?)`).run(
-                    user.id, map.mapset_id, score.beatmap_id, ruleset, map.status, map.convert ? 1 : 0, new Date(score.ended_at || undefined).getTime()
+                    user.id, map.mapset_id, score.beatmap_id, ruleset, map.status, map.convert ? 1 : 0, new Date(score.ended_at || score.created_at || Date.now()).getTime()
                 );
                 log(`Found and saved a new ${ruleset} map pass for ${user.name}`);
                 // Log counts
@@ -518,19 +521,27 @@ const queueActiveUsers = async () => {
         log('Checking for active users to queue for updates...');
         while (true) {
             // Select batch of users
-            const userIds = db.prepare(
+            const userEntries = db.prepare(
                 `SELECT id, last_score_update FROM users
-                WHERE last_score_update != 0
                 LIMIT ? OFFSET ?`
-            ).all(limit, offset).map(u => u.id);
-            if (userIds.length === 0) break;
+            ).all(limit, offset);
+            if (userEntries.length === 0) break;
+            const userIdToEntry = {};
+            for (const entry of userEntries) {
+                userIdToEntry[entry.id] = entry;
+            }
             offset += limit;
             // Fetch user data in bulk
-            const res = await osu.getUsers({ ids: userIds });
+            const res = await osu.getUsers({ ids: userEntries.map(e => e.id) });
             // Loop through users
             for (const user of res.users) {
+                const userEntry = userIdToEntry[user.id];
+                let shouldQueue = false;
+                // Queue if never updated before
+                if (!userEntry.last_score_update) {
+                    shouldQueue = true;
+                }
                 // Check fetched stats to see if play counts changed
-                let didPlayCountsChange = false;
                 for (const mode in user.statistics_rulesets) {
                     const stats = user.statistics_rulesets[mode];
                     const currentCount = stats.play_count;
@@ -539,11 +550,11 @@ const queueActiveUsers = async () => {
                          WHERE user_id = ? AND mode = ?`
                     ).get(user.id, mode)?.count || 0;
                     if (currentCount !== storedCount) {
-                        didPlayCountsChange = true;
+                        shouldQueue = true;
                         break;
                     }
                 }
-                if (didPlayCountsChange) {
+                if (shouldQueue) {
                     // Queue user for update if they aren't already queued
                     await queueUser(user.id);
                     countQueuedUsers++;
