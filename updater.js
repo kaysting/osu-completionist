@@ -467,6 +467,10 @@ const savePassesFromGlobalRecents = async () => {
             await sleep(2000);
         }
     } catch (error) {
+        if (error.status == 429) {
+            // Wait for rate limit to clear
+            await sleep(10000);
+        }
         log('Error while updating users from global recents:', error);
     }
     // Wait and check again
