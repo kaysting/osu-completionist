@@ -69,9 +69,9 @@ const getBulkUserCompletionStats = (userIds, mode, includeLoved, includeConverts
             rank: row.rank
         };
     }
-    return rows.map(row => ({
-        id: row.user_id,
-        stats: statsByUserId[row.user_id] || {
+    return userIds.map(id => ({
+        id: id,
+        stats: statsByUserId[id] || {
             count_completed: 0,
             count_total: totalMaps,
             percentage_completed: 0,

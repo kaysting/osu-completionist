@@ -204,46 +204,64 @@ const updateUserStats = async (userId) => {
     }
 };
 
-let isAllPassesUpdateRunning = false;
 let isRecentsUpdateRunning = false;
 let isMostPlayedUpdateRunning = false;
 
-// Function to update a user's completion data by sequentially fetching
-// their passes for all maps
-const updateUserFromAllPasses = async (userId) => {
+// Function to update a user's completion data by fetching
+// all of their most played maps and then checking passes
+// on each unique mapset that they've played
+const importUser = async (userId) => {
+    const userEntry = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
     try {
-        if (isAllPassesUpdateRunning) {
+        if (isMostPlayedUpdateRunning) {
             return;
         }
-        isAllPassesUpdateRunning = true;
-        const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
-        log(`Starting full pass history update for ${user.name}`);
-        const countMapsetsTotal = db.prepare(`SELECT COUNT(*) AS count FROM beatmapsets`).get().count;
+        isMostPlayedUpdateRunning = true;
+        let totalNewPasses = 0;
+        const user = await osu.getUser(userId);
+        log(`Starting pass import for ${userEntry.name} using ${user.beatmap_playcounts_count} most played maps`);
+        const totalMostPlayed = user.beatmap_playcounts_count;
+        let mostPlayedOffset = 0;
+        const uniqueMapsetIds = [];
+        // Outer loop to fetch passes
         while (true) {
-            const task = db.prepare(`SELECT * FROM user_update_tasks WHERE user_id = ?`).get(user.id);
-            // Get batch of mapset IDs
-            const mapsetIds = db.prepare(
-                `SELECT id FROM beatmapsets
-                     WHERE id > ?
-                     ORDER BY id ASC
-                     LIMIT 50`
-            ).all(task.last_mapset_id).map(row => row.id);
-            if (mapsetIds.length === 0) {
-                // All done updating this user
-                db.prepare(`UPDATE users SET last_score_update = ? WHERE id = ?`).run(Date.now(), user.id);
-                db.prepare(`DELETE FROM user_update_tasks WHERE user_id = ?`).run(user.id);
-                log(`Completed full pass history update for ${user.name}`);
-                break;
+            // Inner loop to fetch mapset IDs from most played maps
+            const mapsetIds = [];
+            while (true) {
+                // Fetch most played maps
+                let res = null;
+                try {
+                    res = await osu.getUserBeatmaps(userId, 'most_played', {
+                        limit: 100, offset: mostPlayedOffset
+                    });
+                    await sleep(1000);
+                } catch (error) {
+                    if (error.status == 429) {
+                        // Wait for rate limit to clear
+                        await sleep(15000);
+                        continue;
+                    }
+                    console.log(`Error while fetching most played maps for ${userEntry.name}:`, error);
+                    await sleep(5000);
+                    continue;
+                }
+                if (res.length == 0) break;
+                // Collect unique mapset IDs
+                let countNewMapsets = 0;
+                for (const entry of res) {
+                    const mapsetId = entry.beatmapset.id;
+                    if (!uniqueMapsetIds.includes(mapsetId)) {
+                        uniqueMapsetIds.push(mapsetId);
+                        mapsetIds.push(mapsetId);
+                        countNewMapsets++;
+                    }
+                    mostPlayedOffset++;
+                    if (mapsetIds.length == 50) break;
+                }
+                if (mapsetIds.length == 50) break;
             }
-            // Calculate progress
-            const countMapsetsRemaining = countMapsetsTotal - mapsetIds.length - db.prepare(
-                `SELECT COUNT(*) AS count FROM beatmapsets WHERE id <= ?`
-            ).get(task.last_mapset_id).count;
-            const percentage = ((countMapsetsTotal - countMapsetsRemaining) / countMapsetsTotal * 100);
-            // Log
-            log(`[${percentage.toFixed(2)}%] Fetching passed maps for ${user.name}...`);
-            // Fetch passed maps for each mapset
-            // This is FAR from an ideal approach but we work with what we've got
+            if (mapsetIds.length == 0) break;
+            // Fetch passes for mapsets
             let maps = [];
             while (true) {
                 try {
@@ -279,50 +297,31 @@ const updateUserFromAllPasses = async (userId) => {
                     );
                     newCount++;
                 }
-                // Log
-                if (newCount > 0)
-                    log(`Found ${newCount} new map passes for ${user.name}`);
                 // Update task info
+                const percentage = (mostPlayedOffset / totalMostPlayed * 100).toFixed(2);
                 db.prepare(`
                         UPDATE user_update_tasks
-                        SET count_new_passes = count_new_passes + ?,
-                            last_mapset_id = ?, percent_complete = ?
+                        SET count_new_passes = count_new_passes + ?, percent_complete = ?
                         WHERE user_id = ?
-                    `).run(newCount, mapsetIds.pop(), percentage, user.id);
+                    `).run(newCount, percentage, user.id);
+                // Log
+                totalNewPasses += maps.length;
+                log(`[Importing ${percentage}%] Found ${newCount} new passes for ${userEntry.name}`);
             });
             transaction(maps);
-            // Wait before looping
-            await sleep(1500);
         }
+        // Update user entry
+        db.prepare(`UPDATE users SET last_score_update = ? WHERE id = ?`).run(Date.now(), user.id);
+        // Remove task entry
+        db.prepare(`DELETE FROM user_update_tasks WHERE user_id = ?`).run(userEntry.id);
+        // Log
+        log(`Completed import of ${totalNewPasses} passes for ${userEntry.name}`);
         // Update user stats
         await updateUserStats(userId);
     } catch (error) {
-        log('Error while updating user with full pass history:', error);
-        await sleep(5000);
+        log(`Error while importing user ${userEntry.name}:`, error);
     }
-    isAllPassesUpdateRunning = false;
-};
-
-// Function to update a user's completion data by fetching
-// all of their most played maps
-const updateUserFromMostPlayed = async (userId) => {
-    try {
-        if (isMostPlayedUpdateRunning) {
-            return;
-        }
-        isMostPlayedUpdateRunning = true;
-        const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
-        log(`Starting most played map update for ${user.name}`);
-        const limit = 100;
-        let offset = 0;
-        while (true) {
-            const beatmaps = await osu.getUserBeatmaps(userId, 'most_played', {
-                limit, offset,
-            });
-        }
-    } catch (error) {
-
-    }
+    isMostPlayedUpdateRunning = false;
 };
 
 // Function to update a user's completion data by fetching
@@ -491,7 +490,7 @@ const startQueuedUserUpdates = async () => {
             if (msSinceLastUpdate < 1000 * 60 * 60 * 24) {
                 updateUserFromRecents(task.user_id);
             } else {
-                updateUserFromAllPasses(task.user_id);
+                importUser(task.user_id);
             }
         }
     } catch (error) {

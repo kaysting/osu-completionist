@@ -7,9 +7,9 @@
         <div class="text">
             <% if (user.updateStatus.details.percent_completed) { %>
             <p>
-                <b>Checking all beatmaps for passes</b>
+                <b>Importing completion data from osu!</b>
                 <br><%= user.updateStatus.details.percent_completed.toFixed(2) %>% complete, discovered
-                <%= user.updateStatus.details.count_new_passes.toLocaleString() %> new passes so far.
+                <%= user.updateStatus.details.count_new_passes.toLocaleString() %> passes so far.
             </p>
             <% } else if (!user.last_score_update_time) { %>
             <p>
