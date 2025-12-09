@@ -669,6 +669,7 @@ img {
     display: flex;
     gap: 2px 4px;
     flex-shrink: 0;
+    align-items: center;
 }
 
 .beatmap .buttons .btn {

@@ -102,15 +102,12 @@ const getUserExtendedCompletionStats = (userId, mode, includeLoved, includeConve
 };
 
 const getUserCompletionStats = (userId, mode, includeLoved, includeConverts) => {
-    const stats = getBulkUserCompletionStats([userId], mode, includeLoved, includeConverts)?.[0]?.stats || null;
-    if (stats) {
-        const extendedStats = getUserExtendedCompletionStats(userId, mode, includeLoved, includeConverts);
-        return {
-            ...stats,
-            ...extendedStats
-        };
-    }
-    return null;
+    const stats = getBulkUserCompletionStats([userId], mode, includeLoved, includeConverts)?.[0]?.stats;
+    const extendedStats = getUserExtendedCompletionStats(userId, mode, includeLoved, includeConverts);
+    return {
+        ...stats,
+        ...extendedStats
+    };
 };
 
 const getLeaderboard = (mode, includeLoved, includeConverts, limit = 100, offset = 0) => {
@@ -298,12 +295,20 @@ const getUserRecentPasses = (userId, mode, includeLoved, includeConverts, limit 
     const beatmapIds = rows.map(row => row.map_id);
     const beatmaps = getBulkBeatmaps(beatmapIds, true, mode);
     for (const map of beatmaps) {
+        if (!map) continue;
         beatmapIdsToMaps[map.id] = map;
     }
-    const passes = rows.map(row => ({
-        time_passed: row.time_passed,
-        beatmap: beatmapIdsToMaps[row.map_id] || null
-    }));
+    const passes = [];
+    for (const row of rows) {
+        const beatmap = beatmapIdsToMaps[row.map_id] || null;
+        if (!beatmap) {
+            utils.log(`Warning getting user recent passes: Couldn't find beatmap with ID ${row.map_id}`);
+            continue;
+        }
+        passes.push({
+            time_passed: row.time_passed, beatmap
+        });
+    }
     return passes;
 };
 

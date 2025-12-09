@@ -206,6 +206,7 @@ const updateUserStats = async (userId) => {
 
 let isAllPassesUpdateRunning = false;
 let isRecentsUpdateRunning = false;
+let isMostPlayedUpdateRunning = false;
 
 // Function to update a user's completion data by sequentially fetching
 // their passes for all maps
@@ -300,6 +301,28 @@ const updateUserFromAllPasses = async (userId) => {
         await sleep(5000);
     }
     isAllPassesUpdateRunning = false;
+};
+
+// Function to update a user's completion data by fetching
+// all of their most played maps
+const updateUserFromMostPlayed = async (userId) => {
+    try {
+        if (isMostPlayedUpdateRunning) {
+            return;
+        }
+        isMostPlayedUpdateRunning = true;
+        const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
+        log(`Starting most played map update for ${user.name}`);
+        const limit = 100;
+        let offset = 0;
+        while (true) {
+            const beatmaps = await osu.getUserBeatmaps(userId, 'most_played', {
+                limit, offset,
+            });
+        }
+    } catch (error) {
+
+    }
 };
 
 // Function to update a user's completion data by fetching

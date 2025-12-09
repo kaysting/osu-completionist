@@ -45,9 +45,11 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
     // If viewing our own profile, get user trends and recommended maps
     let recommended = null;
     if (req.me && req.user.id === req.me.id) {
+        // Determine min and max recent star rating and ranked time
         let minStars, maxStars, minTime, maxTime = null;
         let passesToCheck = 20;
         let passesChecked = 0;
+        let recommendationsToGet = 5;
         for (const pass of recentPasses) {
             if (passesChecked >= passesToCheck) break;
             const stars = pass.beatmap.stars;
@@ -58,11 +60,20 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
             maxTime = maxTime === undefined || timeRanked > maxTime ? timeRanked : maxTime;
             passesChecked++;
         }
+        // Get recommended maps
         recommended = dbHelpers.getUserRecommendedMaps(req.user.id, modeKey, includeLoved, includeConverts, 5, 0, 'random', minStars, maxStars, minTime, maxTime);
+        // If we didn't get enough, remove ranked time filters
+        if (recommended.beatmaps.length < recommendationsToGet) {
+            recommended = dbHelpers.getUserRecommendedMaps(req.user.id, modeKey, includeLoved, includeConverts, 5, 0, 'random', minStars, maxStars);
+        }
+        // If we still didn't get enough, remove star rating filters
+        if (recommended.beatmaps.length < recommendationsToGet) {
+            recommended = dbHelpers.getUserRecommendedMaps(req.user.id, modeKey, includeLoved, includeConverts, 5, 0, 'random');
+        }
     }
     // Format times
-    stats.timeToCompletion = utils.secsToDuration(stats.remaining_time_secs);
-    stats.timeSpentCompleting = utils.secsToDuration(stats.spent_time_secs);
+    stats.timeToCompletion = utils.secsToDuration(stats?.remaining_time_secs || 0);
+    stats.timeSpentCompleting = utils.secsToDuration(stats?.spent_time_secs || 0);
     // Get completion colors for each year
     for (const yearData of yearly) {
         yearData.color = utils.percentageToColor(yearData.percentage_completed / 100);

@@ -15,15 +15,15 @@
                 <div class="setting" id="settingLoved">
                     <div class="label">include loved</div>
                     <select name="loved" class="textbox">
-                        <option value="true" <%= settings.includeLoved ? 'selected' : '' %>>Yes</option>
-                        <option value="" <%= !settings.includeLoved ? 'selected' : '' %>>No</option>
+                        <option value="true" <%= settings.includeLoved ? 'selected' : '' %>>yes</option>
+                        <option value="" <%= !settings.includeLoved ? 'selected' : '' %>>no</option>
                     </select>
                 </div>
                 <div class="setting" id="settingConverts">
                     <div class="label">include converts</div>
                     <select name="converts" class="textbox">
-                        <option value="true" <%= settings.includeConverts ? 'selected' : '' %>>Yes</option>
-                        <option value="" <%= !settings.includeConverts ? 'selected' : '' %>>No</option>
+                        <option value="true" <%= settings.includeConverts ? 'selected' : '' %>>yes</option>
+                        <option value="" <%= !settings.includeConverts ? 'selected' : '' %>>no</option>
                     </select>
                 </div>
             </div>
@@ -46,22 +46,22 @@
                 <div class="setting" id="settingSort">
                     <div class="label">sort</div>
                     <select name="sort" class="textbox">
-                        <option value="random" <%= settings.sort === 'random' ? 'selected' : '' %>>Random</option>
-                        <option value="stars_asc" <%= settings.sort === 'stars_asc' ? 'selected' : '' %>>Easiest to
+                        <option value="random" <%= settings.sort === 'random' ? 'selected' : '' %>>random</option>
+                        <option value="stars_asc" <%= settings.sort === 'stars_asc' ? 'selected' : '' %>>easiest to
                             hardest
                         </option>
-                        <option value="stars_desc" <%= settings.sort === 'stars_desc' ? 'selected' : '' %>>Hardest to
+                        <option value="stars_desc" <%= settings.sort === 'stars_desc' ? 'selected' : '' %>>hardest to
                             easiest</option>
                         <option value="time_ranked_asc" <%= settings.sort === 'time_ranked_asc' ? 'selected' : '' %>>
-                            Oldest
+                            oldest
                             to newest</option>
                         <option value="time_ranked_desc" <%= settings.sort === 'time_ranked_desc' ? 'selected' : '' %>>
-                            Newest to oldest</option>
+                            newest to oldest</option>
                     </select>
                 </div>
             </div>
         </div>
-        <button type="submit" class="btn medium primary">Apply</button>
+        <button type="submit" class="btn primary">apply</button>
     </form>
     <div class="beatmaps card lighter">
         <% for (const beatmap of results.beatmaps) { %>
