@@ -75,7 +75,7 @@ const updateSavedMaps = async () => {
             }
             didUpdateStorage = true;
         });
-        // Loop until no more maps are found
+        // Loop to get unsaved recent beatmapsets
         let cursor;
         while (true) {
             // Fetch mapsets
@@ -114,14 +114,12 @@ const updateSavedMaps = async () => {
             }
             // We're done if no more mapsets, or we found an existing one above
             if (!cursor || mapsets.length === 0 || foundExistingMapset) {
-                log('Beatmap database is up to date');
                 break;
             }
         }
         // Update beatmap status
-        if (true || didUpdateStorage) {
-            updateBeatmapStats();
-        }
+        updateBeatmapStats();
+        log('Beatmap database is up to date');
     } catch (error) {
         log('Error while updating stored beatmap data:', error);
         await sleep(5000);
@@ -308,7 +306,7 @@ const importUser = async (userId) => {
                     `).run(newCount, percentage, user.id);
                 // Log
                 totalNewPasses += maps.length;
-                log(`[Importing ${percentage}%] Found ${newCount} new passes for ${userEntry.name}`);
+                log(`[Importing ${percentage}%] Saved ${newCount} new passes for ${userEntry.name}`);
             });
             transaction(maps);
         }
