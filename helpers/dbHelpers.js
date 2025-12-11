@@ -44,10 +44,10 @@ const getBulkUserCompletionStats = (userIds, mode, includeLoved, includeConverts
     if (userIds.length === 0) {
         return [];
     }
-    const totalMaps = db.prepare(
-        `SELECT count FROM beatmap_stats
+    const totals = db.prepare(
+        `SELECT count, time_total_secs FROM beatmap_stats
          WHERE mode = ? AND includes_loved = ? AND includes_converts = ?`
-    ).get(mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0)?.count || 0;
+    ).get(mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0);
     const rows = db.prepare(`
         SELECT s1.*,
                (SELECT COUNT(*) FROM user_stats s2
@@ -64,8 +64,11 @@ const getBulkUserCompletionStats = (userIds, mode, includeLoved, includeConverts
     for (const row of rows) {
         statsByUserId[row.user_id] = {
             count_completed: row.count,
-            count_total: totalMaps,
-            percentage_completed: totalMaps > 0 ? ((row.count / totalMaps) * 100) : 0,
+            count_total: totals.count,
+            time_spent_secs: row.time_spent_secs,
+            time_remaining_secs: totals.time_total_secs - row.time_spent_secs,
+            time_total_secs: totals.time_total_secs,
+            percentage_completed: row.time_spent_secs > 0 ? ((row.time_spent_secs / totals.time_total_secs) * 100) : 0,
             rank: row.rank
         };
     }
@@ -73,41 +76,18 @@ const getBulkUserCompletionStats = (userIds, mode, includeLoved, includeConverts
         id: id,
         stats: statsByUserId[id] || {
             count_completed: 0,
-            count_total: totalMaps,
+            count_total: totals.count,
             percentage_completed: 0,
+            time_spent_secs: 0,
+            time_remaining_secs: totals.time_total_secs,
+            time_total_secs: totals.time_total_secs,
             rank: -1
         }
     }));
 };
 
-const getUserExtendedCompletionStats = (userId, mode, includeLoved, includeConverts) => {
-    const totalTime = db.prepare(
-        `SELECT SUM(duration_secs) AS secs FROM beatmaps
-         WHERE mode = ? AND ${includeLoved ? `status IN ('ranked', 'approved', 'loved')` : `status IN ('ranked', 'approved')`}
-               ${includeConverts ? '' : 'AND is_convert = 0'}`
-    ).get(mode)?.secs || 0;
-    const passedTime = db.prepare(
-        `SELECT SUM(b.duration_secs) AS secs FROM user_passes up
-         JOIN beatmaps b ON up.map_id = b.id
-         WHERE up.user_id = ?
-           AND up.mode = ?
-           AND ${includeLoved ? `up.status IN ('ranked', 'approved', 'loved')` : `up.status IN ('ranked', 'approved')`}
-           ${includeConverts ? '' : 'AND b.is_convert = 0'}`
-    ).get(userId, mode)?.secs || 0;
-    return {
-        total_time_secs: totalTime,
-        spent_time_secs: passedTime,
-        remaining_time_secs: Math.max(0, totalTime - passedTime)
-    };
-};
-
 const getUserCompletionStats = (userId, mode, includeLoved, includeConverts) => {
-    const stats = getBulkUserCompletionStats([userId], mode, includeLoved, includeConverts)?.[0]?.stats;
-    const extendedStats = getUserExtendedCompletionStats(userId, mode, includeLoved, includeConverts);
-    return {
-        ...stats,
-        ...extendedStats
-    };
+    return getBulkUserCompletionStats([userId], mode, includeLoved, includeConverts)?.[0]?.stats;
 };
 
 const getLeaderboard = (mode, includeLoved, includeConverts, limit = 100, offset = 0) => {
@@ -122,7 +102,7 @@ const getLeaderboard = (mode, includeLoved, includeConverts, limit = 100, offset
          FROM users u
          JOIN user_stats us ON u.id = us.user_id
          WHERE us.mode = ? AND us.includes_loved = ? AND us.includes_converts = ?
-         ORDER BY us.count DESC
+         ORDER BY us.time_spent_secs DESC
          LIMIT ? OFFSET ?`
     ).all(mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0, limit, offset);
     const userIds = rows.map(row => row.id);

@@ -308,7 +308,7 @@ img {
 #topbar .container {
     height: 100%;
     width: 100%;
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
     display: flex;
     align-items: center;
@@ -398,7 +398,7 @@ img {
 }
 
 #main {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
     margin-top: calc(54px + 16px);
     padding: 0px 10px 20px 10px;

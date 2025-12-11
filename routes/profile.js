@@ -72,8 +72,8 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
         }
     }
     // Format times
-    stats.timeToCompletion = utils.secsToDuration(stats?.remaining_time_secs || 0);
-    stats.timeSpentCompleting = utils.secsToDuration(stats?.spent_time_secs || 0);
+    stats.timeToCompletion = utils.secsToDuration(stats?.time_remaining_secs || 0);
+    stats.timeSpentCompleting = utils.secsToDuration(stats?.time_spent_secs || 0);
     // Get completion colors for each year
     for (const yearData of yearly) {
         yearData.color = utils.percentageToColor(yearData.percentage_completed / 100);

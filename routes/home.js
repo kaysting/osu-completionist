@@ -4,7 +4,7 @@ const db = require('../db');
 const router = express.Router();
 
 const stats = {};
-const statCacheTime = 1000 * 60 * 5;
+const statCacheTime = 1000 * 60;
 let lastStatRefresh = 0;
 const getStats = () => {
     const now = Date.now();

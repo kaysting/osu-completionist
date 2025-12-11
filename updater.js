@@ -1,3 +1,7 @@
+const FETCH_ALL_MAPS = false;
+const REPLACE_EXISTING_MAPS = false;
+const QUEUE_ALL_USERS = true;
+
 require('dotenv').config();
 const db = require('./db');
 const osu = require('./osu');
@@ -21,13 +25,13 @@ const updateBeatmapStats = () => {
                     if (!includesConverts) {
                         where.push(`is_convert = 0`);
                     }
-                    const count = db.prepare(
-                        `SELECT COUNT(*) AS count
+                    const stats = db.prepare(
+                        `SELECT COUNT(*) AS count, SUM(duration_secs) AS total_duration
                                 FROM beatmaps
                                 WHERE ${where.join(' AND ')}`
-                    ).get().count;
-                    db.prepare(`INSERT OR REPLACE INTO beatmap_stats (mode, includes_loved, includes_converts, count) VALUES (?, ?, ?, ?)`).run(
-                        mode, includesLoved, includesConverts, count
+                    ).get();
+                    db.prepare(`INSERT OR REPLACE INTO beatmap_stats (mode, includes_loved, includes_converts, count, time_total_secs) VALUES (?, ?, ?, ?, ?)`).run(
+                        mode, includesLoved, includesConverts, stats.count, stats.total_duration
                     );
                     // Update yearly stats
                     const oldestYear = 2007;
@@ -56,24 +60,19 @@ const updateBeatmapStats = () => {
 };
 
 // Function to fetch new beatmaps(ets)
-const FETCH_ALL_MAPS = false;
-const REPLACE_EXISTING_MAPS = false;
 const updateSavedMaps = async () => {
     try {
         log(`Checking for new beatmaps...`);
         // Create data saving transaction function
-        const insertMapset = db.prepare(`INSERT OR REPLACE INTO beatmapsets (id, status, title, artist, time_ranked) VALUES (?, ?, ?, ?, ?)`);
+        const insertMapset = db.prepare(`INSERT OR REPLACE INTO beatmapsets (id, status, title, artist, time_ranked, mapper, cover_url) VALUES (?, ?, ?, ?, ?, ?, ?)`);
         const insertBeatmap = db.prepare(`INSERT OR REPLACE INTO beatmaps (id, mapset_id, mode, status, name, stars, is_convert, duration_secs) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
-        let didUpdateStorage = false;
         const save = db.transaction((mapset) => {
             // Save mapset
-            insertMapset.run(mapset.id, mapset.status, mapset.title, mapset.artist, new Date(mapset.ranked_date || mapset.submitted_date || undefined).getTime());
+            insertMapset.run(mapset.id, mapset.status, mapset.title, mapset.artist, new Date(mapset.ranked_date || mapset.submitted_date || undefined).getTime(), mapset.creator, mapset.covers?.['cover@2x'] || null);
             // Loop through maps and converts and save
             for (const map of [...mapset.beatmaps, ...(mapset.converts || [])]) {
                 insertBeatmap.run(map.id, mapset.id, map.mode, map.status, map.version, map.difficulty_rating, map.convert ? 1 : 0, map.total_length);
-                //log(`Stored beatmap: [${map.mode}] ${mapset.artist} - ${mapset.title} [${map.version}] (ID: ${map.id})`);
             }
-            didUpdateStorage = true;
         });
         // Loop to get unsaved recent beatmapsets
         let cursor;
@@ -159,46 +158,62 @@ const updateUserStats = async (userId) => {
                     if (!includesConverts) {
                         where.push(`is_convert = 0`);
                     }
-                    // Get and save pass count
-                    const count = db.prepare(
+                    // Get and save stats
+                    const passCount = db.prepare(
                         `SELECT COUNT(*) AS count
                                 FROM user_passes
                                 WHERE ${where.join(' AND ')}`
                     ).get().count;
-                    db.prepare(`INSERT OR REPLACE INTO user_stats (user_id, mode, includes_loved, includes_converts, count) VALUES (?, ?, ?, ?, ?)`).run(
-                        userId, mode, includesLoved, includesConverts, count
+                    const timeSpent = db.prepare(
+                        `SELECT SUM(b.duration_secs) AS secs FROM user_passes up
+                        JOIN beatmaps b ON up.map_id = b.id
+                        WHERE up.user_id = ?
+                        AND up.mode = ?
+                        AND ${includesLoved ? `up.status IN ('ranked', 'approved', 'loved')` : `up.status IN ('ranked', 'approved')`}
+                        ${includesConverts ? '' : 'AND b.is_convert = 0'}`
+                    ).get(userId, mode)?.secs || 0;
+                    db.prepare(`INSERT OR REPLACE INTO user_stats (user_id, mode, includes_loved, includes_converts, count, time_spent_secs) VALUES (?, ?, ?, ?, ?, ?)`).run(
+                        userId, mode, includesLoved, includesConverts, passCount, timeSpent
                     );
-                    // Loop through years
-                    const oldestYear = 2007;
-                    const newestYear = new Date().getFullYear();
-                    for (let year = newestYear; year >= oldestYear; year--) {
-                        const tsStart = new Date(year, 0, 1).getTime();
-                        const tsEnd = new Date(year + 1, 0, 1).getTime();
-                        // Get pass count for the year
-                        const passCount = db.prepare(
-                            `SELECT COUNT(*) AS total FROM beatmaps b
-                             INNER JOIN beatmapsets s ON b.mapset_id = s.id
-                             WHERE b.mode = ?
-                             AND ${includesLoved ? `b.status IN ('ranked', 'approved', 'loved')` : `b.status IN  ('ranked', 'approved')`}
-                             ${includesConverts ? '' : 'AND b.is_convert = 0'}
-                             AND s.time_ranked >= ? AND s.time_ranked < ?
-                             AND b.id IN (
-                                 SELECT map_id FROM user_passes 
-                                 WHERE user_id = ? 
-                             )`
-                        ).get(mode, tsStart, tsEnd, userId).total || 0;
-                        // Save yearly pass count
-                        db.prepare(`INSERT OR REPLACE INTO user_stats_yearly (user_id, mode, includes_loved, includes_converts, year, count) VALUES (?, ?, ?, ?, ?, ?)`).run(
-                            userId, mode, includesLoved, includesConverts, year, passCount
-                        );
-                    }
+                    // Group and count passes by year
+                    const stats = db.prepare(`
+                        SELECT 
+                            CAST(strftime('%Y', s.time_ranked / 1000, 'unixepoch') AS INTEGER) as year,
+                            COUNT(*) as count
+                        FROM user_passes up
+                        INNER JOIN beatmaps b ON up.map_id = b.id
+                        INNER JOIN beatmapsets s ON b.mapset_id = s.id
+                        WHERE up.user_id = ?
+                        AND b.mode = ?
+                        AND ${includesLoved ? "b.status IN ('ranked', 'approved', 'loved')" : "b.status IN ('ranked', 'approved')"}
+                        ${includesConverts ? '' : 'AND b.is_convert = 0'}
+                        GROUP BY year
+                    `).all(userId, mode);
+                    // Create yearly insert statement
+                    const yearlyStmt = db.prepare(`
+                        INSERT OR REPLACE INTO user_stats_yearly 
+                        (user_id, mode, includes_loved, includes_converts, year, count) 
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    `);
+                    // Transaction insert
+                    const updateStats = db.transaction((rows) => {
+                        const countsByYear = new Map(rows.map(r => [r.year, r.count]));
+                        const oldestYear = 2007;
+                        const newestYear = new Date().getFullYear();
+                        for (let year = newestYear; year >= oldestYear; year--) {
+                            const count = countsByYear.get(year) || 0;
+                            yearlyStmt.run(userId, mode, includesLoved, includesConverts, year, count);
+                        }
+                    });
+                    updateStats(stats);
                 }
             }
         }
         log('Updated user stats for', userEntry?.name || userId);
+        return true;
     } catch (error) {
         log('Error while updating user stats:', error);
-        await sleep(5000);
+        return false;
     }
 };
 
@@ -445,7 +460,10 @@ const savePassesFromGlobalRecents = async () => {
                     JOIN beatmapsets mapset ON diff.mapset_id = mapset.id
                     WHERE diff.id = ? AND diff.mode = ?`
                 ).get(score.beatmap_id, ruleset);
-                if (!map) continue;
+                if (!map) {
+                    log(`Skipping processing global recent score for ${user.name} on untracked map ID ${score.beatmap_id}`);
+                    continue;
+                }
                 // Skip if map is unranked
                 const isRanked = ['ranked', 'loved', 'approved'].includes(map.status);
                 if (!isRanked) continue;
@@ -534,7 +552,7 @@ const queueActiveUsers = async () => {
             // Loop through users
             for (const user of res.users) {
                 const userEntry = userIdToEntry[user.id];
-                let shouldQueue = false;
+                let shouldQueue = QUEUE_ALL_USERS || false;
                 // Queue if never updated before
                 if (!userEntry.last_score_update) {
                     shouldQueue = true;
