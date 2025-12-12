@@ -1,11 +1,13 @@
 const FETCH_ALL_MAPS = false;
 const REPLACE_EXISTING_MAPS = false;
-const QUEUE_ALL_USERS = true;
+const QUEUE_ALL_USERS = false;
 
 require('dotenv').config();
+const dayjs = require('dayjs');
 const db = require('./db');
 const osu = require('./osu');
 
+const dbHelpers = require('./helpers/dbHelpers');
 const { log, sleep } = require('./utils');
 const { queueUser, updateUserProfile } = require('./helpers/updaterHelpers');
 
@@ -46,6 +48,7 @@ const updateBeatmapStats = () => {
                              ${includesConverts ? '' : 'AND b.is_convert = 0'}
                              AND s.time_ranked >= ? AND s.time_ranked < ?`
                         ).get(mode, tsStart, tsEnd).total;
+                        if (yearlyCount == 0) continue;
                         db.prepare(`INSERT OR REPLACE INTO beatmap_stats_yearly (year, mode, includes_loved, includes_converts, count) VALUES (?, ?, ?, ?, ?)`).run(
                             year, mode, includesLoved, includesConverts, yearlyCount
                         );
@@ -115,6 +118,7 @@ const updateSavedMaps = async () => {
             if (!cursor || mapsets.length === 0 || foundExistingMapset) {
                 break;
             }
+            await sleep(200);
         }
         // Update beatmap status
         updateBeatmapStats();
@@ -202,6 +206,7 @@ const updateUserStats = async (userId) => {
                         const newestYear = new Date().getFullYear();
                         for (let year = newestYear; year >= oldestYear; year--) {
                             const count = countsByYear.get(year) || 0;
+                            if (count == 0) continue;
                             yearlyStmt.run(userId, mode, includesLoved, includesConverts, year, count);
                         }
                     });
@@ -591,6 +596,59 @@ const queueActiveUsers = async () => {
     setTimeout(queueActiveUsers, 1000 * 60 * 60);
 };
 
+// Function to save stat history for all users
+// THIS RUNS RECURSIVELY
+const saveUserHistory = async () => {
+    try {
+        const hhmm = dayjs().format('HHmm');
+        if (hhmm !== '0000') {
+            return setTimeout(saveUserHistory, 1000);
+        }
+        log('Starting daily user history save...');
+        const stmt = db.prepare(
+            `INSERT OR REPLACE INTO user_stats_history
+                (user_id, mode, includes_loved, includes_converts,
+                time, count, time_spent_secs, percent)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        );
+        let offset = 0;
+        while (true) {
+            const userIds = db.prepare(`SELECT id FROM users LIMIT ? OFFSET ?`)
+                .all(50, offset).map(e => e.id);
+            if (userIds.length === 0) break;
+            offset += userIds.length;
+            let countEntries = 0;
+            let countUsers = 0;
+            const transaction = db.transaction((userIds) => {
+                for (const mode of ['osu', 'taiko', 'fruits', 'mania']) {
+                    for (const includesLoved of [1, 0]) {
+                        for (const includesConverts of [1, 0]) {
+                            const bulkStats = dbHelpers.getBulkUserCompletionStats(userIds, mode, includesLoved, includesConverts);
+                            for (const entry of bulkStats) {
+                                const userId = entry.id;
+                                const stats = entry.stats;
+                                stmt.run(
+                                    userId, mode, includesLoved, includesConverts, Date.now(), stats.count_completed, stats.time_spent_secs, stats.percentage_completed
+                                );
+                                countEntries++;
+                            }
+                        }
+                    }
+                }
+                countUsers += userIds.length;
+            });
+            transaction(userIds);
+            log(`Saved ${countEntries} history entries for ${countUsers} users`);
+            await sleep(100);
+        }
+        log('Completed daily user history save');
+        await sleep(1000 * 60);
+    } catch (error) {
+        log('Error while saving user history:', error);
+    }
+    setTimeout(saveUserHistory, 1000);
+};
+
 async function main() {
 
     // Get osu API token
@@ -604,6 +662,7 @@ async function main() {
     startQueuedUserUpdates();
     savePassesFromGlobalRecents();
     queueActiveUsers();
+    saveUserHistory();
 
 }
 

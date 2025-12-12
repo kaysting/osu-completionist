@@ -1,3 +1,4 @@
+const dayjs = require('dayjs');
 const db = require('../db');
 const utils = require('../utils');
 
@@ -61,29 +62,88 @@ const getBulkUserCompletionStats = (userIds, mode, includeLoved, includeConverts
         AND s1.mode = ? AND s1.includes_loved = ? AND s1.includes_converts = ?
     `).all(...userIds, mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0);
     const statsByUserId = {};
+    const defaultStats = {
+        count_completed: 0,
+        count_total: totals.count,
+        percentage_completed: 0,
+        time_spent_secs: 0,
+        time_remaining_secs: totals.time_total_secs,
+        time_total_secs: totals.time_total_secs,
+        rank: -1
+    };
     for (const row of rows) {
-        statsByUserId[row.user_id] = {
-            count_completed: row.count,
-            count_total: totals.count,
-            time_spent_secs: row.time_spent_secs,
-            time_remaining_secs: totals.time_total_secs - row.time_spent_secs,
-            time_total_secs: totals.time_total_secs,
-            percentage_completed: row.time_spent_secs > 0 ? ((row.time_spent_secs / totals.time_total_secs) * 100) : 0,
-            rank: row.rank
-        };
+        const stats = { ...defaultStats };
+        stats.count_completed = row.count;
+        stats.count_total = totals.count;
+        stats.time_spent_secs = row.time_spent_secs;
+        stats.time_remaining_secs = totals.time_total_secs - row.time_spent_secs;
+        stats.time_total_secs = totals.time_total_secs;
+        stats.percentage_completed = row.time_spent_secs > 0 ? ((row.time_spent_secs / totals.time_total_secs) * 100) : 0;
+        stats.rank = row.rank;
+        statsByUserId[row.user_id] = stats;
     }
     return userIds.map(id => ({
         id: id,
-        stats: statsByUserId[id] || {
-            count_completed: 0,
-            count_total: totals.count,
-            percentage_completed: 0,
-            time_spent_secs: 0,
-            time_remaining_secs: totals.time_total_secs,
-            time_total_secs: totals.time_total_secs,
-            rank: -1
-        }
+        stats: statsByUserId[id] || defaultStats
     }));
+};
+
+const getUserHistoricalCompletionStats = (userId, mode, includeLoved, includeConverts, aggregate = 'day') => {
+    // Fetch all daily stats
+    const rows = db.prepare(
+        `SELECT time, count, percent, time_spent_secs FROM user_stats_history
+             WHERE user_id = ? AND mode = ? AND includes_loved = ? AND includes_converts = ?
+             ORDER BY time ASC`
+    ).all(userId, mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0);
+    if (rows.length === 0) return [];
+    if (aggregate === 'day') {
+        // Return most recent 90 days
+        return rows.reverse().slice(0, 90).map(row => ({
+            date: dayjs(row.time).format('YYYY-MM-DD'),
+            count_completed: row.count,
+            percentage_completed: row.percent,
+            time_spent_secs: row.time_spent_secs,
+            time_saved: row.time
+        }));
+    } else if (aggregate === 'month') {
+        // Group by month
+        const monthly = {};
+        for (const row of rows) {
+            const date = dayjs(row.time).format('YYYY-MM');
+            if (!monthly[date])
+                monthly[date] = [];
+            monthly[date].push(row);
+        }
+        const monthKeys = Object.keys(monthly).sort();
+        // Compile stats for each month
+        const entries = [];
+        for (const month of monthKeys) {
+            const rows = monthly[month];
+            const first = rows[0];
+            const last = rows[rows.length - 1];
+            entries.push({
+                month,
+                start: {
+                    time_saved: first.time,
+                    count_completed: first.count,
+                    percentage_completed: first.percent,
+                    time_spent_secs: first.time_spent_secs
+                },
+                end: {
+                    time_saved: last.time,
+                    count_completed: last.count,
+                    percentage_completed: last.percent,
+                    time_spent_secs: last.time_spent_secs
+                },
+                delta: {
+                    count_completed: last.count - first.count,
+                    percentage_completed: last.percent - first.percent,
+                    time_spent_secs: last.time_spent_secs - first.time_spent_secs
+                }
+            });
+        }
+        return entries;
+    }
 };
 
 const getUserCompletionStats = (userId, mode, includeLoved, includeConverts) => {
@@ -408,6 +468,7 @@ module.exports = {
     getLeaderboard,
     getUserRecentPasses,
     getUserYearlyCompletionStats,
+    getUserHistoricalCompletionStats,
     getUserRecommendedMaps,
     getUserCompletionStats,
     getBulkUserProfiles,

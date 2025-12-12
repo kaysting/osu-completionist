@@ -114,6 +114,14 @@ CREATE TABLE
 		)
 	);
 
+CREATE INDEX idx_user_stats_history ON user_stats_history (
+	user_id,
+	time,
+	mode,
+	includes_loved,
+	includes_converts
+);
+
 CREATE TABLE
 	IF NOT EXISTS "user_stats" (
 		"user_id" INTEGER NOT NULL,
