@@ -17,26 +17,32 @@ const importBeatmapsets = async () => {
     stream.pipe(beatmapsetsParser);
     let newMapsetCount = 0;
     let newMapCount = 0;
-    // Handle saving mapsets
-    const insertMapset = db.prepare(`INSERT OR REPLACE INTO beatmapsets (id, status, title, artist, time_ranked, mapper, cover_url) VALUES (?, ?, ?, ?, ?, ?, ?)`);
-    const insertBeatmap = db.prepare(`INSERT OR REPLACE INTO beatmaps (id, mapset_id, mode, status, name, stars, is_convert, duration_secs) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
-    const save = db.transaction((mapset) => {
+    // Create data saving transaction function
+    const stmtInsertMapset = db.prepare(
+        `INSERT OR REPLACE INTO beatmapsets
+            (id, status, title, artist, time_ranked, mapper)
+        VALUES (?, ?, ?, ?, ?, ?)`
+    );
+    const stmtInsertMap = db.prepare(
+        `INSERT OR REPLACE INTO beatmaps
+            (id, mapset_id, mode, status, name, stars, is_convert,
+            duration_secs, cs, ar, od, hp, bpm)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    );
+    const transaction = db.transaction((mapset) => {
         // Save mapset
-        insertMapset.run(mapset.id, mapset.status, mapset.title, mapset.artist, new Date(mapset.ranked_date || mapset.submitted_date || undefined).getTime(), mapset.creator, mapset.covers?.['cover@2x'] || null);
+        stmtInsertMapset.run(mapset.id, mapset.status, mapset.title, mapset.artist, new Date(mapset.ranked_date || mapset.submitted_date || undefined).getTime(), mapset.creator);
         // Loop through maps and converts and save
         let mapCount = 0;
         for (const map of [...mapset.beatmaps, ...(mapset.converts || [])]) {
-            insertBeatmap.run(map.id, mapset.id, map.mode, map.status, map.version, map.difficulty_rating, map.convert ? 1 : 0, map.total_length);
+            stmtInsertMap.run(map.id, mapset.id, map.mode, map.status, map.version, map.difficulty_rating, map.convert ? 1 : 0, map.total_length, map.cs, map.ar, map.accuracy, map.drain, map.bpm);
             mapCount++;
         }
         console.log(`Saved mapset ${mapset.id} with ${mapCount} maps: ${mapset.artist} - ${mapset.title}`);
         newMapCount += mapCount;
     });
-    // Loop through dump entries
-    for await (const row of beatmapsetsParser) {
-        const mapsetId = parseInt(row.beatmapset_id);
-        // Skip if already stored
-        if (storedMapsetIds.includes(mapsetId)) continue;
+    // Function to fetch and save a mapset
+    const saveMapset = async mapsetId => {
         // Fetch full mapset again to get converts
         let mapsetFull = null;
         while (true) {
@@ -49,9 +55,31 @@ const importBeatmapsets = async () => {
             }
         }
         // Save mapset and its maps
-        save(mapsetFull);
+        transaction(mapsetFull);
         newMapsetCount++;
+    };
+    // Loop through dump entries
+    for await (const row of beatmapsetsParser) {
+        const mapsetId = row.beatmapset_id;
+        // Skip if already stored
+        if (storedMapsetIds.includes(mapsetId)) continue;
+        await saveMapset(mapsetId);
     }
+    // Save any other maps that we don't have or that are missing data
+    const rows = [
+        ...db.prepare(
+            `SELECT DISTINCT mapset_id FROM beatmaps WHERE cs IS NULL`
+        ).all(),
+        ...db.prepare(
+            `SELECT DISTINCT mapset_id FROM user_passes
+            WHERE mapset_id NOT IN (SELECT id FROM beatmapsets)`
+        ).all()
+    ];
+    console.log(`Found ${rows.length} additional beatmapsets needing import`);
+    for (const row of rows) {
+        await saveMapset(row.mapset_id);
+    }
+    // Log and finish
     console.log(`Imported ${newMapsetCount} beatmapsets and ${newMapCount} beatmaps`);
 };
 

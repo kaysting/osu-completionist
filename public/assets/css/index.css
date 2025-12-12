@@ -540,6 +540,51 @@ img {
     background: var(--bg);
 }
 
+.beatmapStars,
+.beatmapStatus {
+    padding: 0px 8px;
+    height: 18px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-weight: 600;
+    font-size: 13px;
+    color: black;
+    flex-shrink: 0;
+}
+
+.beatmapStatus {
+    font-weight: bold;
+}
+
+.beatmapStatus.ranked,
+.beatmapStatus.approved {
+    background: hsl(130, 80%, 70%);
+}
+
+.beatmapStatus.loved {
+    background: hsl(340, 80%, 70%);
+}
+
+.beatmapStatus.qualified {
+    background: hsl(200, 80%, 70%);
+}
+
+.beatmapStatus.graveyard {
+    background: hsl(0, 0%, 70%);
+}
+
+.beatmapStars .icon {
+    font-family: 'Material Symbols Rounded';
+    font-variation-settings: 'FILL' 1;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 1;
+    margin-left: -2px;
+}
+
 .beatmap {
     padding: 8px;
     border-radius: 8px;
@@ -609,54 +654,12 @@ img {
     flex-shrink: 0;
 }
 
-.beatmap .map .diff .status,
-.beatmap .map .diff .stars {
-    padding: 0px 8px;
-    height: 18px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    font-weight: 600;
-    font-size: 13px;
-    color: black;
-    flex-shrink: 0;
+.beatmap .map .diff .text {
+    font-size: 14px;
 }
 
-.beatmap .map .diff .status {
+.beatmap .map .diff .text .name {
     font-weight: bold;
-}
-
-.beatmap .map .diff .status.ranked,
-.beatmap .map .diff .status.approved {
-    background: hsl(130, 80%, 70%);
-}
-
-.beatmap .map .diff .status.loved {
-    background: hsl(340, 80%, 70%);
-}
-
-.beatmap .map .diff .status.qualified {
-    background: hsl(200, 80%, 70%);
-}
-
-.beatmap .map .diff .status.graveyard {
-    background: hsl(0, 0%, 70%);
-}
-
-.beatmap .map .diff .stars .icon {
-    font-family: 'Material Symbols Rounded';
-    font-variation-settings: 'FILL' 1;
-    font-weight: 300;
-    font-size: 14px;
-    line-height: 1;
-    margin-left: -2px;
-}
-
-.beatmap .map .diff .name {
-    font-size: 14px;
-    font-weight: 600;
 }
 
 .beatmap .time {
@@ -687,6 +690,151 @@ img {
     .beatmap .buttons {
         flex-direction: column;
     }
+}
+
+.beatmapCard {
+    overflow: hidden;
+    border-radius: 16px;
+    background: hsl(220, 20%, 15%);
+    user-select: none;
+}
+
+.beatmapCard .left {
+    width: auto;
+    height: 100%;
+    aspect-ratio: 0.8 / 1;
+    margin-right: -16px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.beatmapCard .left .listImage {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.beatmapCard .right {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+.beatmapCard .right .coverImage {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.beatmapCard .right .coverDimming {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, hsla(220, 20%, 25%, 1), hsla(220, 20%, 25%, 0.7))
+}
+
+.beatmapCard .right>.content {
+    padding: 8px;
+    padding-left: 12px;
+    position: relative;
+}
+
+.beatmapCard .title,
+.beatmapCard .artist,
+.beatmapCard .mapper,
+.beatmapCard .time,
+.beatmapCard .diff .name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    line-height: 1.2;
+    text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.beatmapCard .title {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+}
+
+.beatmapCard .artist {
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+}
+
+.beatmapCard .mapper {
+    font-size: 14px;
+    font-weight: 600;
+    color: hsl(220, 20%, 75%);
+}
+
+.beatmapCard .time {
+    font-size: 12px;
+    font-weight: 600;
+    color: hsl(220, 20%, 75%);
+}
+
+.beatmapCard .diff {
+    padding: 5px;
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.beatmapCard .diffDimming {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.beatmapCard .diff .content {
+    position: relative;
+}
+
+.beatmapCard .diff .beatmapStars {
+    margin-right: 4px;
+}
+
+.beatmapCard .diff .ruleset {
+    height: 16px;
+    width: 16px;
+    flex-shrink: 0;
+}
+
+.beatmapCard .diff .name {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+}
+
+.beatmapCard .buttons {
+    padding: 4px;
+}
+
+.beatmapNarrowContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.beatmapCardContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 8px;
+    justify-content: center;
 }
 
 .flex {

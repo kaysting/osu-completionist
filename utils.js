@@ -82,6 +82,59 @@ const utils = {
         return format(Math.floor(absDiff), 'year');
     },
 
+    rgbToHsl: (r, g, b) => {
+        // WRITTEN BY GEMINI
+        // 1. Normalize r, g, b to range [0, 1]
+        r /= 255;
+        g /= 255;
+        b /= 255;
+
+        // 2. Find the maximum and minimum values to calculate lightness
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        let h, s, l = (max + min) / 2;
+
+        // 3. Calculate Saturation and Hue
+        if (max === min) {
+            // Achromatic (gray), no saturation or hue
+            h = s = 0;
+        } else {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+
+        // 4. Return as array of integers: [0-360, 0-100, 0-100]
+        return [
+            Math.round(h * 360),
+            Math.round(s * 100),
+            Math.round(l * 100)
+        ];
+    },
+
+    rgbToHex: (r, g, b) => {
+        return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+    },
+
+    hslToHex: (h, s, l) => {
+        l /= 100;
+        const a = s * Math.min(l, 1 - l) / 100;
+
+        const f = n => {
+            const k = (n + h / 30) % 12;
+            const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+            return Math.round(255 * color).toString(16).padStart(2, '0');
+        };
+
+        return `#${f(0)}${f(8)}${f(4)}`;
+    },
+
     starsToColor: stars => {
         const starGradientPoints = [
             { stars: 0, color: [128, 128, 128] },
@@ -106,10 +159,10 @@ const utils = {
                 const r = Math.round(pointA.color[0] + ratio * (pointB.color[0] - pointA.color[0]));
                 const g = Math.round(pointA.color[1] + ratio * (pointB.color[1] - pointA.color[1]));
                 const b = Math.round(pointA.color[2] + ratio * (pointB.color[2] - pointA.color[2]));
-                return `rgb(${r}, ${g}, ${b})`;
+                return [r, g, b];
             }
         }
-        return 'rgb(128, 128, 128)';
+        return [128, 128, 128];
     },
 
     percentageToColor: percentage => utils.interpolateColors(percentage, [

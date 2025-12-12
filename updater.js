@@ -3,6 +3,8 @@ const REPLACE_EXISTING_MAPS = false;
 const QUEUE_ALL_USERS = false;
 
 require('dotenv').config();
+const fs = require('fs');
+const cp = require('child_process');
 const dayjs = require('dayjs');
 const db = require('./db');
 const osu = require('./osu');
@@ -10,6 +12,8 @@ const osu = require('./osu');
 const dbHelpers = require('./helpers/dbHelpers');
 const { log, sleep } = require('./utils');
 const { queueUser, updateUserProfile } = require('./helpers/updaterHelpers');
+const path = require('path');
+const dbPath = require('path').join(__dirname, process.env.DB_PATH || './storage.db');
 
 // Function to update beatmap stats and totals in the database
 const updateBeatmapStats = () => {
@@ -63,18 +67,29 @@ const updateBeatmapStats = () => {
 };
 
 // Function to fetch new beatmaps(ets)
-const updateSavedMaps = async () => {
+const fetchNewMapData = async () => {
     try {
         log(`Checking for new beatmaps...`);
         // Create data saving transaction function
-        const insertMapset = db.prepare(`INSERT OR REPLACE INTO beatmapsets (id, status, title, artist, time_ranked, mapper, cover_url) VALUES (?, ?, ?, ?, ?, ?, ?)`);
-        const insertBeatmap = db.prepare(`INSERT OR REPLACE INTO beatmaps (id, mapset_id, mode, status, name, stars, is_convert, duration_secs) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
-        const save = db.transaction((mapset) => {
+        const stmtInsertMapset = db.prepare(
+            `INSERT OR REPLACE INTO beatmapsets
+            (id, status, title, artist, time_ranked, mapper)
+        VALUES (?, ?, ?, ?, ?, ?)`
+        );
+        const stmtInsertMap = db.prepare(
+            `INSERT OR REPLACE INTO beatmaps
+            (id, mapset_id, mode, status, name, stars, is_convert,
+            duration_secs, cs, ar, od, hp, bpm)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        );
+        const transaction = db.transaction((mapset) => {
             // Save mapset
-            insertMapset.run(mapset.id, mapset.status, mapset.title, mapset.artist, new Date(mapset.ranked_date || mapset.submitted_date || undefined).getTime(), mapset.creator, mapset.covers?.['cover@2x'] || null);
+            stmtInsertMapset.run(mapset.id, mapset.status, mapset.title, mapset.artist, new Date(mapset.ranked_date || mapset.submitted_date || undefined).getTime(), mapset.creator);
             // Loop through maps and converts and save
+            let mapCount = 0;
             for (const map of [...mapset.beatmaps, ...(mapset.converts || [])]) {
-                insertBeatmap.run(map.id, mapset.id, map.mode, map.status, map.version, map.difficulty_rating, map.convert ? 1 : 0, map.total_length);
+                stmtInsertMap.run(map.id, mapset.id, map.mode, map.status, map.version, map.difficulty_rating, map.convert ? 1 : 0, map.total_length, map.cs, map.ar, map.accuracy, map.drain, map.bpm);
+                mapCount++;
             }
         });
         // Loop to get unsaved recent beatmapsets
@@ -105,7 +120,7 @@ const updateSavedMaps = async () => {
                 // Fetch full mapset again to get converts
                 const mapsetFull = await osu.getBeatmapset(mapset.id);
                 // Save mapset and its maps
-                save(mapsetFull);
+                transaction(mapsetFull);
                 countNewlySaved++;
             }
             // Log counts
@@ -128,7 +143,7 @@ const updateSavedMaps = async () => {
         await sleep(5000);
     }
     // Wait an hour and then run again
-    setTimeout(updateSavedMaps, 1000 * 60 * 60);
+    setTimeout(fetchNewMapData, 1000 * 60 * 60);
 };
 
 // Function to log a user's current pass count
@@ -407,7 +422,7 @@ const updateUserFromRecents = async (userId) => {
         const transaction = db.transaction((scores) => {
             for (const score of scores) {
                 db.prepare(
-                    `INSERT INTO user_passes
+                    `INSERT OR IGNORE INTO user_passes
                         (user_id, mapset_id, map_id, mode, status, is_convert, time_passed)
                     VALUES (?, ?, ?, ?, ?, ?, ?)`
                 ).run(
@@ -649,6 +664,42 @@ const saveUserHistory = async () => {
     setTimeout(saveUserHistory, 1000);
 };
 
+const backupDatabase = async () => {
+    try {
+        const backupsDir = process.env.DB_BACKUPS_DIR || path.join(__dirname, 'backups');
+        const backupIntervalHours = process.env.DB_BACKUP_INTERVAL_HOURS || 6;
+        const keepBackupsCount = process.env.DB_KEEP_BACKUPS_COUNT || 12;
+        if (!fs.existsSync(backupsDir)) {
+            fs.mkdirSync(backupsDir);
+        }
+        // Get existing backups sorted by modification time
+        const files = fs.readdirSync(backupsDir)
+            .map(file => ({
+                name: file,
+                path: require('path').join(backupsDir, file),
+                mtime: fs.statSync(require('path').join(backupsDir, file)).mtime.getTime()
+            }))
+            .sort((a, b) => b.mtime - a.mtime);
+        // Check if backup is needed
+        const lastBackupTime = files.length > 0 ? files[0].mtime : 0;
+        const needsBackup = Date.now() - lastBackupTime > (backupIntervalHours * 60 * 60 * 1000);
+        if (needsBackup) {
+            const backupFile = path.join(backupsDir, `${dayjs().format('YYYYMMDD-HHmmss')}.sql`);
+            log(`Backing up database to ${backupFile}...`);
+            cp.execSync(`sqlite3 "${dbPath}" .dump > "${backupFile}"`);
+            log(`Backup complete`);
+            const filesToDelete = files.slice(keepBackupsCount - 1);
+            for (const file of filesToDelete) {
+                fs.unlinkSync(file.path);
+                log(`Deleted old backup: ${file.path}`);
+            }
+        }
+    } catch (error) {
+        log('Error while backing up database:', error);
+    }
+    setTimeout(backupDatabase, 1000 * 60 * 60);
+};
+
 async function main() {
 
     // Get osu API token
@@ -658,11 +709,12 @@ async function main() {
     // Start update processes
     // Stagger function calls to prevent fetching API token too rapidly
     log(`Starting update processes...`);
-    updateSavedMaps();
+    fetchNewMapData();
     startQueuedUserUpdates();
     savePassesFromGlobalRecents();
     queueActiveUsers();
     saveUserHistory();
+    backupDatabase();
 
 }
 

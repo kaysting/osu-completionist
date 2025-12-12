@@ -240,16 +240,21 @@ const formatBeatmap = (beatmap) => ({
     mode: beatmap.mode,
     name: beatmap.name,
     stars: beatmap.stars,
-    difficulty_color: utils.starsToColor(beatmap.stars),
+    difficulty_color: utils.rgbToHex(...utils.starsToColor(beatmap.stars)),
     duration_secs: beatmap.duration_secs,
     is_convert: !!beatmap.is_convert,
-    status: beatmap.status
+    status: beatmap.status,
+    cs: beatmap?.cs,
+    ar: beatmap?.ar,
+    od: beatmap?.od,
+    hp: beatmap?.hp
 });
 
 const formatBeatmapset = (beatmapset) => ({
     id: beatmapset.id,
     artist: beatmapset.artist,
     title: beatmapset.title,
+    mapper: beatmapset.mapper,
     time_ranked: beatmapset.time_ranked,
     status: beatmapset.status
 });

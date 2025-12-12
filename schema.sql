@@ -114,14 +114,6 @@ CREATE TABLE
 		)
 	);
 
-CREATE INDEX idx_user_stats_history ON user_stats_history (
-	user_id,
-	time,
-	mode,
-	includes_loved,
-	includes_converts
-);
-
 CREATE TABLE
 	IF NOT EXISTS "user_stats" (
 		"user_id" INTEGER NOT NULL,
@@ -162,7 +154,6 @@ CREATE TABLE
 		"title" TEXT,
 		"artist" TEXT,
 		"mapper" TEXT,
-		"cover_url" TEXT,
 		"time_ranked" INTEGER NOT NULL,
 		PRIMARY KEY ("id")
 	);
@@ -179,9 +170,22 @@ CREATE TABLE
 		"stars" REAL NOT NULL,
 		"is_convert" INTEGER NOT NULL,
 		"duration_secs" integer NOT NULL DEFAULT 0,
+		cs integer,
+		ar integer,
+		od integer,
+		hp integer,
+		bpm integer,
 		PRIMARY KEY ("id", "mapset_id", "mode")
 	);
 
 CREATE INDEX idx_beatmaps_mapset_id ON beatmaps (mapset_id);
 
 CREATE INDEX idx_beatmaps_stats ON beatmaps (mode, status, is_convert);
+
+CREATE INDEX "idx_user_stats_history" ON "user_stats_history" (
+	"user_id",
+	"time",
+	"mode",
+	"includes_loved",
+	"includes_converts"
+);

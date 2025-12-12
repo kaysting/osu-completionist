@@ -123,14 +123,14 @@
             <div>
                 <span class="header">what to play next</span>
             </div>
-            <div class="entries">
+            <div class="beatmapCardContainer">
                 <% if (user.recommended.beatmaps.length === 0) { %>
                 <div class="empty">
                     <p>Nothing! You've played every map.</p>
                 </div>
                 <% } %>
                 <% for (const beatmap of user.recommended.beatmaps) { %>
-                <%- include('../partials/beatmap', { beatmap }) %>
+                <%- include('../partials/beatmapCard', { beatmap }) %>
                 <% } %>
             </div>
             <div class="flex row gap-8 justify-center">
@@ -148,14 +148,14 @@
             <div>
                 <span class="header">recent passes</span>
             </div>
-            <div class="entries">
+            <div class="beatmapNarrowContainer">
                 <% if (user.recentPasses.length === 0) { %>
                 <div class="empty">
                     <p>No recent passes found :(</p>
                 </div>
                 <% } %>
                 <% for (const pass of user.recentPasses) { %>
-                <%- include('../partials/beatmap', { beatmap: pass.beatmap, time: `Passed ${pass.timeSincePass}` }) %>
+                <%- include('../partials/beatmapNarrow', { beatmap: pass.beatmap, time: `Passed ${pass.timeSincePass}` }) %>
                 <% } %>
             </div>
         </div>

@@ -7,13 +7,16 @@
             </div>
             <div class="diff">
                 <img src="/assets/ruleset-icons/<%= beatmap.mode %>.svg" class="ruleset">
-                <span class="status <%= beatmap.status %>"><%= beatmap.status.toUpperCase() %></span>
-                <span class="stars"
+                <span class="beatmapStatus <%= beatmap.status %>"><%= beatmap.status.toUpperCase() %></span>
+                <span class="beatmapStars"
                     style="background: <%= beatmap.difficulty_color %>; color: <%= beatmap.stars < 6.8 ? 'black' : 'hsl(40, 100%, 70%)' %>">
                     <span class="icon">star</span><span class="value"><%= beatmap.stars.toFixed(2) %></span>
                 </span>
-                <span class="name"
-                    style=" color: <%= beatmap.stars < 6.8 ? beatmap.difficulty_color : 'hsl(40, 100%, 70%)' %>"><%= beatmap.name %></span>
+                <span class="text"
+                    style=" color: <%= beatmap.stars < 6.8 ? beatmap.difficulty_color : 'hsl(40, 100%, 70%)' %>">
+                    <span class="name"><%= beatmap.name %></span>
+                    <span class="mapper">mapped by <%= beatmap.beatmapset.mapper || '<unknown>' %></span>
+                </span>
             </div>
         </div>
         <div class="time">

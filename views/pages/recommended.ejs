@@ -61,11 +61,11 @@
                 </div>
             </div>
         </div>
-        <button type="submit" class="btn primary">apply</button>
+        <button type="submit" class="btn primary">Apply</button>
     </form>
-    <div class="beatmaps card lighter">
+    <div class="beatmapCardContainer beatmaps card lighter">
         <% for (const beatmap of results.beatmaps) { %>
-        <%- include('../partials/beatmap', { beatmap }) %>
+        <%- include('../partials/beatmapCard', { beatmap }) %>
         <% } %>
     </div>
 </div>

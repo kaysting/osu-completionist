@@ -1,0 +1,43 @@
+<div class="beatmapCard flex">
+    <div class="left">
+        <img class="listImage" src="https://assets.ppy.sh/beatmaps/<%= beatmap.beatmapset.id %>/covers/list.jpg">
+    </div>
+    <div class="right flex-grow flex">
+        <img class="coverImage" src="https://assets.ppy.sh/beatmaps/<%= beatmap.beatmapset.id %>/covers/cover.jpg">
+        <div class="coverDimming"></div>
+        <div class="content flex col gap-8 flex-grow">
+            <div class="text">
+                <div class="title" title="<%= beatmap.beatmapset.title %>"><%= beatmap.beatmapset.title %></div>
+                <div class="artist" title="<%= beatmap.beatmapset.artist %>"><%= beatmap.beatmapset.artist %></div>
+                <div class="mapper">Mapped by
+                    <%= beatmap.beatmapset.mapper %>&nbsp;&nbsp;&bull;&nbsp;&nbsp;<span
+                        title="<%= locals.time || `Ranked ${dayjs(beatmap.beatmapset.time_ranked).format('YYYY-MM-DD')}` %>"><%= locals.time || `Ranked ${dayjs(beatmap.beatmapset.time_ranked).format('YYYY-MM-DD')}` %></span>
+                </div>
+            </div>
+            <div class="flex gap-4 align-center">
+                <div class="beatmapStatus <%= beatmap.status %>"><%= beatmap.status.toUpperCase() %></div>
+                <div class="diff flex-grow" style="background: <%= beatmap.difficulty_color %>">
+                    <div class="diffDimming"></div>
+                    <div class="content flex gap-4 align-center">
+                        <span class="beatmapStars"
+                            style="background: <%= beatmap.difficulty_color %>; color: <%= beatmap.stars < 6.8 ? 'black' : 'hsl(40, 100%, 70%)' %>">
+                            <span class="icon">star</span>
+                            <span class="value"><%= beatmap.stars.toFixed(2) %></span>
+                        </span>
+                        <img src="/assets/ruleset-icons/<%= beatmap.mode %>.svg" class="ruleset">
+                        <span class="name" title="<%= beatmap.name %>"><%= beatmap.name %></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="buttons flex col gap-4 justify-center align-center flex-no-shrink">
+        <a href="osu://b/<%= beatmap.id %>" class="btn square text" target="_blank" title="Open beatmap in osu!direct">
+            <div class="icon">rocket_launch</div>
+        </a>
+        <a href="https://osu.ppy.sh/beatmapsets/<%= beatmap.mapset_id %>#<%= beatmap.mode %>/<%= beatmap.id %>"
+            class="btn square text" target="_blank" title="Open beatmap on osu! website">
+            <div class="icon">open_in_new</div>
+        </a>
+    </div>
+</div>
