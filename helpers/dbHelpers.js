@@ -247,7 +247,8 @@ const formatBeatmap = (beatmap) => ({
     cs: beatmap?.cs,
     ar: beatmap?.ar,
     od: beatmap?.od,
-    hp: beatmap?.hp
+    hp: beatmap?.hp,
+    bpm: beatmap?.bpm
 });
 
 const formatBeatmapset = (beatmapset) => ({
@@ -467,6 +468,145 @@ const getUserRecommendedMaps = (userId, mode, includeLoved = false, includeConve
     };
 };
 
+const searchBeatmaps = (query, includeLoved, includeConverts, sort, notPlayedByUserId, limit = 50, offset = 0) => {
+    const filterRegex = /(cs|ar|od|hp|keys|stars|sr|bpm|length|mode)\s?(<=|>=|=|<|>)\s?(\w+)(\s|$)/gi;
+    const filterMatches = query.matchAll(filterRegex);
+    const textQuery = query.replace(filterRegex, '').trim();
+    const params = [];
+    const whereClauses = [];
+    let joinClause = '';
+    let sortClause = 'RANDOM()';
+    let mode;
+    // Loop through filter matches
+    for (const match of filterMatches) {
+        // Parse filter
+        const key = match[1];
+        const operator = match[2];
+        const value = match[3].toLowerCase();
+        const valueInt = parseInt(value);
+        const valueFloat = parseFloat(value);
+        const valueBool = (value === 'false' || !valueInt) ? false : (value) ? true : null;
+        console.log({ key, operator, value });
+        // Apply filter
+        switch (key) {
+            case 'stars':
+            case 'sr': {
+                if (!valueFloat) break;
+                whereClauses.push(`map.stars ${operator} ${valueFloat}`);
+                break;
+            }
+            case 'keys':
+            case 'cs': {
+                if (!valueFloat) break;
+                whereClauses.push(`map.cs ${operator} ${valueInt}`);
+                break;
+            }
+            case 'ar': {
+                if (!valueFloat) break;
+                whereClauses.push(`map.ar ${operator} ${valueInt}`);
+                break;
+            }
+            case 'od': {
+                if (!valueFloat) break;
+                whereClauses.push(`map.od ${operator} ${valueInt}`);
+                break;
+            }
+            case 'hp': {
+                if (!valueFloat) break;
+                whereClauses.push(`map.hp ${operator} ${valueInt}`);
+                break;
+            }
+            case 'bpm': {
+                if (!valueFloat) break;
+                whereClauses.push(`map.bpm ${operator} ${valueInt}`);
+                break;
+            }
+            case 'length': {
+                if (!valueInt) break;
+                whereClauses.push(`map.duration_secs ${operator} ${valueInt}`);
+                break;
+            }
+            case 'mode': {
+                const modeKey = utils.rulesetNameToKey(value);
+                if (!modeKey) break;
+                whereClauses.push(`map.mode ${operator} ${modeKey}`);
+                mode = modeKey;
+                break;
+            }
+        }
+    }
+    // Handle including loved
+    if (includeLoved) {
+        whereClauses.push(`map.status IN ('ranked', 'approved', 'loved')`);
+    } else {
+        whereClauses.push(`map.status IN ('ranked', 'approved')`);
+    }
+    // Handle excluding converts
+    // If no mode is provided, don't include converts
+    if (!includeConverts || !mode) {
+        whereClauses.push(`map.is_convert = 0`);
+    }
+    // Exclude passed maps if user was provided
+    if (notPlayedByUserId) {
+        whereClauses.push(`
+            NOT EXISTS (
+                SELECT 1 FROM user_passes up 
+                WHERE up.user_id = ? 
+                AND up.map_id = b.id 
+                AND up.mode = b.mode
+            )
+        `);
+        params.push(notPlayedByUserId);
+    }
+    // Handle sorting
+    switch (sort) {
+        case 'stars_asc': {
+            sortClause = `map.stars ASC`;
+            break;
+        }
+        case 'stars_desc': {
+            sortClause = `map.stars DESC`;
+            break;
+        }
+        case 'date_asc': {
+            sortClause = `mapset.time_ranked ASC`;
+            break;
+        }
+        case 'date_desc': {
+            sortClause = `mapset.time_ranked DESC`;
+            break;
+        }
+        case 'relevance': {
+            if (!textQuery) break;
+            sortClause = `search.rank`;
+            break;
+        }
+    }
+    // Join FTS table if we have a text search
+    if (textQuery) {
+        if (mode) {
+            joinClause = `JOIN beatmaps_search search ON map.id = search.map_id AND map.mode = ${mode}`;
+        } else {
+            joinClause = `JOIN beatmaps_search search ON map.id = search.map_id`;
+        }
+    }
+    // Get result IDs
+    const sql = `
+        SELECT map.id
+        FROM beatmaps map
+        JOIN beatmapsets mapset ON map.mapset_id = mapset.id
+        ${joinClause}
+        WHERE ${whereClauses.join(' AND ')}
+        ORDER BY ${sortClause}
+        LIMIT ? OFFSET ?
+    `;
+    console.log({ sql, params, limit, offset });
+    const rows = db.prepare(sql).all(...params, limit, offset);
+    // Fetch and return result data
+    const beatmaps = getBulkBeatmaps(rows.map(row => row.id), true, mode);
+    return beatmaps;
+};
+
 module.exports = {
     getBulkUserCompletionStats,
     getUserProfile,
@@ -481,5 +621,6 @@ module.exports = {
     getBulkBeatmapsets,
     getBeatmap,
     getBeatmapset,
-    getUserUpdateStatus
+    getUserUpdateStatus,
+    searchBeatmaps
 };

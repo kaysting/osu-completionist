@@ -5,82 +5,90 @@
 const fs = require('fs');
 const SqlDumpParser = require('./helpers/mysql-stream-parser');
 const db = require('./db');
-const osu = require('./osu');
+const { saveMapset } = require('./helpers/updaterHelpers');
 
 const dumpFolder = process.argv[2];
 
 const importBeatmapsets = async () => {
+
+    console.time('Import beatmaps from dump');
     console.log('Importing unsaved beatmapsets...');
     const storedMapsetIds = db.prepare(`SELECT id FROM beatmapsets`).all().map(row => row.id);
     const beatmapsetsParser = new SqlDumpParser({ tableName: 'osu_beatmapsets' });
     const stream = fs.createReadStream(`${dumpFolder}/osu_beatmapsets.sql`);
     stream.pipe(beatmapsetsParser);
     let newMapsetCount = 0;
-    let newMapCount = 0;
-    // Create data saving transaction function
-    const stmtInsertMapset = db.prepare(
-        `INSERT OR REPLACE INTO beatmapsets
-            (id, status, title, artist, time_ranked, mapper)
-        VALUES (?, ?, ?, ?, ?, ?)`
-    );
-    const stmtInsertMap = db.prepare(
-        `INSERT OR REPLACE INTO beatmaps
-            (id, mapset_id, mode, status, name, stars, is_convert,
-            duration_secs, cs, ar, od, hp, bpm)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    );
-    const transaction = db.transaction((mapset) => {
-        // Save mapset
-        stmtInsertMapset.run(mapset.id, mapset.status, mapset.title, mapset.artist, new Date(mapset.ranked_date || mapset.submitted_date || undefined).getTime(), mapset.creator);
-        // Loop through maps and converts and save
-        let mapCount = 0;
-        for (const map of [...mapset.beatmaps, ...(mapset.converts || [])]) {
-            stmtInsertMap.run(map.id, mapset.id, map.mode, map.status, map.version, map.difficulty_rating, map.convert ? 1 : 0, map.total_length, map.cs, map.ar, map.accuracy, map.drain, map.bpm);
-            mapCount++;
-        }
-        console.log(`Saved mapset ${mapset.id} with ${mapCount} maps: ${mapset.artist} - ${mapset.title}`);
-        newMapCount += mapCount;
-    });
-    // Function to fetch and save a mapset
-    const saveMapset = async mapsetId => {
-        // Fetch full mapset again to get converts
-        let mapsetFull = null;
-        while (true) {
-            try {
-                mapsetFull = await osu.getBeatmapset(mapsetId);
-                break;
-            } catch (error) {
-                console.error(`Error fetching beatmapset ${mapsetId}: ${error}. Retrying in 5 seconds...`);
-                await new Promise(resolve => setTimeout(resolve, 5000));
-            }
-        }
-        // Save mapset and its maps
-        transaction(mapsetFull);
-        newMapsetCount++;
-    };
     // Loop through dump entries
     for await (const row of beatmapsetsParser) {
         const mapsetId = row.beatmapset_id;
         // Skip if already stored
         if (storedMapsetIds.includes(mapsetId)) continue;
         await saveMapset(mapsetId);
+        newMapsetCount++;
     }
+    console.timeEnd('Import beatmaps from dump');
+
+    console.log(`Importing incomplete beatmaps...`);
+    console.time('Import incomplete beatmaps');
     // Save any other maps that we don't have or that are missing data
     const rows = [
+        // beatmaps missing cs
         ...db.prepare(
             `SELECT DISTINCT mapset_id FROM beatmaps WHERE cs IS NULL`
         ).all(),
+        // beatmaps users have passed but we don't have data for
         ...db.prepare(
             `SELECT DISTINCT mapset_id FROM user_passes
             WHERE mapset_id NOT IN (SELECT id FROM beatmapsets)`
+        ).all(),
+        // mapsets with no maps
+        ...db.prepare(
+            `SELECT id AS mapset_id FROM beatmapsets
+            WHERE id NOT IN (SELECT DISTINCT mapset_id FROM beatmaps)`
         ).all()
     ];
-    console.log(`Found ${rows.length} additional beatmapsets needing import`);
     for (const row of rows) {
-        await saveMapset(row.mapset_id);
+        await saveMapset(row.mapset_id, false);
+        newMapsetCount++;
     }
-    // Log and finish
-    console.log(`Imported ${newMapsetCount} beatmapsets and ${newMapCount} beatmaps`);
+    console.timeEnd('Import incomplete beatmaps');
+
+    // Log import results
+    console.log(`Imported ${newMapsetCount} beatmapsets`);
+
+    // Repopulate the search table
+    const insertIntoIndex = db.prepare(`
+        INSERT INTO beatmaps_search (title, artist, name, map_id, mode)
+        VALUES (?, ?, ?, ?, ?)
+    `);
+    const rebuildSearchIndex = db.transaction(() => {
+        // Get all maps
+        const maps = db.prepare(`
+            SELECT b.id AS map_id, b.mode, b.name AS version, bs.title, bs.artist
+            FROM beatmaps b
+            JOIN beatmapsets bs ON b.mapset_id = bs.id
+        `).all();
+        console.log(`Rebuilding beatmap search index with ${maps.length} entries`);
+        // Clear index
+        db.prepare(`DELETE FROM beatmaps_search`).run();
+        // Insert missing maps into search index
+        for (const row of maps) {
+            insertIntoIndex.run(row.title, row.artist, row.name, row.map_id, row.mode);
+        }
+    });
+
+    console.time("FTS rebuild");
+    const count = rebuildSearchIndex();
+    console.timeEnd("FTS rebuild");
+
+    // Optimize
+    if (count > 1000) {
+        console.time(`Optimize FTS`);
+        console.log("Optimizing FTS index...");
+        db.prepare("INSERT INTO beatmaps_search(beatmaps_search) VALUES('optimize')").run();
+        console.timeEnd(`Optimize FTS`);
+    }
+
 };
 
 async function main() {

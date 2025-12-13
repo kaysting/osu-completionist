@@ -13,15 +13,15 @@ const updateUserProfile = async (userId, userObj) => {
             // Update user profile data
             db.prepare(
                 `UPDATE users
-                        SET name = ?,
-                            avatar_url = ?,
-                            banner_url = ?,
-                            country_code = ?,
-                            team_id = ?,
-                            team_name = ?,
-                            team_name_short = ?,
-                            team_flag_url = ?
-                        WHERE id = ?`
+                SET name = ?,
+                    avatar_url = ?,
+                    banner_url = ?,
+                    country_code = ?,
+                    team_id = ?,
+                    team_name = ?,
+                    team_name_short = ?,
+                    team_flag_url = ?
+                WHERE id = ?`
             ).run(user.username, user.avatar_url, user.cover.url, user.country.code, user.team?.id, user.team?.name, user.team?.short_name, user.team?.flag_url, user.id);
             utils.log(`Updated stored user data for ${user.username}`);
         } else {
@@ -69,7 +69,55 @@ const queueUser = async (userId) => {
     }
 };
 
+// Prepare mapset data saving statements and transaction
+const stmtInsertMapset = db.prepare(
+    `INSERT OR REPLACE INTO beatmapsets
+        (id, status, title, artist, time_ranked, mapper)
+    VALUES (?, ?, ?, ?, ?, ?)`
+);
+const stmtInsertMap = db.prepare(
+    `INSERT OR REPLACE INTO beatmaps
+        (id, mapset_id, mode, status, name, stars, is_convert,
+        duration_secs, cs, ar, od, hp, bpm)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+);
+const stmtInsertMapIndex = db.prepare(
+    `INSERT OR REPLACE INTO beatmaps_search (title, artist, name, map_id, mode)
+     VALUES (?, ?, ?, ?, ?)`
+);
+const saveMapsetTransaction = db.transaction((mapset, shouldIndex) => {
+    // Save mapset
+    stmtInsertMapset.run(mapset.id, mapset.status, mapset.title, mapset.artist, new Date(mapset.ranked_date || mapset.submitted_date || undefined).getTime(), mapset.creator);
+    // Loop through maps and converts and save
+    let mapCount = 0;
+    for (const map of [...mapset.beatmaps, ...(mapset.converts || [])]) {
+        stmtInsertMap.run(map.id, mapset.id, map.mode, map.status, map.version, map.difficulty_rating, map.convert ? 1 : 0, map.total_length, map.cs, map.ar, map.accuracy, map.drain, map.bpm);
+        if (shouldIndex)
+            stmtInsertMapIndex.run(mapset.title, mapset.artist, map.version, map.id, map.mode);
+        mapCount++;
+    }
+    console.log(`Saved mapset ${mapset.id} with ${mapCount} maps: ${mapset.artist} - ${mapset.title}`);
+});
+
+// Function to fetch and save a mapset
+const saveMapset = async (mapsetId, index = true) => {
+    // Fetch full mapset again to get converts
+    let mapsetFull = null;
+    while (true) {
+        try {
+            mapsetFull = await osu.getBeatmapset(mapsetId);
+            break;
+        } catch (error) {
+            console.error(`Error fetching beatmapset ${mapsetId}: ${error}. Retrying in 5 seconds...`);
+            await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+    }
+    // Save mapset and its maps
+    saveMapsetTransaction(mapsetFull, index);
+};
+
 module.exports = {
     updateUserProfile,
-    queueUser
+    queueUser,
+    saveMapset
 };

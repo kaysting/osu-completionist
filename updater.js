@@ -1,6 +1,6 @@
 const FETCH_ALL_MAPS = false;
 const REPLACE_EXISTING_MAPS = false;
-const QUEUE_ALL_USERS = false;
+const QUEUE_ALL_USERS = true;
 
 require('dotenv').config();
 const fs = require('fs');
@@ -11,7 +11,7 @@ const osu = require('./osu');
 
 const dbHelpers = require('./helpers/dbHelpers');
 const { log, sleep } = require('./utils');
-const { queueUser, updateUserProfile } = require('./helpers/updaterHelpers');
+const { queueUser, updateUserProfile, saveMapset } = require('./helpers/updaterHelpers');
 const path = require('path');
 const dbPath = require('path').join(__dirname, process.env.DB_PATH || './storage.db');
 
@@ -70,28 +70,6 @@ const updateBeatmapStats = () => {
 const fetchNewMapData = async () => {
     try {
         log(`Checking for new beatmaps...`);
-        // Create data saving transaction function
-        const stmtInsertMapset = db.prepare(
-            `INSERT OR REPLACE INTO beatmapsets
-            (id, status, title, artist, time_ranked, mapper)
-        VALUES (?, ?, ?, ?, ?, ?)`
-        );
-        const stmtInsertMap = db.prepare(
-            `INSERT OR REPLACE INTO beatmaps
-            (id, mapset_id, mode, status, name, stars, is_convert,
-            duration_secs, cs, ar, od, hp, bpm)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        );
-        const transaction = db.transaction((mapset) => {
-            // Save mapset
-            stmtInsertMapset.run(mapset.id, mapset.status, mapset.title, mapset.artist, new Date(mapset.ranked_date || mapset.submitted_date || undefined).getTime(), mapset.creator);
-            // Loop through maps and converts and save
-            let mapCount = 0;
-            for (const map of [...mapset.beatmaps, ...(mapset.converts || [])]) {
-                stmtInsertMap.run(map.id, mapset.id, map.mode, map.status, map.version, map.difficulty_rating, map.convert ? 1 : 0, map.total_length, map.cs, map.ar, map.accuracy, map.drain, map.bpm);
-                mapCount++;
-            }
-        });
         // Loop to get unsaved recent beatmapsets
         let cursor;
         while (true) {
@@ -117,10 +95,8 @@ const fetchNewMapData = async () => {
                 } else if (existingMapset && !REPLACE_EXISTING_MAPS) {
                     continue;
                 }
-                // Fetch full mapset again to get converts
-                const mapsetFull = await osu.getBeatmapset(mapset.id);
-                // Save mapset and its maps
-                transaction(mapsetFull);
+                // Fetch full mapset and save
+                await saveMapset(mapset.id, true);
                 countNewlySaved++;
             }
             // Log counts

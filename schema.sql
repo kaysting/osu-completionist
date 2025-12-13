@@ -160,6 +160,45 @@ CREATE TABLE
 
 CREATE INDEX idx_beatmapsets_time_ranked ON beatmapsets (time_ranked);
 
+CREATE INDEX "idx_user_stats_history" ON "user_stats_history" (
+	"user_id",
+	"time",
+	"mode",
+	"includes_loved",
+	"includes_converts"
+);
+
+CREATE TABLE
+	user_previous_names (
+		user_id int not null,
+		name int not null,
+		primary key (user_id, name)
+	);
+
+CREATE VIRTUAL TABLE beatmaps_search USING fts5 (
+	title,
+	artist,
+	name,
+	map_id UNINDEXED,
+	mode UNINDEXED
+)
+/* beatmaps_search(title,artist,name,map_id,mode) */;
+
+CREATE TABLE
+	IF NOT EXISTS 'beatmaps_search_data' (id INTEGER PRIMARY KEY, block BLOB);
+
+CREATE TABLE
+	IF NOT EXISTS 'beatmaps_search_idx' (segid, term, pgno, PRIMARY KEY (segid, term)) WITHOUT ROWID;
+
+CREATE TABLE
+	IF NOT EXISTS 'beatmaps_search_content' (id INTEGER PRIMARY KEY, c0, c1, c2, c3, c4);
+
+CREATE TABLE
+	IF NOT EXISTS 'beatmaps_search_docsize' (id INTEGER PRIMARY KEY, sz BLOB);
+
+CREATE TABLE
+	IF NOT EXISTS 'beatmaps_search_config' (k PRIMARY KEY, v) WITHOUT ROWID;
+
 CREATE TABLE
 	IF NOT EXISTS "beatmaps" (
 		"id" INTEGER NOT NULL,
@@ -170,22 +209,10 @@ CREATE TABLE
 		"stars" REAL NOT NULL,
 		"is_convert" INTEGER NOT NULL,
 		"duration_secs" integer NOT NULL DEFAULT 0,
-		cs integer,
-		ar integer,
-		od integer,
-		hp integer,
-		bpm integer,
+		cs REAL,
+		ar REAL,
+		od REAL,
+		hp REAL,
+		bpm REAL,
 		PRIMARY KEY ("id", "mapset_id", "mode")
 	);
-
-CREATE INDEX idx_beatmaps_mapset_id ON beatmaps (mapset_id);
-
-CREATE INDEX idx_beatmaps_stats ON beatmaps (mode, status, is_convert);
-
-CREATE INDEX "idx_user_stats_history" ON "user_stats_history" (
-	"user_id",
-	"time",
-	"mode",
-	"includes_loved",
-	"includes_converts"
-);
