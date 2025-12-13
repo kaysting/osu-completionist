@@ -1,6 +1,10 @@
 <div class="beatmapCard flex">
-    <div class="left">
+    <div class="left flex align-center justify-center">
         <img class="listImage" src="https://assets.ppy.sh/beatmaps/<%= beatmap.beatmapset.id %>/covers/list.jpg">
+        <button class="playPause btn"
+            onClick="audioButtonClick(event, `https://b.ppy.sh/preview/<%= beatmap.beatmapset.id %>.mp3`)">
+            <span class="icon filled">play_arrow</span>
+        </button>
     </div>
     <div class="right flex-grow flex">
         <div class="content flex col gap-8 flex-grow">
