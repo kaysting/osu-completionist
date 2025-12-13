@@ -35,10 +35,6 @@ audioPlayer.addEventListener('play', () => {
 const audioButtonClick = (event, audioUrl) => {
     // Get clicked button
     const elBtn = event.currentTarget;
-    // Change icon of previous button to play
-    if (lastAudioButtonElement) {
-        lastAudioButtonElement.querySelector('.icon').innerText = 'play_arrow';
-    }
     // If the this button is the same as the last one, handle play/pause
     if (elBtn === lastAudioButtonElement) {
         if (elBtn.dataset.playing === "true") {
@@ -47,6 +43,10 @@ const audioButtonClick = (event, audioUrl) => {
             audioPlayer.play();
         }
         return;
+    } else if (lastAudioButtonElement) {
+        // Reset previous button if it differs from the current one
+        lastAudioButtonElement.querySelector('.icon').innerText = 'play_arrow';
+        lastAudioButtonElement.dataset.playing = false;
     }
     // Update previous button variable
     lastAudioButtonElement = elBtn;
