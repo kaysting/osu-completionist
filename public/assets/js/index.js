@@ -51,6 +51,7 @@ const audioButtonClick = (event, audioUrl) => {
     // Update previous button variable
     lastAudioButtonElement = elBtn;
     // Play audio
+    audioPlayer.volume = 0.5;
     audioPlayer.src = audioUrl;
     audioPlayer.play();
 };

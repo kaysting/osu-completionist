@@ -13,10 +13,7 @@
             <div class="text">
                 <div class="title" title="<%= beatmap.beatmapset.title %>"><%= beatmap.beatmapset.title %></div>
                 <div class="artist" title="<%= beatmap.beatmapset.artist %>"><%= beatmap.beatmapset.artist %></div>
-                <div class="mapper">Mapped by
-                    <%= beatmap.beatmapset.mapper %>&nbsp;&nbsp;&bull;&nbsp;&nbsp;<span
-                        title="<%= locals.time || `Ranked ${dayjs(beatmap.beatmapset.time_ranked).format('YYYY-MM-DD')}` %>"><%= locals.time || `Ranked ${dayjs(beatmap.beatmapset.time_ranked).format('YYYY-MM-DD')}` %></span>
-                </div>
+                <div class="mapper">Mapped by <%= beatmap.beatmapset.mapper %></div>
             </div>
             <div class="flex gap-4 align-center">
                 <div class="beatmapStatus <%= beatmap.status %>"><%= beatmap.status.toUpperCase() %></div>
@@ -34,7 +31,7 @@
                 </div>
             </div>
         </div>
-        <div class="buttons flex col gap-4 justify-center align-center flex-no-shrink">
+        <div class="buttons flex col justify-center align-center flex-no-shrink">
             <a href="osu://b/<%= beatmap.id %>" class="btn square text" target="_blank"
                 title="Open beatmap in osu!direct">
                 <div class="icon">rocket_launch</div>
@@ -42,6 +39,10 @@
             <a href="https://osu.ppy.sh/beatmapsets/<%= beatmap.mapset_id %>#<%= beatmap.mode %>/<%= beatmap.id %>"
                 class="btn square text" target="_blank" title="Open beatmap on osu! website">
                 <div class="icon">open_in_new</div>
+            </a>
+            <a href="https://mirror.nekoha.moe/api4/download/<%= beatmap.beatmapset.id %>" class="btn square text"
+                title="Direct download from mirror.nekoha.moe">
+                <div class="icon">download</div>
             </a>
         </div>
     </div>

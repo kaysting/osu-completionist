@@ -22,7 +22,7 @@ router.get('/', (req, res) => {
     const minRankedTime = year ? new Date(`${year}-01-01`).getTime() : null;
     const maxRankedTime = year ? new Date(`${year + 1}-01-01`).getTime() : null;
     const page = parseInt(req.query.p) || 1;
-    const limit = 100;
+    const limit = 96;
     const offset = (page - 1) * limit;
     const results = getUserRecommendedMaps(
         req.me.id, modeKey, includeLoved, includeConverts,
