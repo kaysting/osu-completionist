@@ -3,9 +3,9 @@
         <img class="listImage" src="https://assets.ppy.sh/beatmaps/<%= beatmap.beatmapset.id %>/covers/list.jpg">
     </div>
     <div class="right flex-grow flex">
-        <img class="coverImage" src="https://assets.ppy.sh/beatmaps/<%= beatmap.beatmapset.id %>/covers/cover.jpg">
-        <div class="coverDimming"></div>
         <div class="content flex col gap-8 flex-grow">
+            <img class="coverImage" src="https://assets.ppy.sh/beatmaps/<%= beatmap.beatmapset.id %>/covers/cover.jpg">
+            <div class="coverDimming"></div>
             <div class="text">
                 <div class="title" title="<%= beatmap.beatmapset.title %>"><%= beatmap.beatmapset.title %></div>
                 <div class="artist" title="<%= beatmap.beatmapset.artist %>"><%= beatmap.beatmapset.artist %></div>
@@ -30,14 +30,15 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="buttons flex col gap-4 justify-center align-center flex-no-shrink">
-        <a href="osu://b/<%= beatmap.id %>" class="btn square text" target="_blank" title="Open beatmap in osu!direct">
-            <div class="icon">rocket_launch</div>
-        </a>
-        <a href="https://osu.ppy.sh/beatmapsets/<%= beatmap.mapset_id %>#<%= beatmap.mode %>/<%= beatmap.id %>"
-            class="btn square text" target="_blank" title="Open beatmap on osu! website">
-            <div class="icon">open_in_new</div>
-        </a>
+        <div class="buttons flex col gap-4 justify-center align-center flex-no-shrink">
+            <a href="osu://b/<%= beatmap.id %>" class="btn square text" target="_blank"
+                title="Open beatmap in osu!direct">
+                <div class="icon">rocket_launch</div>
+            </a>
+            <a href="https://osu.ppy.sh/beatmapsets/<%= beatmap.mapset_id %>#<%= beatmap.mode %>/<%= beatmap.id %>"
+                class="btn square text" target="_blank" title="Open beatmap on osu! website">
+                <div class="icon">open_in_new</div>
+            </a>
+        </div>
     </div>
 </div>

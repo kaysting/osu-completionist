@@ -717,12 +717,6 @@ img {
     object-fit: cover;
 }
 
-.beatmapCard .right {
-    position: relative;
-    overflow: hidden;
-    border-radius: 16px;
-}
-
 .beatmapCard .right .coverImage {
     position: absolute;
     left: 0px;
@@ -744,6 +738,12 @@ img {
 .beatmapCard .right>.content {
     padding: 8px;
     padding-left: 12px;
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.beatmapCard .right>.content .text {
     position: relative;
 }
 
@@ -782,6 +782,10 @@ img {
     font-size: 12px;
     font-weight: 600;
     color: hsl(220, 20%, 75%);
+}
+
+.beatmapCard .beatmapStatus {
+    position: relative;
 }
 
 .beatmapCard .diff {
@@ -824,6 +828,12 @@ img {
     padding: 4px;
 }
 
+@media (max-width: 450px) {
+    .beatmapCard .left {
+        display: none;
+    }
+}
+
 .beatmapNarrowContainer {
     display: flex;
     flex-direction: column;
@@ -832,7 +842,7 @@ img {
 
 .beatmapCardContainer {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
     gap: 8px;
     justify-content: center;
 }
