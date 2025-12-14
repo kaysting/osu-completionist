@@ -601,7 +601,7 @@ const searchBeatmaps = (query, includeLoved, includeConverts, sort, notPlayedByU
     if (textQuery) {
         joinClause = `JOIN beatmaps_search ON map.id = beatmaps_search.map_id AND map.mode = beatmaps_search.mode`;
         whereClauses.push(`beatmaps_search MATCH ?`);
-        params.push(textQuery);
+        params.push(`"${textQuery.replace(/"/g, '')}"`);
     }
 
     // Handle sorting

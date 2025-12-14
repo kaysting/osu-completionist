@@ -44,6 +44,16 @@ router.get('/:mode/:includes', (req, res) => {
         { id: 'date_desc', name: 'Newest to oldest' }
     ];
     sortTypes.unshift({ id: '', name: `Auto (${results.query.text ? 'Relevant' : 'Random'})` });
+    // Define placeholder list and pick one
+    const placeholders = [
+        `Try "stars>5.5 stars<7" to get maps in your comfort zone`,
+        `Try "length>240 camellia" to get long Camellia maps`,
+        `Try "ar>9.5 cs<4" to find high AR low CS maps`,
+        `Try "year=2007" to get maps from 2007`,
+        `Try "keys=4" to find just 4K maps (with mania selected)`,
+        `Try "ar=10" to find high AR maps`
+    ];
+    const placeholder = placeholders[Math.floor(Math.random() * placeholders.length)];
     // Render
     res.render('layout', {
         title: 'Play next',
@@ -55,6 +65,7 @@ router.get('/:mode/:includes', (req, res) => {
         settings: {
             modeKey, mode, includes, basePath: '/recommended', query, sort, sortTypes, page
         },
+        placeholder,
         results,
         me: req.me
     });
