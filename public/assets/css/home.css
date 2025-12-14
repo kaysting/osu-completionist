@@ -73,11 +73,11 @@
     display: flex;
     gap: 8px;
     justify-content: center;
-    width: 100%;
+    width: 400px;
 }
 
 #home .actions .search .textbox {
-    max-width: 300px;
+    width: 100%;
 }
 
 #home .stats {

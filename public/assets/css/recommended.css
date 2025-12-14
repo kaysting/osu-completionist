@@ -3,42 +3,31 @@
 }
 
 #recommended .settings {
-    padding: 8px 12px 0px 12px;
+    padding: 8px;
 }
 
-#recommended .settings .controls .row {
-    display: flex;
-    flex-direction: row;
-    gap: 8px 24px;
-    flex-wrap: wrap;
-}
-
-@media (max-width: 700px) {
+@media (max-width: 800px) {
     #recommended .settings {
         flex-direction: column;
-        width: 100%;
-        align-items: center;
     }
 
-    #recommended .controls .setting {
+    #recommended .settings>* {
         width: 100%;
-        flex-basis: 100%;
     }
 }
 
-#recommended .setting {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-#settingYear,
-#settingMinStars,
-#settingMaxStars {
-    width: 100px;
-}
-
-#recommended .setting .label {
-    font-size: 14px;
+#recommended .noResults {
+    padding: 64px 16px;
     color: var(--textDim);
+    text-align: center;
+}
+
+#recommended .noResults p {
+    font-size: 18px;
+    margin: 0px;
+}
+
+#recommended .noResults .icon {
+    font-family: "Material Symbols Rounded";
+    font-size: 96px;
 }

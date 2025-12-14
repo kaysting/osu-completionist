@@ -469,130 +469,161 @@ const getUserRecommendedMaps = (userId, mode, includeLoved = false, includeConve
 };
 
 const searchBeatmaps = (query, includeLoved, includeConverts, sort, notPlayedByUserId, limit = 50, offset = 0) => {
-    const filterRegex = /(cs|ar|od|hp|keys|stars|sr|bpm|length|mode)\s?(<=|>=|=|<|>)\s?(\w+)(\s|$)/gi;
+    const filterRegex = /(cs|ar|od|hp|keys|stars|sr|bpm|length|mode|year|month)\s?(<=|>=|=|<|>)\s?([\w.]+)(\s|$)/gi;
     const filterMatches = query.matchAll(filterRegex);
     const textQuery = query.replace(filterRegex, '').trim();
+
     const params = [];
     const whereClauses = [];
     let joinClause = '';
-    let sortClause = 'RANDOM()';
-    let mode;
+    let sortClause = '';
+    let mode = null;
+    const filters = [];
+
     // Loop through filter matches
     for (const match of filterMatches) {
-        // Parse filter
         const key = match[1];
         const operator = match[2];
         const value = match[3].toLowerCase();
+        filters.push({ key, operator, value });
+
         const valueInt = parseInt(value);
         const valueFloat = parseFloat(value);
-        const valueBool = (value === 'false' || !valueInt) ? false : (value) ? true : null;
-        console.log({ key, operator, value });
-        // Apply filter
+
         switch (key) {
             case 'stars':
-            case 'sr': {
-                if (!valueFloat) break;
-                whereClauses.push(`map.stars ${operator} ${valueFloat}`);
+            case 'sr':
+                if (!isNaN(valueFloat)) whereClauses.push(`map.stars ${operator} ${valueFloat}`);
                 break;
-            }
             case 'keys':
-            case 'cs': {
-                if (!valueFloat) break;
-                whereClauses.push(`map.cs ${operator} ${valueInt}`);
+            case 'cs':
+                if (!isNaN(valueFloat)) whereClauses.push(`map.cs ${operator} ${valueFloat}`);
                 break;
-            }
-            case 'ar': {
-                if (!valueFloat) break;
-                whereClauses.push(`map.ar ${operator} ${valueInt}`);
+            case 'ar':
+                if (!isNaN(valueFloat)) whereClauses.push(`map.ar ${operator} ${valueFloat}`);
                 break;
-            }
-            case 'od': {
-                if (!valueFloat) break;
-                whereClauses.push(`map.od ${operator} ${valueInt}`);
+            case 'od':
+                if (!isNaN(valueFloat)) whereClauses.push(`map.od ${operator} ${valueFloat}`);
                 break;
-            }
-            case 'hp': {
-                if (!valueFloat) break;
-                whereClauses.push(`map.hp ${operator} ${valueInt}`);
+            case 'hp':
+                if (!isNaN(valueFloat)) whereClauses.push(`map.hp ${operator} ${valueFloat}`);
                 break;
-            }
-            case 'bpm': {
-                if (!valueFloat) break;
-                whereClauses.push(`map.bpm ${operator} ${valueInt}`);
+            case 'bpm':
+                if (!isNaN(valueFloat)) whereClauses.push(`map.bpm ${operator} ${valueFloat}`);
                 break;
-            }
-            case 'length': {
-                if (!valueInt) break;
-                whereClauses.push(`map.duration_secs ${operator} ${valueInt}`);
+            case 'length':
+                if (!isNaN(valueInt)) whereClauses.push(`map.duration_secs ${operator} ${valueInt}`);
                 break;
-            }
-            case 'mode': {
+            case 'mode':
                 const modeKey = utils.rulesetNameToKey(value);
-                if (!modeKey) break;
-                whereClauses.push(`map.mode ${operator} ${modeKey}`);
+                if (!modeKey || operator !== '=') break;
+                whereClauses.push(`map.mode = '${modeKey}'`);
                 mode = modeKey;
+                break;
+            case 'year': {
+                if (isNaN(valueInt) || valueInt < 2007 || valueInt > new Date().getFullYear() + 1) break;
+                const startMs = Date.UTC(valueInt, 0, 1);
+                const endMs = Date.UTC(valueInt + 1, 0, 1);
+                switch (operator) {
+                    case '=':
+                        whereClauses.push(`mapset.time_ranked >= ${startMs} AND mapset.time_ranked < ${endMs}`);
+                        break;
+                    case '>=':
+                        whereClauses.push(`mapset.time_ranked >= ${startMs}`);
+                        break;
+                    case '<=':
+                        whereClauses.push(`mapset.time_ranked < ${endMs}`);
+                        break;
+                    case '>':
+                        whereClauses.push(`mapset.time_ranked >= ${endMs}`);
+                        break;
+                    case '<':
+                        whereClauses.push(`mapset.time_ranked < ${startMs}`);
+                        break;
+                }
+                break;
+            }
+            case 'month': {
+                if (!value.match(/^\d{4}-\d{1,2}$/)) break;
+                const [yearStr, monthStr] = value.split('-');
+                const year = parseInt(yearStr);
+                const monthIndex = parseInt(monthStr) - 1;
+                const startMs = Date.UTC(year, monthIndex, 1);
+                const endMs = Date.UTC(year, monthIndex + 1, 1);
+                switch (operator) {
+                    case '=':
+                        whereClauses.push(`mapset.time_ranked >= ${startMs} AND mapset.time_ranked < ${endMs}`);
+                        break;
+                    case '>=':
+                        whereClauses.push(`mapset.time_ranked >= ${startMs}`);
+                        break;
+                    case '<=':
+                        whereClauses.push(`mapset.time_ranked < ${endMs}`);
+                        break;
+                    case '>':
+                        whereClauses.push(`mapset.time_ranked >= ${endMs}`);
+                        break;
+                    case '<':
+                        whereClauses.push(`mapset.time_ranked < ${startMs}`);
+                        break;
+                }
                 break;
             }
         }
     }
+
     // Handle including loved
     if (includeLoved) {
         whereClauses.push(`map.status IN ('ranked', 'approved', 'loved')`);
     } else {
         whereClauses.push(`map.status IN ('ranked', 'approved')`);
     }
+
     // Handle excluding converts
-    // If no mode is provided, don't include converts
     if (!includeConverts || !mode) {
         whereClauses.push(`map.is_convert = 0`);
     }
-    // Exclude passed maps if user was provided
+
+    // Exclude passed maps
     if (notPlayedByUserId) {
         whereClauses.push(`
             NOT EXISTS (
                 SELECT 1 FROM user_passes up 
                 WHERE up.user_id = ? 
-                AND up.map_id = b.id 
-                AND up.mode = b.mode
+                AND up.map_id = map.id 
+                AND up.mode = map.mode
             )
         `);
         params.push(notPlayedByUserId);
     }
-    // Handle sorting
-    switch (sort) {
-        case 'stars_asc': {
-            sortClause = `map.stars ASC`;
-            break;
-        }
-        case 'stars_desc': {
-            sortClause = `map.stars DESC`;
-            break;
-        }
-        case 'date_asc': {
-            sortClause = `mapset.time_ranked ASC`;
-            break;
-        }
-        case 'date_desc': {
-            sortClause = `mapset.time_ranked DESC`;
-            break;
-        }
-        case 'relevance': {
-            if (!textQuery) break;
-            sortClause = `search.rank`;
-            break;
-        }
-    }
+
     // Join FTS table if we have a text search
     if (textQuery) {
-        if (mode) {
-            joinClause = `JOIN beatmaps_search search ON map.id = search.map_id AND map.mode = ${mode}`;
-        } else {
-            joinClause = `JOIN beatmaps_search search ON map.id = search.map_id`;
+        joinClause = `JOIN beatmaps_search ON map.id = beatmaps_search.map_id AND map.mode = beatmaps_search.mode`;
+        whereClauses.push(`beatmaps_search MATCH ?`);
+        params.push(textQuery);
+    }
+
+    // Handle sorting
+    switch (sort) {
+        case 'stars_asc': sortClause = `map.stars ASC`; break;
+        case 'stars_desc': sortClause = `map.stars DESC`; break;
+        case 'date_asc': sortClause = `mapset.time_ranked ASC`; break;
+        case 'date_desc': sortClause = `mapset.time_ranked DESC`; break;
+        case 'length_asc': sortClause = `map.duration_secs ASC`; break;
+        case 'length_desc': sortClause = `map.duration_secs DESC`; break;
+        default: {
+            if (textQuery) {
+                sortClause = `beatmaps_search.rank`;
+            } else {
+                sortClause = `RANDOM()`;
+            }
         }
     }
+
     // Get result IDs
     const sql = `
-        SELECT map.id
+        SELECT DISTINCT map.id
         FROM beatmaps map
         JOIN beatmapsets mapset ON map.mapset_id = mapset.id
         ${joinClause}
@@ -600,11 +631,16 @@ const searchBeatmaps = (query, includeLoved, includeConverts, sort, notPlayedByU
         ORDER BY ${sortClause}
         LIMIT ? OFFSET ?
     `;
-    console.log({ sql, params, limit, offset });
     const rows = db.prepare(sql).all(...params, limit, offset);
-    // Fetch and return result data
+
     const beatmaps = getBulkBeatmaps(rows.map(row => row.id), true, mode);
-    return beatmaps;
+    return {
+        beatmaps,
+        query: {
+            filters,
+            text: textQuery
+        }
+    };
 };
 
 module.exports = {
