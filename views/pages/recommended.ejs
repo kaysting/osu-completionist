@@ -1,32 +1,42 @@
 <link rel="stylesheet" href="/assets/css/recommended.css">
 <div class="flex col gap-16">
     <%- include('../partials/statSettings') %>
-    <div id="recommended" class="card flex col gap-8">
-        <form class="settings flex gap-8 justify-center align-center">
-            <div class="flex row gap-8 flex-grow">
-                <% if (settings.query) { %>
-                <a href="?" class="btn medium square">
-                    <span class="icon">close</span>
-                </a>
-                <% } %>
-                <div class="textbox medium hasIcon flex-grow">
-                    <span class="icon">search</span>
-                    <input type="text" name="q" id="inputQuery" class="input" placeholder="<%= placeholder %>"
-                        value="<%= settings.query %>">
+    <div id="recommended" class="card flex col">
+        <form class="settings flex col gap-8">
+            <div class="inputs flex gap-8">
+                <div class="flex row gap-8 flex-grow">
+                    <% if (settings.query) { %>
+                    <a href="." class="btn medium square">
+                        <span class="icon">close</span>
+                    </a>
+                    <% } %>
+                    <div class="textbox medium hasIcon flex-grow">
+                        <span class="icon">search</span>
+                        <input type="text" name="q" id="inputQuery" class="input" placeholder="<%= placeholder %>"
+                            value="<%= settings.query %>">
+                    </div>
+                </div>
+                <div class="flex row gap-8">
+                    <div class="textbox medium select hasIcon flex-grow">
+                        <span class="icon">sort</span>
+                        <select name="sort" class="input" id="inputSort" onChange="this.form.submit()">
+                            <% for (const type of settings.sortTypes) { %>
+                            <option value="<%= type.id %>" <%= type.id === (settings.sort || '') ? 'selected' : '' %>>
+                                <%= type.name %>
+                            </option>
+                            <% } %>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn primary medium" id="searchSubmit">Go</button>
                 </div>
             </div>
-            <div class="flex row gap-8">
-                <div class="textbox medium select hasIcon flex-grow">
-                    <span class="icon">sort</span>
-                    <select name="sort" class="input" id="inputSort" onChange="this.form.submit()">
-                        <% for (const type of settings.sortTypes) { %>
-                        <option value="<%= type.id %>" <%= type.id === (settings.sort || '') ? 'selected' : '' %>>
-                            <%= type.name %>
-                        </option>
-                        <% } %>
-                    </select>
-                </div>
-                <button type="submit" class="btn primary medium" id="searchSubmit">Go</button>
+            <div class="hint flex align-center">
+                <a href="" class="help btn small text accent">
+                    <span class="icon">filter_alt</span>
+                    <span class="label">Filter help</span>
+                </a>
+                <div class="status">Found <%= results.total_matches.toLocaleString() %> un-passed maps in
+                    <%= results.process_time_ms %>ms</div>
             </div>
         </form>
         <script>
@@ -38,13 +48,13 @@
             inputQuery.selectionStart = inputQuery.selectionEnd = inputQuery.value.length;
         </script>
         <% if (results.beatmaps.length) { %>
-        <div class="beatmapCardContainer beatmaps card lighter">
+        <div class="beatmapCardContainer card lighter">
             <% for (const beatmap of results.beatmaps) { %>
             <%- include('../partials/beatmapCard', { beatmap }) %>
             <% } %>
         </div>
         <% } else { %>
-        <div class="card lighter flex col gap-16 align-center noResults">
+        <div class="flex col gap-16 align-center noResults">
             <div class="icon">help</div>
             <p>Either your search matched no maps or you've played them all.</p>
         </div>

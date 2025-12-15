@@ -177,6 +177,21 @@ img {
     padding: 4px 12px;
 }
 
+.btn.small {
+    height: 26px;
+    font-size: 14px;
+    padding: 0px 8px;
+}
+
+.btn.small .icon {
+    font-size: 16px;
+}
+
+.btn.small.square {
+    width: 40px;
+    padding: 0px;
+}
+
 .btn.medium {
     height: 40px;
     font-size: 16px;
@@ -269,6 +284,7 @@ img {
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
+    user-select: none;
 }
 
 .textbox::after {
@@ -799,9 +815,9 @@ img {
     padding: 0px;
     padding-right: 16px;
     --bg: hsla(220, 20%, 15%, 0.5);
-    --bgHover: hsla(220, 20%, 15%, 0.6);
+    --bgHover: hsla(220, 20%, 15%, 0.75);
     --fg: white;
-    --fgHover: white;
+    --fgHover: var(--accent);
 }
 
 .beatmapCard .left .playPause .icon {

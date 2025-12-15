@@ -622,8 +622,9 @@ const searchBeatmaps = (query, includeLoved, includeConverts, sort, notPlayedByU
     }
 
     // Get result IDs
+    const startTime = Date.now();
     const sql = `
-        SELECT DISTINCT map.id
+        SELECT DISTINCT map.id, COUNT(*) OVER() AS total_matches
         FROM beatmaps map
         JOIN beatmapsets mapset ON map.mapset_id = mapset.id
         ${joinClause}
@@ -632,9 +633,13 @@ const searchBeatmaps = (query, includeLoved, includeConverts, sort, notPlayedByU
         LIMIT ? OFFSET ?
     `;
     const rows = db.prepare(sql).all(...params, limit, offset);
+    const endTime = Date.now();
+    const totalMatches = rows.length > 0 ? rows[0].total_matches : 0;
 
     const beatmaps = getBulkBeatmaps(rows.map(row => row.id), true, mode);
     return {
+        total_matches: totalMatches,
+        process_time_ms: endTime - startTime,
         beatmaps,
         query: {
             filters,

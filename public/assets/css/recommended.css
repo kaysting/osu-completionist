@@ -6,13 +6,19 @@
     padding: 8px;
 }
 
-@media (max-width: 800px) {
-    #recommended .settings {
-        flex-direction: column;
-    }
+#recommended .settings .hint {
+    gap: 2px 8px;
+}
 
-    #recommended .settings>* {
-        width: 100%;
+#recommended .settings .hint .status {
+    font-size: 14px;
+    color: var(--textDim);
+    line-height: 1.2;
+}
+
+@media (max-width: 800px) {
+    #recommended .settings .inputs {
+        flex-direction: column;
     }
 }
 
