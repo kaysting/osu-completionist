@@ -135,10 +135,10 @@
             </div>
             <div class="flex row gap-8 justify-center">
                 <div class="flex">
-                    <a href="/recommended?mode=<%= settings.modeKey %>&loved=<%= settings.includes.includes('loved') ? 'true' : '' %>&converts=<%= settings.includes.includes('converts') ? 'true' : '' %>"
+                    <a href="/recommended/<%= settings.modeKey %>/<%= settings.includes.join('-') %>?q=<%- user.recommendedQuery %>"
                         class="btn primary">
                         <span class="icon filled">cards_star</span>
-                        <span class="label">view more in play next...</span>
+                        <span class="label">More like this in play next...</span>
                     </a>
                 </div>
             </div>

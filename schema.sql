@@ -168,13 +168,6 @@ CREATE INDEX "idx_user_stats_history" ON "user_stats_history" (
 	"includes_converts"
 );
 
-CREATE TABLE
-	user_previous_names (
-		user_id int not null,
-		name int not null,
-		primary key (user_id, name)
-	);
-
 CREATE VIRTUAL TABLE beatmaps_search USING fts5 (
 	title,
 	artist,
@@ -216,3 +209,28 @@ CREATE TABLE
 		bpm REAL,
 		PRIMARY KEY ("id", "mapset_id", "mode")
 	);
+
+CREATE TABLE
+	user_previous_names (
+		user_id int not null,
+		name text not null,
+		primary key (user_id, name)
+	);
+
+CREATE VIRTUAL TABLE users_search USING fts5 (names)
+/* users_search(names) */;
+
+CREATE TABLE
+	IF NOT EXISTS 'users_search_data' (id INTEGER PRIMARY KEY, block BLOB);
+
+CREATE TABLE
+	IF NOT EXISTS 'users_search_idx' (segid, term, pgno, PRIMARY KEY (segid, term)) WITHOUT ROWID;
+
+CREATE TABLE
+	IF NOT EXISTS 'users_search_content' (id INTEGER PRIMARY KEY, c0);
+
+CREATE TABLE
+	IF NOT EXISTS 'users_search_docsize' (id INTEGER PRIMARY KEY, sz BLOB);
+
+CREATE TABLE
+	IF NOT EXISTS 'users_search_config' (k PRIMARY KEY, v) WITHOUT ROWID;

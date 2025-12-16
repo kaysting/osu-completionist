@@ -64,7 +64,7 @@ const importBeatmapsets = async () => {
     const rebuildSearchIndex = db.transaction(() => {
         // Get all maps
         const maps = db.prepare(`
-            SELECT b.id AS map_id, b.mode, b.name AS version, bs.title, bs.artist
+            SELECT b.id AS map_id, b.mode, b.name, bs.title, bs.artist
             FROM beatmaps b
             JOIN beatmapsets bs ON b.mapset_id = bs.id
         `).all();

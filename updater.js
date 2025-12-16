@@ -1,6 +1,6 @@
 const FETCH_ALL_MAPS = false;
 const REPLACE_EXISTING_MAPS = false;
-const QUEUE_ALL_USERS = true;
+const QUEUE_ALL_USERS = false;
 
 require('dotenv').config();
 const fs = require('fs');

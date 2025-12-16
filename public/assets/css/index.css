@@ -955,9 +955,98 @@ img {
 
 .beatmapCardContainer {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr));
     gap: 8px;
-    justify-content: center;
+}
+
+.userCardContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 350px), 1fr));
+    gap: 8px;
+}
+
+.userCard {
+    position: relative;
+    background: hsl(220, 20%, 15%);
+    border-radius: 16px;
+    overflow: hidden;
+    padding: 8px;
+}
+
+.userCard:hover {
+    text-decoration: none;
+}
+
+.userCard .banner {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.userCard .bannerDimming {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background: hsla(220, 20%, 10%, 0.6);
+    transition: 0.1s ease-in-out;
+}
+
+.userCard:hover .bannerDimming {
+    background: hsla(220, 20%, 30%, 0.6);
+    transition: none;
+}
+
+.userCard .avatar {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    border-radius: 24px;
+    flex-shrink: 0;
+}
+
+.userCard .content {
+    position: relative;
+    text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.userCard .name {
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.userCard .flags {
+    gap: 4px 16px;
+    overflow: hidden;
+}
+
+.userCard .flags img {
+    height: 18px;
+    border-radius: 4px;
+}
+
+.userCard .flags .name {
+    font-size: 14px;
+    font-weight: 400;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.userCard .hoverOverlay {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
 }
 
 .flex {
@@ -1010,6 +1099,15 @@ img {
 
 .justify-evenly {
     justify-content: space-evenly;
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}
+
+.text-ellipsis {
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .gap-2 {

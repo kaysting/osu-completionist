@@ -36,12 +36,14 @@ router.get('/:mode/:includes', (req, res) => {
     );
     // Define sort types
     const sortTypes = [
+        { id: 'date_asc', name: 'Oldest to newest' },
+        { id: 'date_desc', name: 'Newest to oldest' },
         { id: 'stars_asc', name: 'Easiest to hardest' },
         { id: 'stars_desc', name: 'Hardest to easiest' },
         { id: 'length_asc', name: 'Shortest to longest' },
         { id: 'length_desc', name: 'Longest to shortest' },
-        { id: 'date_asc', name: 'Oldest to newest' },
-        { id: 'date_desc', name: 'Newest to oldest' }
+        { id: 'bpm_asc', name: 'Slowest to fastest' },
+        { id: 'bpm_desc', name: 'Fastest to slowest' }
     ];
     sortTypes.unshift({ id: '', name: `Auto (${results.query.text ? 'Relevant' : 'Random'})` });
     // Define placeholder list and pick one

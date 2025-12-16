@@ -44,12 +44,13 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
     const updateStatus = dbHelpers.getUserUpdateStatus(req.user.id);
     // If viewing our own profile, get user trends and recommended maps
     let recommended = null;
+    let recommendedQuery = null;
     if (req.me && req.user.id === req.me.id) {
         // Determine min and max recent star rating and ranked time
         let minStars, maxStars, minTime, maxTime = null;
         let passesToCheck = 20;
         let passesChecked = 0;
-        let recommendationsToGet = 5;
+        let limit = 5;
         for (const pass of recentPasses) {
             if (passesChecked >= passesToCheck) break;
             const stars = pass.beatmap.stars;
@@ -60,15 +61,10 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
             maxTime = maxTime === undefined || timeRanked > maxTime ? timeRanked : maxTime;
             passesChecked++;
         }
-        // Get recommended maps
-        recommended = dbHelpers.getUserRecommendedMaps(req.user.id, modeKey, includeLoved, includeConverts, 5, 0, 'random', minStars, maxStars, minTime, maxTime);
-        // If we didn't get enough, remove ranked time filters
-        if (recommended.beatmaps.length < recommendationsToGet) {
-            recommended = dbHelpers.getUserRecommendedMaps(req.user.id, modeKey, includeLoved, includeConverts, 5, 0, 'random', minStars, maxStars);
-        }
-        // If we still didn't get enough, remove star rating filters
-        if (recommended.beatmaps.length < recommendationsToGet) {
-            recommended = dbHelpers.getUserRecommendedMaps(req.user.id, modeKey, includeLoved, includeConverts, 5, 0, 'random');
+        if (passesChecked) {
+            // Get recommended maps
+            recommendedQuery = `stars > ${(minStars - 0.5).toFixed(1)} stars < ${(maxStars + 0.5).toFixed(1)} year >= ${new Date(minTime).getUTCFullYear()} year <= ${new Date(maxTime).getUTCFullYear()}`;
+            recommended = dbHelpers.searchBeatmaps(`${recommendedQuery} mode=${mode}`, includeLoved, includeConverts, 'random', req.user.id, limit);
         }
     }
     // Format times
@@ -102,7 +98,7 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
             description: `${req.user.name} has passed ${stats.percentage_completed.toFixed(2)}% of all ${modeName} beatmaps (${includesString})! Click to view more of their completionist stats.`,
         },
         user: {
-            ...user, stats, yearly, recentPasses, updateStatus, recommended
+            ...user, stats, yearly, recentPasses, updateStatus, recommended, recommendedQuery
         },
         copyable: statsText.join('\n'),
         settings: {

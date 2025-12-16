@@ -1,0 +1,12 @@
+#search form {
+    padding: 8px;
+}
+
+#search .results {
+    padding: 16px 12px;
+}
+
+#search .results .empty {
+    font-size: 16px;
+    color: var(--textDim);
+}

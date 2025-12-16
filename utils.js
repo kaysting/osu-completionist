@@ -269,6 +269,22 @@ const utils = {
             }
         }
         return num.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    },
+
+    sanitizeFtsQuery: (input) => {
+        // Thanks Gemini
+        if (!input || !input.trim()) return null;
+
+        return input
+            .split(/\s+/)                    // Split by spaces
+            .filter(word => word.length > 0) // Ignore empty spaces
+            .map(word => {
+                // Escape double quotes in the word itself
+                const safeWord = word.replace(/"/g, '""');
+                // Wrap in quotes and add wildcard
+                return `"${safeWord}"*`;
+            })
+            .join(' AND '); // Explicit AND ensures all terms must be present
     }
 
 };
