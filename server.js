@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const db = require('./db');
-const { log } = require('./utils');
+const { log, logError } = require('./utils');
 const { getAuthenticatedUser } = require('./middleware');
 const dayjs = require('dayjs');
 
@@ -45,7 +45,7 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-    log(err);
+    logError(err);
     res.status(500);
     res.render('layout', {
         title: `500 internal server error`,
@@ -70,12 +70,12 @@ const shutDown = () => {
 };
 
 process.on('unhandledRejection', (reason, promise) => {
-    log('Unhandled Rejection at:', promise, 'reason:', reason);
+    logError('Unhandled Rejection at:', promise, 'reason:', reason);
     shutDown();
 });
 
 process.on('uncaughtException', (err) => {
-    log('Uncaught Exception thrown:', err);
+    logError('Uncaught Exception thrown:', err);
 });
 
 process.on('SIGINT', () => {

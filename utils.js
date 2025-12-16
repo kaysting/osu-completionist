@@ -1,10 +1,39 @@
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
 
 const utils = {
 
     log: (...args) => {
         const timestamp = new Date().toISOString();
         console.log(`[${timestamp}]`, ...args);
+    },
+
+    postDiscordWebhook: async (webhookUrl, message) => {
+        try {
+            await axios.post(webhookUrl, message);
+        } catch (error) {
+            // Don't bother logging anything
+        }
+    },
+
+    logError: (...args) => {
+        const timestamp = new Date().toISOString();
+        console.error(`[${timestamp}]`, ...args);
+        const url = process.env.ERROR_LOGS_DISCORD_WEBHOOK_URL;
+        if (url) {
+            const content = args.map(arg => {
+                if (arg instanceof Error) {
+                    return `\`\`\`${arg.stack}\`\`\``;
+                } else if (typeof arg === 'object') {
+                    return `\`\`\`json\n${JSON.stringify(arg, null, 2)}\`\`\``;
+                } else {
+                    return arg.toString();
+                }
+            }).join('\n');
+            utils.postDiscordWebhook(url, {
+                content
+            });
+        }
     },
 
     sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
@@ -17,20 +46,24 @@ const utils = {
             case 'standard':
             case 'std':
             case 'circles':
+            case 0:
                 return 'osu';
             case 'osu!taiko':
             case 'taiko':
             case 'drums':
+            case 1:
                 return 'taiko';
             case 'osu!catch':
             case 'osu!ctb':
             case 'ctb':
             case 'catch':
             case 'fruits':
+            case 2:
                 return 'fruits';
             case 'osu!mania':
             case 'mania':
             case 'keys':
+            case 3:
                 return 'mania';
             default:
                 return null;

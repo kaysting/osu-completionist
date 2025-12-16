@@ -505,6 +505,16 @@ img {
     overflow: hidden;
 }
 
+@media (max-width: 600px) {
+    #main {
+        padding: 0px 4px 16px 4px;
+    }
+
+    .card {
+        padding: 8px 2px 8px 2px;
+    }
+}
+
 .card.lighter {
     background: hsl(220, 20%, 18%);
     border-radius: 8px;
@@ -745,6 +755,9 @@ img {
 
 .beatmap .map .diff .text {
     font-size: 14px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .beatmap .map .diff .text .name {
@@ -1021,6 +1034,7 @@ img {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    line-height: 1.2;
 }
 
 .userCard .flags {
@@ -1039,14 +1053,7 @@ img {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-}
-
-.userCard .hoverOverlay {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    height: 100%;
+    line-height: 1.2;
 }
 
 .flex {

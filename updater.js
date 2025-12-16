@@ -10,7 +10,7 @@ const db = require('./db');
 const osu = require('./osu');
 
 const dbHelpers = require('./helpers/dbHelpers');
-const { log, sleep } = require('./utils');
+const { log, logError, sleep } = require('./utils');
 const { queueUser, updateUserProfile, saveMapset } = require('./helpers/updaterHelpers');
 const path = require('path');
 const dbPath = require('path').join(__dirname, process.env.DB_PATH || './storage.db');
@@ -62,7 +62,7 @@ const updateBeatmapStats = () => {
         }
         log('Updated beatmap stats');
     } catch (error) {
-        log('Error while updating beatmap stats:', error);
+        logError('Error while updating beatmap stats:', error);
     }
 };
 
@@ -115,7 +115,7 @@ const fetchNewMapData = async () => {
         updateBeatmapStats();
         log('Beatmap database is up to date');
     } catch (error) {
-        log('Error while updating stored beatmap data:', error);
+        logError('Error while updating stored beatmap data:', error);
         await sleep(5000);
     }
     // Wait an hour and then run again
@@ -208,7 +208,7 @@ const updateUserStats = async (userId) => {
         log('Updated user stats for', userEntry?.name || userId);
         return true;
     } catch (error) {
-        log('Error while updating user stats:', error);
+        logError('Error while updating user stats:', error);
         return false;
     }
 };
@@ -332,7 +332,7 @@ const importUser = async (userId) => {
         // Queue user again to fetch recents and catch any missed passes
         await queueUser(userId);
     } catch (error) {
-        log(`Error while importing user ${userEntry.name}:`, error);
+        logError(`Error while importing user ${userEntry.name}:`, error);
     }
     isMostPlayedUpdateRunning = false;
 };
@@ -421,7 +421,7 @@ const updateUserFromRecents = async (userId) => {
         // Update user stats
         await updateUserStats(userId);
     } catch (error) {
-        log('Error while updating user recent scores:', error);
+        logError('Error while updating user recent scores:', error);
         await sleep(5000);
     }
     isRecentsUpdateRunning = false;
@@ -492,7 +492,7 @@ const savePassesFromGlobalRecents = async () => {
             // Wait for rate limit to clear
             await sleep(10000);
         }
-        log('Error while updating users from global recents:', error);
+        logError('Error while updating users from global recents:', error);
     }
     // Wait and check again
     setTimeout(savePassesFromGlobalRecents, 1000 * 15);
@@ -519,7 +519,7 @@ const startQueuedUserUpdates = async () => {
             }
         }
     } catch (error) {
-        log('Error while initializing user update tasks:', error);
+        logError('Error while initializing user update tasks:', error);
         await sleep(5000);
     }
     setTimeout(startQueuedUserUpdates, 1000);
@@ -586,7 +586,7 @@ const queueActiveUsers = async () => {
         // Log inactive user count
         log(`Queued ${countQueuedUsers} active users for updates and skipped ${countInactiveUsers} inactive users`);
     } catch (error) {
-        log('Error while queuing active users for update:', error);
+        logError('Error while queuing active users for update:', error);
         await sleep(5000);
     }
     // Run again in an hour
@@ -641,7 +641,7 @@ const saveUserHistory = async () => {
         log('Completed daily user history save');
         await sleep(1000 * 60);
     } catch (error) {
-        log('Error while saving user history:', error);
+        logError('Error while saving user history:', error);
     }
     setTimeout(saveUserHistory, 1000);
 };
@@ -677,7 +677,7 @@ const backupDatabase = async () => {
             }
         }
     } catch (error) {
-        log('Error while backing up database:', error);
+        logError('Error while backing up database:', error);
     }
     setTimeout(backupDatabase, 1000 * 60 * 60);
 };
@@ -685,11 +685,12 @@ const backupDatabase = async () => {
 async function main() {
 
     // Get osu API token
+    // We await this before starting other processes to avoid
+    // getting a bunch of tokens at once
     log('Authenticating with osu API...');
     await osu.getToken();
 
     // Start update processes
-    // Stagger function calls to prevent fetching API token too rapidly
     log(`Starting update processes...`);
     fetchNewMapData();
     startQueuedUserUpdates();
