@@ -396,18 +396,22 @@ const updateUserFromRecents = async (userId) => {
         }
         // Write new scores to database
         const transaction = db.transaction((scores) => {
+            let mostRecentScoreTime = 0;
             for (const score of scores) {
+                const scoreTime = new Date(score.ended_at || score.created_at || Date.now()).getTime();
+                if (scoreTime > mostRecentScoreTime) {
+                    mostRecentScoreTime = scoreTime;
+                }
                 db.prepare(
                     `INSERT OR IGNORE INTO user_passes
                         (user_id, mapset_id, map_id, mode, status, is_convert, time_passed)
                     VALUES (?, ?, ?, ?, ?, ?, ?)`
                 ).run(
                     user.id, score.beatmapset.id, score.beatmap.id, score.beatmap.mode,
-                    score.beatmap.status, score.beatmap.convert ? 1 : 0,
-                    new Date(score.ended_at || score.created_at || Date.now()).getTime()
+                    score.beatmap.status, score.beatmap.convert ? 1 : 0, scoreTime
                 );
             }
-            db.prepare(`UPDATE users SET last_score_update = ? WHERE id = ?`).run(updateTime, user.id);
+            db.prepare(`UPDATE users SET last_score_update = ?, last_score_submit = ? WHERE id = ?`).run(updateTime, mostRecentScoreTime, user.id);
             db.prepare(`DELETE FROM user_update_tasks WHERE user_id = ?`).run(user.id);
             log(`Completed recent score update for ${user.name}`);
         });
@@ -469,9 +473,11 @@ const savePassesFromGlobalRecents = async () => {
                 );
                 if (existingPass) continue;
                 // Save the pass and log
+                const scoreTime = new Date(score.ended_at || score.created_at || Date.now()).getTime();
                 db.prepare(`INSERT OR IGNORE INTO user_passes (user_id, mapset_id, map_id, mode, status, is_convert, time_passed) VALUES (?, ?, ?, ?, ?, ?, ?)`).run(
-                    user.id, map.mapset_id, score.beatmap_id, ruleset, map.status, map.convert ? 1 : 0, new Date(score.ended_at || score.created_at || Date.now()).getTime()
+                    user.id, map.mapset_id, score.beatmap_id, ruleset, map.status, map.convert ? 1 : 0, scoreTime
                 );
+                db.prepare(`UPDATE users SET last_score_submit = ? WHERE id = ?`).run(scoreTime, user.id);
                 log(`Found and saved a new ${ruleset} map pass for ${user.name}`);
                 // Log counts
                 logUserPassCount(user.id);

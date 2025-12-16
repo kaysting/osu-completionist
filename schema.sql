@@ -88,6 +88,7 @@ CREATE TABLE
 		"team_name_short" TEXT,
 		"team_flag_url" TEXT,
 		"last_score_update" INTEGER NOT NULL DEFAULT 0,
+		last_score_submit INTEGER NOT NULL DEFAULT 0,
 		PRIMARY KEY ("id")
 	);
 
@@ -234,3 +235,5 @@ CREATE TABLE
 
 CREATE TABLE
 	IF NOT EXISTS 'users_search_config' (k PRIMARY KEY, v) WITHOUT ROWID;
+
+CREATE INDEX idx_users_last_pass ON users (last_score_submit);
