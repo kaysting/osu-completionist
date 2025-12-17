@@ -49,7 +49,7 @@
 
 body {
     --bg: hsl(220, 20%, 10%);
-    --text: hsl(220, 20%, 95%);
+    --text: hsl(220, 20%, 90%);
     --textDim: hsl(220, 20%, 65%);
     --accent: hsl(150, 90%, 60%);
     background: var(--bg);
@@ -63,6 +63,42 @@ p {
     font-size: 16px;
     line-height: 1.4;
     margin-bottom: 0.5em;
+    color: var(--text);
+}
+
+p:not(:last-child) {
+    line-height: 1.5;
+    margin-bottom: 0.8em;
+}
+
+li {
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--text);
+}
+
+b {
+    font-weight: bold;
+    color: white;
+}
+
+code {
+    background: hsl(220, 20%, 25%);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.9em;
+    color: var(--text);
+}
+
+ul,
+ol {
+    margin-left: 2em;
+}
+
+ul:not(:last-child):not(li>ul),
+ol:not(:last-child):not(li>ol) {
+    margin-bottom: 0.8em;
 }
 
 a {
@@ -71,15 +107,12 @@ a {
 }
 
 a:hover {
+    color: white;
     text-decoration: underline;
 }
 
-b {
-    font-weight: 600;
-    color: white;
-}
-
 small {
+    display: block;
     font-size: 14px;
     color: var(--textDim);
     line-height: 1.2;
@@ -367,6 +400,66 @@ img {
 .btnGroup .btn:last-child {
     border-top-right-radius: 8px;
     border-bottom-right-radius: 8px;
+}
+
+.popup::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+}
+
+.popup:not([open]) {
+    display: none;
+}
+
+.popup {
+    margin: auto;
+    display: flex;
+    border: none;
+    background: hsl(220, 20%, 15%);
+    border-radius: 16px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+    flex-direction: column;
+    color: inherit;
+    font-size: inherit;
+    font-family: inherit;
+    max-width: 800px;
+    max-height: 800px;
+    gap: 16px;
+}
+
+.popup>.title {
+    padding: 16px;
+    padding-bottom: 0px;
+    font-size: 24px;
+    text-align: center;
+    font-weight: bold;
+    color: white;
+    line-height: 1.2;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.popup>.body {
+    padding: 0px 16px;
+    font-size: 16px;
+    line-height: 1.5;
+    overflow: auto;
+    scrollbar-color: hsl(220, 20%, 30%) transparent;
+}
+
+.popup>.actions {
+    padding: 16px;
+    padding-top: 0px;
+    display: flex;
+    gap: 8px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.popup>.actions>.btn {
+    width: 100%;
+    max-width: 400px;
 }
 
 #topbar {

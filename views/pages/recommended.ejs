@@ -31,22 +31,13 @@
                 </div>
             </div>
             <div class="hint flex align-center">
-                <a href="" class="help btn small text accent">
+                <button class="help btn small text accent" id="filterHelpButton">
                     <span class="icon">filter_alt</span>
                     <span class="label">Filter help</span>
-                </a>
-                <div class="status">Found <%= results.total_matches.toLocaleString() %> un-passed maps in
-                    <%= results.process_time_ms %>ms</div>
+                </button>
+                <div class="status">Found <%= results.total_matches.toLocaleString() %> un-passed maps</div>
             </div>
         </form>
-        <script>
-            const inputQuery = document.querySelector('#inputQuery');
-            const inputSort = document.querySelector('#inputSort');
-            // Focus input
-            inputQuery.focus();
-            // Move cursor to the end
-            inputQuery.selectionStart = inputQuery.selectionEnd = inputQuery.value.length;
-        </script>
         <% if (results.beatmaps.length) { %>
         <div class="beatmapCardContainer card lighter">
             <% for (const beatmap of results.beatmaps) { %>
@@ -61,3 +52,30 @@
         <% } %>
     </div>
 </div>
+<dialog id="filterHelpPopup" class="popup" closedby="any">
+    <div class="title">Searching and filtering help</div>
+    <div class="body"><%- filterHelpHtml %></div>
+    <div class="actions">
+        <button class="btn primary medium" id="filterHelpClose">Got it</button>
+    </div>
+</dialog>
+<script>
+    const inputQuery = document.querySelector('#inputQuery');
+    const inputSort = document.querySelector('#inputSort');
+    const btnFilterHelp = document.querySelector('#filterHelpButton');
+    const filterHelpPopup = document.querySelector('#filterHelpPopup');
+    const btnFilterHelpClose = document.querySelector('#filterHelpClose');
+    // Show filter help popup
+    btnFilterHelp.addEventListener('click', (e) => {
+        e.preventDefault();
+        filterHelpPopup.showModal();
+    });
+    // Close filter help popup
+    btnFilterHelpClose.addEventListener('click', (e) => {
+        filterHelpPopup.close();
+    });
+    // Focus input
+    inputQuery.focus();
+    // Move cursor to the end
+    inputQuery.selectionStart = inputQuery.selectionEnd = inputQuery.value.length;
+</script>

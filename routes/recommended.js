@@ -1,6 +1,8 @@
 const express = require('express');
 const { searchBeatmaps } = require('../helpers/dbHelpers');
 const utils = require('../utils');
+const marked = require('marked');
+const fs = require('fs');
 
 const router = express.Router();
 
@@ -69,6 +71,7 @@ router.get('/:mode/:includes', (req, res) => {
         },
         placeholder,
         results,
+        filterHelpHtml: marked.parse(fs.readFileSync('./views/markdown/filterHelp.md', 'utf-8')),
         me: req.me
     });
 });
