@@ -218,11 +218,15 @@ const getBulkUserYearlyCompletionStats = (userIds, mode, includeLoved, includeCo
     for (const userId of userIds) {
         const entry = [];
         for (const year in yearToTotalCount) {
+            const count_total = yearToTotalCount[year];
+            if (!count_total) continue;
+            const count_completed = userIdToYearlyCompletions[userId]?.[year] || 0;
+            const percentage_completed = count_total > 0 ? ((count_completed / count_total) * 100) : 0;
             entry.push({
                 year: parseInt(year),
-                count_completed: userIdToYearlyCompletions[userId]?.[year] || 0,
-                count_total: yearToTotalCount[year],
-                percentage_completed: yearToTotalCount[year] > 0 ? (((userIdToYearlyCompletions[userId]?.[year] || 0) / yearToTotalCount[year]) * 100) : 0
+                count_completed,
+                count_total,
+                percentage_completed
             });
         }
         entries.push(entry);

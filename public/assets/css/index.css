@@ -59,25 +59,15 @@ body {
     line-height: 1;
 }
 
-p {
-    font-size: 16px;
-    line-height: 1.4;
-    margin-bottom: 0.5em;
-    color: var(--text);
-}
-
-p:not(:last-child) {
-    line-height: 1.5;
-    margin-bottom: 0.8em;
-}
-
+p,
 li {
     font-size: 16px;
     line-height: 1.5;
     color: var(--text);
 }
 
-b {
+b,
+strong {
     font-weight: bold;
     color: white;
 }
@@ -96,6 +86,7 @@ ol {
     margin-left: 2em;
 }
 
+p:not(:last-child),
 ul:not(:last-child):not(li>ul),
 ol:not(:last-child):not(li>ol) {
     margin-bottom: 0.8em;
@@ -403,8 +394,7 @@ img {
 }
 
 .popup::backdrop {
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(8px);
+    background: hsla(220, 20%, 10%, 0.75);
 }
 
 .popup:not([open]) {
@@ -417,7 +407,7 @@ img {
     border: none;
     background: hsl(220, 20%, 15%);
     border-radius: 16px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.5);
     flex-direction: column;
     color: inherit;
     font-size: inherit;
