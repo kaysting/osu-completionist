@@ -476,6 +476,19 @@ img {
     display: block;
 }
 
+#topbar:not(.overflowing) #navSearch {
+    width: 32px;
+    padding: 0px;
+}
+
+#topbar:not(.overflowing) #navSearch .label {
+    display: none;
+}
+
+#topbar:not(.overflowing) #navSearch .icon {
+    display: block;
+}
+
 #topbar.overflowing #navProfile {
     flex-grow: 1;
     justify-content: flex-start;
