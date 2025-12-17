@@ -422,8 +422,8 @@ img {
     color: inherit;
     font-size: inherit;
     font-family: inherit;
-    max-width: 800px;
-    max-height: 800px;
+    max-width: min(800px, calc(100% - 16px));
+    max-height: min(800px, calc(100% - 16px));
     gap: 16px;
 }
 
