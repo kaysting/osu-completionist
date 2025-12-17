@@ -522,8 +522,8 @@ const searchBeatmaps = (query, includeLoved, includeConverts, sort, notPlayedByU
     switch (sort) {
         case 'stars_asc': sortClause = `map.stars ASC`; break;
         case 'stars_desc': sortClause = `map.stars DESC`; break;
-        case 'date_asc': sortClause = `mapset.time_ranked ASC`; break;
-        case 'date_desc': sortClause = `mapset.time_ranked DESC`; break;
+        case 'date_asc': sortClause = `mapset.time_ranked ASC, map.stars ASC`; break;
+        case 'date_desc': sortClause = `mapset.time_ranked DESC, map.stars DESC`; break;
         case 'length_asc': sortClause = `map.duration_secs ASC`; break;
         case 'length_desc': sortClause = `map.duration_secs DESC`; break;
         case 'bpm_asc': sortClause = `map.bpm ASC`; break;

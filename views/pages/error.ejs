@@ -1,4 +1,16 @@
 <div id="error">
     <h1><%= number %></h1>
     <p><%= message %></p>
+    <div class="flex gap-8 flex-wrap justify-center">
+        <a href="/" class="btn primary medium">
+            <span class="icon filled">home</span>
+            <span class="label">Home</span>
+        </a>
+        <% if (me) { %>
+        <a href="/u/<%= me.id %>" class="btn medium">
+            <span class="icon filled">person</span>
+            <span class="label">Your profile</span>
+        </a>
+        <% } %>
+    </div>
 </div>
