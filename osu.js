@@ -12,10 +12,21 @@ osu! API Documentation: https://osu.ppy.sh/docs
 require('dotenv').config();
 const axios = require('axios');
 
+let baseUrl = 'https://osu.ppy.sh/api/v2';
 let token = '';
 let expireTime = 0;
 let tokenPromise = null;
-let baseUrl = 'https://osu.ppy.sh/api/v2';
+let lastRequestTime = Date.now();
+let rateLimitRemaining = 1200;
+const MAX_RATE_LIMIT = 1200;
+const MAX_REQUESTS_PER_SECOND = 20;
+const MIN_SAFE_LIMIT_REMAINING = 200;
+
+function getLimitRemainingNow() {
+    const now = Date.now();
+    const msSinceLastRequest = now - lastRequestTime;
+    return Math.min(MAX_RATE_LIMIT, rateLimitRemaining + Math.floor((msSinceLastRequest / 1000) * MAX_REQUESTS_PER_SECOND));
+}
 
 /**
  * Returns a valid oauth token, refreshing it if necessary.
@@ -43,7 +54,7 @@ async function getToken() {
             const res = await axios.post('https://osu.ppy.sh/oauth/token', formData);
 
             token = res.data.access_token;
-            expireTime = now + (res.data.expires_in * 1000);
+            expireTime = now + (res.data.expires_in * 1000) - (60 * 1000);
 
             return token;
         } catch (error) {
@@ -67,22 +78,56 @@ async function getToken() {
  */
 const makeGetRequest = async (endpoint, params = {}) => {
     const token = await getToken();
-    try {
-        const res = await axios.get(baseUrl + endpoint, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
-            params: params,
-            timeout: 1000 * 60
-        });
-        return res.data;
-    } catch (error) {
-        const e = new Error(`Error making GET request to osu! API ${endpoint}: ${error}`);
-        e.data = error?.response?.data || null;
-        e.status = error?.response?.status || null;
-        throw e;
+    let waitTime = 3000;
+    let maxRetries = 10;
+    let tries = 0;
+    while (true) {
+        try {
+            tries++;
+            // Throttle if limit remaining is too low
+            const limitRemainingNow = getLimitRemainingNow();
+            if (limitRemainingNow < MIN_SAFE_LIMIT_REMAINING) {
+                const waitMs = Math.ceil((MIN_SAFE_LIMIT_REMAINING - limitRemainingNow) / MAX_REQUESTS_PER_SECOND * 1000);
+                //console.log(`[osu.js] Throttling for ${waitMs}ms before GET ${endpoint}...`);
+                await new Promise(resolve => setTimeout(resolve, waitMs));
+            }
+            // Pessimistically pay for the request
+            rateLimitRemaining -= MIN_SAFE_LIMIT_REMAINING;
+            // Make request
+            const res = await axios.get(baseUrl + endpoint, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                params: params,
+                timeout: 1000 * 60
+            });
+            // Update rate limit info
+            lastRequestTime = Date.now();
+            const limitRemainingFromHeader = parseInt(res.headers['x-ratelimit-remaining']);
+            if (!isNaN(limitRemainingFromHeader)) {
+                rateLimitRemaining = limitRemainingFromHeader;
+            } else {
+                console.log(`[osu.js] Warning: Missing X-RateLimit-Remaining header on GET ${endpoint}`);
+            }
+            // Return data
+            return res.data;
+        } catch (error) {
+            const status = error?.response?.status || null;
+            if ((status === 429 || status >= 500) && tries < maxRetries) {
+                // Rate limited, wait and retry
+                // Use exponential backoff with some jitter
+                console.log(`[osu.js] HTTP ${status} on GET ${endpoint}, trying again (${tries + 1}/${maxRetries}) in ${Math.round(waitTime)}ms`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+                waitTime = Math.min((waitTime * 2) + (0.2 * waitTime * Math.random()), 60 * 1000);
+            } else {
+                const e = new Error(`Error making GET request to osu! API ${endpoint}: ${error}`);
+                e.data = error?.response?.data || null;
+                e.status = status || null;
+                throw e;
+            }
+        }
     }
 };
 

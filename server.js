@@ -33,6 +33,7 @@ app.use('/u', require('./routes/profile'));
 app.use('/search', require('./routes/search'));
 app.use('/auth', require('./routes/auth'));
 app.use('/recommended', require('./routes/recommended'));
+app.use('/queue', require('./routes/queue'));
 
 app.use((req, res) => {
     res.status(404).render('layout', {

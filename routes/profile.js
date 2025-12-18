@@ -96,6 +96,7 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
         meta: {
             title: `${req.user.name}'s ${modeName} completionist profile`,
             description: `${req.user.name} has passed ${stats.percentage_completed.toFixed(2)}% of all ${modeName} beatmaps (${includesString})! Click to view more of their completionist stats.`,
+            thumbnail: user.avatar_url
         },
         user: {
             ...user, stats, yearly, recentPasses, updateStatus, recommended, recommendedQuery

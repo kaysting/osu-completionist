@@ -17,7 +17,7 @@
                             <div class="name"><%= entry.user.name %></div>
                             <div class="flags">
                                 <div class="country" title="<%= entry.user.country.name %>">
-                                    <img src="/assets/flags/<%= entry.user.country.code %>.png" class="flag">
+                                    <img src="<%= entry.user.country.flag_url %>" class="flag">
                                 </div>
                                 <% if (entry.user.team.name) { %>
                                 <div class="team" title="<%= entry.user.team.name %>">

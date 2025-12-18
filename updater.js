@@ -1,6 +1,8 @@
 const FETCH_ALL_MAPS = false;
 const REPLACE_EXISTING_MAPS = false;
 const QUEUE_ALL_USERS = false;
+const MAX_CONCURRENT_USER_IMPORTS = 1;
+const MAX_CONCURRENT_USER_RECENTS_UPDATES = 5;
 
 require('dotenv').config();
 const fs = require('fs');
@@ -116,7 +118,6 @@ const fetchNewMapData = async () => {
         log('Beatmap database is up to date');
     } catch (error) {
         logError('Error while updating stored beatmap data:', error);
-        await sleep(5000);
     }
     // Wait an hour and then run again
     setTimeout(fetchNewMapData, 1000 * 60 * 60);
@@ -213,8 +214,9 @@ const updateUserStats = async (userId) => {
     }
 };
 
-let isRecentsUpdateRunning = false;
-let isMostPlayedUpdateRunning = false;
+let countRecentsUpdatesRunning = 0;
+let countUserImportsRunning = 0;
+const userIdsUpdating = {};
 
 // Function to update a user's completion data by fetching
 // all of their most played maps and then checking passes
@@ -222,10 +224,8 @@ let isMostPlayedUpdateRunning = false;
 const importUser = async (userId) => {
     const userEntry = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
     try {
-        if (isMostPlayedUpdateRunning) {
-            return;
-        }
-        isMostPlayedUpdateRunning = true;
+        countUserImportsRunning++;
+        userIdsUpdating[userId] = true;
         let totalNewPasses = 0;
         const user = await osu.getUser(userId);
         log(`Starting pass import for ${userEntry.name} using ${user.beatmap_playcounts_count} most played maps`);
@@ -238,22 +238,9 @@ const importUser = async (userId) => {
             const mapsetIds = [];
             while (true) {
                 // Fetch most played maps
-                let res = null;
-                try {
-                    res = await osu.getUserBeatmaps(userId, 'most_played', {
-                        limit: 100, offset: mostPlayedOffset
-                    });
-                    await sleep(1000);
-                } catch (error) {
-                    if (error.status == 429) {
-                        // Wait for rate limit to clear
-                        await sleep(15000);
-                        continue;
-                    }
-                    console.log(`Error while fetching most played maps for ${userEntry.name}:`, error);
-                    await sleep(5000);
-                    continue;
-                }
+                let res = await osu.getUserBeatmaps(userId, 'most_played', {
+                    limit: 100, offset: mostPlayedOffset
+                });
                 if (res.length == 0) break;
                 // Collect unique mapset IDs
                 let countNewMapsets = 0;
@@ -273,25 +260,12 @@ const importUser = async (userId) => {
             }
             if (mapsetIds.length == 0) break;
             // Fetch passes for mapsets
-            let maps = [];
-            while (true) {
-                try {
-                    const res = await osu.getUserBeatmapsPassed(user.id, {
-                        beatmapset_ids: mapsetIds,
-                        exclude_converts: false,
-                        no_diff_reduction: false
-                    });
-                    maps = res.beatmaps_passed;
-                    break;
-                } catch (error) {
-                    if (error.status == 429) {
-                        // Wait for rate limit to clear
-                        await sleep(5000);
-                    } else {
-                        throw error;
-                    }
-                }
-            }
+            const res = await osu.getUserBeatmapsPassed(user.id, {
+                beatmapset_ids: mapsetIds,
+                exclude_converts: false,
+                no_diff_reduction: false
+            });
+            const maps = res.beatmaps_passed;
             // Save new passes
             const transaction = db.transaction((maps) => {
                 let newCount = 0;
@@ -334,7 +308,8 @@ const importUser = async (userId) => {
     } catch (error) {
         logError(`Error while importing user ${userEntry.name}:`, error);
     }
-    isMostPlayedUpdateRunning = false;
+    countUserImportsRunning--;
+    delete userIdsUpdating[userId];
 };
 
 // Function to update a user's completion data by fetching
@@ -342,10 +317,8 @@ const importUser = async (userId) => {
 // fetched less than 24 hours ago
 const updateUserFromRecents = async (userId) => {
     try {
-        if (isRecentsUpdateRunning) {
-            return;
-        }
-        isRecentsUpdateRunning = true;
+        countRecentsUpdatesRunning++;
+        userIdsUpdating[userId] = true;
         const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
         log(`Starting recent score update for ${user.name}`);
         // Fetch all available recent scores for all game modes
@@ -422,9 +395,9 @@ const updateUserFromRecents = async (userId) => {
         await updateUserStats(userId);
     } catch (error) {
         logError('Error while updating user recent scores:', error);
-        await sleep(5000);
     }
-    isRecentsUpdateRunning = false;
+    countRecentsUpdatesRunning--;
+    delete userIdsUpdating[userId];
 };
 
 // Function to get scores set recently globally and save new passes
@@ -484,18 +457,12 @@ const savePassesFromGlobalRecents = async () => {
                 // Update user stats
                 await updateUserStats(user.id);
             }
-            // Wait a second for rate limiting
-            await sleep(2000);
         }
     } catch (error) {
-        if (error.status == 429) {
-            // Wait for rate limit to clear
-            await sleep(10000);
-        }
         logError('Error while updating users from global recents:', error);
     }
     // Wait and check again
-    setTimeout(savePassesFromGlobalRecents, 1000 * 15);
+    setTimeout(savePassesFromGlobalRecents, 1000 * 60);
 };
 
 // Function that starts scheduled user update tasks
@@ -507,22 +474,39 @@ const startQueuedUserUpdates = async () => {
     try {
         const tasks = db.prepare(`SELECT * FROM user_update_tasks ORDER BY time_queued ASC`).all();
         for (const task of tasks) {
+            // Get user entry from db and fetch their profile if they don't exist yet
             const userEntry = db.prepare(`SELECT * FROM users WHERE id = ?`).get(task.user_id);
             if (!userEntry) {
                 await updateUserProfile(task.user_id);
             }
+            // Ensure we can run any updates right now
+            const canRunRecentsUpdate = countRecentsUpdatesRunning < MAX_CONCURRENT_USER_RECENTS_UPDATES;
+            const canRunUserImport = countUserImportsRunning < MAX_CONCURRENT_USER_IMPORTS;
+            if (!canRunRecentsUpdate && !canRunUserImport) {
+                break;
+            }
+            // Ensure this user isn't already being updated
+            if (userIdsUpdating[task.user_id]) {
+                continue;
+            }
+            // Check the time since the user was last fully updated
+            // If it's less than 24 hours, run a recents update
+            // otherwise, run a full user import
             const msSinceLastUpdate = Date.now() - (userEntry?.last_score_update || 0);
-            if (msSinceLastUpdate < 1000 * 60 * 60 * 24) {
+            const maxMsSinceLastUpdate = 1000 * 60 * 60 * 24;
+            const isSoonEnoughForRecents = msSinceLastUpdate < maxMsSinceLastUpdate;
+            if (isSoonEnoughForRecents && canRunRecentsUpdate) {
                 updateUserFromRecents(task.user_id);
-            } else {
+                await sleep(1000);
+            } else if (canRunUserImport) {
                 importUser(task.user_id);
+                await sleep(1000);
             }
         }
     } catch (error) {
         logError('Error while initializing user update tasks:', error);
-        await sleep(5000);
     }
-    setTimeout(startQueuedUserUpdates, 1000);
+    setTimeout(startQueuedUserUpdates, 5000);
 };
 
 // Function to check the current play counts of all users
@@ -536,14 +520,15 @@ const queueActiveUsers = async () => {
         let countQueuedUsers = 0;
         let offset = 0;
         let limit = 50;
-        log('Checking for active users to queue for updates...');
         while (true) {
             // Select batch of users
             const userEntries = db.prepare(
                 `SELECT id, last_score_update FROM users
+                WHERE id NOT IN (SELECT user_id FROM user_update_tasks)
                 LIMIT ? OFFSET ?`
             ).all(limit, offset);
             if (userEntries.length === 0) break;
+            log(`Checking ${userEntries.length} users for activity...`);
             const userIdToEntry = {};
             for (const entry of userEntries) {
                 userIdToEntry[entry.id] = entry;
@@ -587,7 +572,7 @@ const queueActiveUsers = async () => {
         log(`Queued ${countQueuedUsers} active users for updates and skipped ${countInactiveUsers} inactive users`);
     } catch (error) {
         logError('Error while queuing active users for update:', error);
-        await sleep(5000);
+        return setTimeout(queueActiveUsers, 1000 * 60);
     }
     // Run again in an hour
     setTimeout(queueActiveUsers, 1000 * 60 * 60);
@@ -692,11 +677,11 @@ async function main() {
 
     // Start update processes
     log(`Starting update processes...`);
-    fetchNewMapData();
     startQueuedUserUpdates();
-    savePassesFromGlobalRecents();
     queueActiveUsers();
     saveUserHistory();
+    savePassesFromGlobalRecents();
+    fetchNewMapData();
     backupDatabase();
 
 }

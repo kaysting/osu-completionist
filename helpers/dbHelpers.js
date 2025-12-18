@@ -10,7 +10,7 @@ const formatUserEntry = (entry) => ({
     country: {
         code: entry.country_code,
         name: entry.country_name,
-        flag_url: `/assets/flags/${entry.country_code.toUpperCase()}.png`
+        flag_url: `/assets/images/flags/${entry.country_code.toUpperCase()}.png`
     },
     team: {
         id: entry.team_id,
@@ -55,7 +55,7 @@ const getBulkUserCompletionStats = (userIds, mode, includeLoved, includeConverts
                 WHERE s2.mode = s1.mode
                 AND s2.includes_loved = s1.includes_loved
                 AND s2.includes_converts = s1.includes_converts
-                AND s2.count > s1.count
+                AND s2.time_spent_secs > s1.time_spent_secs
                ) + 1 AS rank
         FROM user_stats s1
         WHERE s1.user_id IN (${userIds.map(() => '?').join(',')})
@@ -366,7 +366,7 @@ const getUserUpdateStatus = (userId) => {
     const entry = db.prepare(`SELECT * FROM user_update_tasks WHERE user_id = ?`).get(userId);
     if (entry) {
         const position = db.prepare(
-            `SELECT COUNT(*) + 1 AS pos FROM user_update_tasks
+            `SELECT COUNT(*) AS pos FROM user_update_tasks
              WHERE time_queued < ?`
         ).get(entry.time_queued)?.pos || 0;
         return {
@@ -597,6 +597,23 @@ const searchUsers = (query, limit = 50, offset = 0) => {
     return { query, total_matches, users };
 };
 
+const getQueuedUsers = () => {
+    const rows = db.prepare(`SELECT * FROM user_update_tasks ORDER BY time_queued ASC`).all();
+    const inProgressUserIds = [];
+    const waitingUserIds = [];
+    for (const row of rows) {
+        if (row.percent_complete > 0) {
+            inProgressUserIds.push(row.user_id);
+        } else {
+            waitingUserIds.push(row.user_id);
+        }
+    }
+    return {
+        in_progress: getBulkUserProfiles(inProgressUserIds),
+        waiting: getBulkUserProfiles(waitingUserIds)
+    };
+};
+
 module.exports = {
     getBulkUserCompletionStats,
     getUserProfile,
@@ -612,5 +629,6 @@ module.exports = {
     getBeatmapset,
     getUserUpdateStatus,
     searchBeatmaps,
-    searchUsers
+    searchUsers,
+    getQueuedUsers
 };

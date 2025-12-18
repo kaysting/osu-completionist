@@ -7,13 +7,20 @@
     <title><%= `${locals.title ? locals.title + ' - ' : ''}` %>osu!complete</title>
     <meta name="description" content="<%= locals?.meta?.description || '' %>">
     <meta property="og:site_name" content="osu!complete">
-    <meta property="og:title" content="<%= locals?.meta?.title || '' %>">
-    <meta property="og:description" content="<%= locals?.meta?.description || '' %>">
-    <meta property="og:image" content="<%= locals?.meta?.image || '' %>">
+    <meta property="og:title" content="<%= locals?.meta?.title || 'osu! completionist tracker and leaderboard' %>">
+    <meta property="og:description"
+        content="<%= locals?.meta?.description || 'Track your osu! completionist progress across all game modes, ranked, loved, and convert maps, and compare your progress with others!' %>">
+    <meta property="og:image"
+        content="<%= locals?.meta?.image || locals?.meta?.thumbnail || '/assets/images/promo.png?v=1' %>">
+    <meta name="twitter:image"
+        content="<%= locals?.meta?.image || locals?.meta?.thumbnail || '/assets/images/promo.png?v=1' %>">
+    <% if (!locals?.meta?.thumbnail) { %>
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="628" />
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="<%= locals?.meta?.image || '' %>">
+    <% } %>
     <meta name="theme-color" content="#6EF79C">
-    <link rel="icon" type="image/png" href="/icon.png">
+    <link rel="icon" type="image/png" href="/assets/images/icon.png">
     <link rel="stylesheet" href="/assets/css/index.css">
     <script src="/assets/js/index.js"></script>
     <script src="/assets/js/triangles-bg.js"></script>
@@ -43,6 +50,11 @@
                     href="/leaderboard" title="View top completionists">
                     <span class="icon filled">leaderboard</span>
                     <span class="label">leaderboard</span>
+                </a>
+                <a id="navQueue" class="btn <%= page == 'queue' ? 'text bright' : 'text muted' %>" href="/queue"
+                    title="View top completionists">
+                    <span class="icon filled">autorenew</span>
+                    <span class="label">queue</span>
                 </a>
                 <% if (me) { %>
                 <a id="navRecommended" class="btn <%= page == 'recommended' ? 'text bright' : 'text muted' %>"

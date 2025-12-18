@@ -601,6 +601,10 @@ img {
     overflow: hidden;
 }
 
+.card.padded {
+    padding: 16px 12px;
+}
+
 @media (max-width: 600px) {
     #main {
         padding: 0px 4px 16px 4px;
@@ -608,6 +612,10 @@ img {
 
     .card {
         padding: 8px 2px 8px 2px;
+    }
+
+    .card.padded {
+        padding: 16px 4px;
     }
 }
 
@@ -623,6 +631,10 @@ img {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.card.warning * {
+    color: hsl(40, 90%, 20%);
 }
 
 .card.warning>.icon {

@@ -22,10 +22,6 @@ router.get('/', (req, res) => {
     const stats = getStats();
     res.render('layout', {
         page: 'home',
-        meta: {
-            title: `osu! completionist tracker and leaderboard`,
-            description: `Track your osu! completionist progress across all game modes, ranked, loved, and convert maps, and compare your progress with others!`
-        },
         stats: {
             users: stats.users.toLocaleString(),
             beatmaps: stats.beatmaps.toLocaleString(),

@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
         title: 'Search',
         meta: {
             title: `Search tracked completionists and maps`,
-            description: `Search all tracked players and beatmaps.`
+            description: `Find who or what you're looking for using natural text or filtered searches.`
         },
         me: req.me,
         user_results: users,

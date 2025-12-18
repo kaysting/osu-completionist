@@ -10,7 +10,7 @@
     <div class="right flex-grow flex">
         <div class="content flex col gap-8 flex-grow justify-center">
             <img class="coverImage" src="https://assets.ppy.sh/beatmaps/<%= beatmap.beatmapset.id %>/covers/cover.jpg"
-                onError="this.onerror=null; this.src='/default-cover.png';">
+                onError="this.onerror=null; this.src='/assets/images/beatmap-card-fallback.png';">
             <div class="coverDimming"></div>
             <div class="text">
                 <div class="title" title="<%= beatmap.beatmapset.title %>"><%= beatmap.beatmapset.title %></div>

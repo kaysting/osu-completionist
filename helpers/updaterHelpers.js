@@ -68,12 +68,12 @@ const queueUser = async (userId) => {
     try {
         const existingTask = db.prepare(`SELECT 1 FROM user_update_tasks WHERE user_id = ? LIMIT 1`).get(userId);
         if (!existingTask) {
+            const user = await updateUserProfile(userId);
             db.prepare(
                 `INSERT OR IGNORE INTO user_update_tasks
                 (user_id, time_queued, last_mapset_id, count_new_passes, percent_complete)
                 VALUES (?, ?, 0, 0, 0)`
             ).run(userId, Date.now());
-            const user = await updateUserProfile(userId);
             utils.log(`Queued ${user.username} for update`);
             return true;
         }
