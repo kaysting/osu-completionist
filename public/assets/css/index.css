@@ -617,6 +617,10 @@ img {
     .card.padded {
         padding: 16px 4px;
     }
+
+    .card.padded .header {
+        margin: 0px 8px;
+    }
 }
 
 .card.lighter {

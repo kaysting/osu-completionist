@@ -2,7 +2,7 @@ const FETCH_ALL_MAPS = false;
 const REPLACE_EXISTING_MAPS = false;
 const QUEUE_ALL_USERS = false;
 const MAX_CONCURRENT_USER_IMPORTS = 1;
-const MAX_CONCURRENT_USER_RECENTS_UPDATES = 5;
+const MAX_CONCURRENT_USER_RECENTS_UPDATES = 1;
 
 require('dotenv').config();
 const fs = require('fs');
@@ -232,11 +232,12 @@ const importUser = async (userId) => {
         const totalMostPlayed = user.beatmap_playcounts_count;
         let mostPlayedOffset = 0;
         const uniqueMapsetIds = [];
+        const mapsetIds = [];
         // Outer loop to fetch passes
         while (true) {
             // Inner loop to fetch mapset IDs from most played maps
-            const mapsetIds = [];
             while (true) {
+                if (mapsetIds.length >= 50) break;
                 // Fetch most played maps
                 let res = await osu.getUserBeatmaps(userId, 'most_played', {
                     limit: 100, offset: mostPlayedOffset
@@ -254,14 +255,12 @@ const importUser = async (userId) => {
                         countNewMapsets++;
                     }
                     mostPlayedOffset++;
-                    if (mapsetIds.length == 50) break;
                 }
-                if (mapsetIds.length == 50) break;
             }
             if (mapsetIds.length == 0) break;
             // Fetch passes for mapsets
             const res = await osu.getUserBeatmapsPassed(user.id, {
-                beatmapset_ids: mapsetIds,
+                beatmapset_ids: mapsetIds.splice(0, 50),
                 exclude_converts: false,
                 no_diff_reduction: false
             });
@@ -506,7 +505,7 @@ const startQueuedUserUpdates = async () => {
     } catch (error) {
         logError('Error while initializing user update tasks:', error);
     }
-    setTimeout(startQueuedUserUpdates, 5000);
+    setTimeout(startQueuedUserUpdates, 1000);
 };
 
 // Function to check the current play counts of all users
