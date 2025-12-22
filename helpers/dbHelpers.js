@@ -615,8 +615,8 @@ const getQueuedUsers = () => {
         }
     }
     return {
-        in_progress: getBulkUserProfiles(inProgressUserIds),
-        waiting: getBulkUserProfiles(waitingUserIds)
+        in_progress: getBulkUserProfiles(inProgressUserIds).filter(Boolean),
+        waiting: getBulkUserProfiles(waitingUserIds).filter(Boolean)
     };
 };
 

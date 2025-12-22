@@ -9,13 +9,19 @@ const dbHelpers = require('../helpers/dbHelpers.js');
 
 const router = express.Router();
 
+const minMsSinceLastImport = 1000 * 60 * 60 * 24 * 7;
+
 router.get('/:id', ensureUserExists, (req, res) => {
     res.redirect(`/u/${req.user.id}/osu/ranked`);
 });
 
 router.get('/:id/update', async (req, res) => {
     if (!req.me || req.me.id != req.params.id) {
-        utils.log(`Unauthorized reimport request for user ${req.params.id} by ${req.me?.id}`);
+        return res.redirect(`/u/${req.params.id}`);
+    }
+    const minMsSinceLastImport = 1000 * 60 * 60 * 24 * 7;
+    const msSinceLastImport = Date.now() - (req.me.last_import_time || 0);
+    if (msSinceLastImport < minMsSinceLastImport) {
         return res.redirect(`/u/${req.params.id}`);
     }
     await updater.queueUserForImport(req.params.id);
@@ -49,6 +55,15 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
         );
         updateStatus.details.position_ordinal = utils.ordinalSuffix(updateStatus.details.position);
     }
+    updateStatus.canReimport = false;
+    const msSinceLastImport = Date.now() - (req.user.last_import_time || 0);
+    if (msSinceLastImport > minMsSinceLastImport) {
+        updateStatus.canReimport = true;
+    }
+    const msUntilNextImport = minMsSinceLastImport - msSinceLastImport;
+    updateStatus.timeUntilNextImport = utils.getRelativeTimestamp(
+        Date.now() + msUntilNextImport, undefined, false
+    );
     // If viewing our own profile, get user trends and recommended maps
     let recommended = null;
     let recommendedQuery = null;

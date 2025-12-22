@@ -34,7 +34,8 @@
                     <span>copy stats</span>
                 </button>
                 <% if (user.id == me?.id && !user.updateStatus.updating) { %>
-                <a class="btn translucent" href="/u/<%= user.id %>/update">
+                <a
+                    <%- user.updateStatus.canReimport ? `class="btn translucent" href="/u/${user.id}/update"` : ` class="btn translucent disabled" title="You can request to be imported again in ${user.updateStatus.timeUntilNextImport}.\nReminder that your stats are updated automatically, so there's no need to re-import unless you find issues."` %>>
                     <span class="icon">update</span>
                     <span>request re-import</span>
                 </a>

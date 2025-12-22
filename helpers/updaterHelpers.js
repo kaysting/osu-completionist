@@ -15,32 +15,30 @@ const fetchNewMapData = async () => {
         utils.log(`Checking for new beatmaps...`);
         // Loop to get unsaved recent beatmapsets
         let countNewlySaved = 0;
-        let cursor;
+        let cursor = null;
         while (true) {
             // Fetch mapsets
             const data = await osu.searchBeatmapsets({
                 cursor_string: cursor,
+                sort: 'ranked_desc',
                 nsfw: true
             });
             // Extract data
             cursor = data.cursor_string;
             const mapsets = data.beatmapsets;
             // Loop through mapsets
-            let foundExistingMapset = false;
+            let savedNewMapset = false;
             for (const mapset of mapsets) {
                 // Skip if we already have this mapset
-                foundExistingMapset = false;
                 const existingMapset = db.prepare(`SELECT 1 FROM beatmapsets WHERE id = ? LIMIT 1`).get(mapset.id);
-                if (existingMapset) {
-                    foundExistingMapset = true;
-                    continue;
-                }
+                if (existingMapset) continue;
                 // Fetch full mapset and save
                 await saveMapset(mapset.id, true);
+                savedNewMapset = true;
                 countNewlySaved++;
             }
-            // We're done if no more mapsets, or we found an existing one above
-            if (!cursor || mapsets.length === 0 || foundExistingMapset) {
+            // We're done if no more mapsets, or we didn't find any new ones above
+            if (!cursor || mapsets.length === 0 || !savedNewMapset) {
                 break;
             }
         }
@@ -395,7 +393,7 @@ const importUser = async (userId) => {
                 const validStatuses = ['ranked', 'loved', 'approved'];
                 if (!validStatuses.includes(map.status)) continue;
                 // Save mapset data if not already saved
-                const existingMapset = db.prepare(`SELECT 1 FROM beatmapsets WHERE id = ? LIMIT 1`).get(map.beatmapset_id);
+                const existingMapset = db.prepare(`SELECT * FROM beatmapsets WHERE id = ? LIMIT 1`).get(map.beatmapset_id);
                 if (!existingMapset || existingMapset.status !== map.status) {
                     await saveMapset(map.beatmapset_id, !existingMapset);
                 }
@@ -514,7 +512,7 @@ const savePassesFromGlobalRecents = async () => {
             if (!validStatuses.includes(map.status)) continue;
             // Save mapset data if not already saved
             const mapsetId = map.beatmapset.id;
-            const existingMapset = db.prepare(`SELECT 1 FROM beatmapsets WHERE id = ? LIMIT 1`).get(mapsetId);
+            const existingMapset = db.prepare(`SELECT * FROM beatmapsets WHERE id = ? LIMIT 1`).get(mapsetId);
             if (!existingMapset || existingMapset.status !== map.beatmapset.status) {
                 await saveMapset(mapsetId, !existingMapset);
             }
@@ -579,6 +577,7 @@ const startQueuedImports = async () => {
     if (!nextEntry) return;
     if (isImportRunning) return;
     const userId = nextEntry.user_id;
+    await updateUserProfile(userId);
     importUser(userId);
 };
 
@@ -586,8 +585,8 @@ const queueUserForImport = async (userId) => {
     try {
         const existingTask = db.prepare(`SELECT 1 FROM user_import_queue WHERE user_id = ? LIMIT 1`).get(userId);
         if (!existingTask) {
-            // Save stats
-            await updateUserStats(userId);
+            // Update user profile before import
+            await updateUserProfile(userId);
             // Add to queue
             db.prepare(
                 `INSERT OR IGNORE INTO user_import_queue
@@ -599,7 +598,7 @@ const queueUserForImport = async (userId) => {
         }
         return false;
     } catch (error) {
-        utils.log(`Error while queueing user ${userId} for import:`, error);
+        utils.logError(`Error while queueing user ${userId} for import:`, error);
         return null;
     }
 };

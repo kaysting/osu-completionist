@@ -18,7 +18,6 @@
     <% if (results.waiting.length) { %>
     <div class="userCardContainer">
         <% for (const user of results.waiting) { %>
-        <% if (!user) continue; %>
         <%- include('../partials/userCard', { user }) %>
         <% } %>
     </div>
