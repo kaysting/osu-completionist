@@ -1,21 +1,4 @@
 CREATE TABLE
-	IF NOT EXISTS "user_update_tasks" (
-		"user_id" INTEGER NOT NULL UNIQUE,
-		"time_queued" INTEGER DEFAULT 0,
-		"last_mapset_id" TEXT DEFAULT 0,
-		"count_new_passes" INTEGER DEFAULT 0,
-		"percent_complete" REAL DEFAULT 0
-	);
-
-CREATE TABLE
-	IF NOT EXISTS "user_play_counts" (
-		"user_id" INTEGER,
-		"mode" TEXT,
-		"count" INTEGER DEFAULT 0,
-		PRIMARY KEY ("user_id", "mode")
-	);
-
-CREATE TABLE
 	IF NOT EXISTS "user_passes" (
 		"user_id" INTEGER NOT NULL,
 		"mapset_id" INTEGER NOT NULL,
@@ -26,10 +9,6 @@ CREATE TABLE
 		"time_passed" INTEGER NOT NULL DEFAULT 1763938577564,
 		PRIMARY KEY ("user_id", "mapset_id", "map_id", "mode")
 	);
-
-CREATE INDEX idx_tasks_queued ON user_update_tasks (time_queued);
-
-CREATE INDEX idx_user_play_counts ON user_play_counts (user_id, mode);
 
 CREATE INDEX idx_user_passes_lookup ON user_passes (user_id, map_id, mode);
 
@@ -87,12 +66,9 @@ CREATE TABLE
 		"team_name" TEXT,
 		"team_name_short" TEXT,
 		"team_flag_url" TEXT,
-		"last_score_update" INTEGER NOT NULL DEFAULT 0,
 		last_score_submit INTEGER NOT NULL DEFAULT 0,
 		PRIMARY KEY ("id")
 	);
-
-CREATE INDEX idx_users_last_update ON users (last_score_update);
 
 CREATE INDEX idx_users_name ON users (name);
 
@@ -237,3 +213,18 @@ CREATE TABLE
 	IF NOT EXISTS 'users_search_config' (k PRIMARY KEY, v) WITHOUT ROWID;
 
 CREATE INDEX idx_users_last_pass ON users (last_score_submit);
+
+CREATE TABLE
+	global_recents_cursors (
+		mode TEXT NOT NULL PRIMARY KEY,
+		cursor TEXT NOT NULL
+	);
+
+CREATE TABLE
+	IF NOT EXISTS "user_import_queue" (
+		"user_id" INTEGER NOT NULL UNIQUE,
+		"time_queued" INTEGER DEFAULT 0,
+		"time_started" INTEGER DEFAULT 0,
+		"percent_complete" REAL DEFAULT 0,
+		"count_passes_imported" INTEGER DEFAULT 0
+	);

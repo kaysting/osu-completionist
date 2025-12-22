@@ -44,7 +44,7 @@ router.get('/callback', async (req, res) => {
         const userEntry = db.prepare('SELECT * FROM users WHERE id = ?').get(user.data.id);
         if (!userEntry) {
             log(`${user.data.username} is new here!`);
-            await updaterHelpers.queueUser(user.data.id);
+            await updaterHelpers.queueUserForImport(user.data.id);
         }
         // Set JWT cookie
         const jwt = utils.generateJWT({ id: user.data.id });

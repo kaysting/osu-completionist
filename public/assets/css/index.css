@@ -118,6 +118,12 @@ img {
     color: black;
 }
 
+*:focus-visible {
+    outline: 2px solid hsl(150, 90%, 80%);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
 .btn {
     --bg: hsl(220, 20%, 25%);
     --bgHover: hsl(220, 20%, 35%);
@@ -137,17 +143,31 @@ img {
     justify-content: center;
     gap: 8px;
     user-select: none;
-    outline: none;
     border: none;
     cursor: pointer;
     flex-shrink: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: center;
 }
 
 .btn:hover {
+    color: var(--fg);
+    background: var(--bg);
+    text-decoration: none;
+}
+
+.btn:hover:not(.disabled):not(:disabled) {
     color: var(--fgHover);
     background: var(--bgHover);
     transition: none;
-    text-decoration: none;
+}
+
+.btn:disabled,
+.btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 .btn.primary {
@@ -402,6 +422,8 @@ img {
 }
 
 .popup {
+    --width: 800px;
+    --height: 800px;
     margin: auto;
     display: flex;
     border: none;
@@ -412,8 +434,8 @@ img {
     color: inherit;
     font-size: inherit;
     font-family: inherit;
-    max-width: min(800px, calc(100% - 16px));
-    max-height: min(800px, calc(100% - 16px));
+    max-width: min(var(--width), calc(100% - 16px));
+    max-height: min(var(--height), calc(100% - 16px));
     gap: 16px;
 }
 
@@ -440,16 +462,13 @@ img {
 .popup>.actions {
     padding: 16px;
     padding-top: 0px;
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 8px;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
 }
 
 .popup>.actions>.btn {
     width: 100%;
-    max-width: 400px;
 }
 
 #topbar {
@@ -613,14 +632,6 @@ img {
     .card {
         padding: 8px 2px 8px 2px;
     }
-
-    .card.padded {
-        padding: 16px 4px;
-    }
-
-    .card.padded .header {
-        margin: 0px 8px;
-    }
 }
 
 .card.lighter {
@@ -779,8 +790,12 @@ img {
     background: hsl(340, 80%, 70%);
 }
 
+.beatmapStatus.pending {
+    background: hsl(40, 80%, 70%);
+}
+
 .beatmapStatus.qualified {
-    background: hsl(200, 80%, 70%);
+    background: hsl(190, 80%, 70%);
 }
 
 .beatmapStatus.graveyard {

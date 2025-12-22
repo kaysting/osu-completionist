@@ -39,7 +39,9 @@ const utils = {
     sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
 
     rulesetNameToKey: name => {
-        switch (name.toLowerCase()) {
+        if (typeof name === 'string')
+            name = name.toLowerCase();
+        switch (name) {
             case 'osu!':
             case 'osu':
             case 'osu!standard':
@@ -86,11 +88,11 @@ const utils = {
         }
     },
 
-    getRelativeTimestamp: (ts, origin = Date.now()) => {
+    getRelativeTimestamp: (ts, origin = Date.now(), includeSuffix = true) => {
         const diff = ts - origin;
         const suffix = diff < 0 ? ' ago' : ' from now';
         const format = (value, unit) => {
-            return `${value} ${unit}${value !== 1 ? 's' : ''}${suffix}`;
+            return `${value} ${unit}${value !== 1 ? 's' : ''}${includeSuffix ? suffix : ''}`;
         };
         let absDiff = Math.abs(diff);
         absDiff /= 1000;
@@ -105,10 +107,9 @@ const utils = {
         absDiff /= 24;
         if (absDiff < 30)
             return format(Math.floor(absDiff), 'day');
-        absDiff /= 7;
-        if (absDiff < 4)
-            return format(Math.floor(absDiff), 'week');
-        absDiff /= 4;
+        if (absDiff / 7 < 4)
+            return format(Math.floor(absDiff / 7), 'week');
+        absDiff /= 30;
         if (absDiff < 12)
             return format(Math.floor(absDiff), 'month');
         absDiff /= 12;
@@ -318,6 +319,21 @@ const utils = {
                 return `"${safeWord}"*`;
             })
             .join(' AND '); // Explicit AND ensures all terms must be present
+    },
+
+    ordinalSuffix: (i) => {
+        const j = i % 10,
+            k = i % 100;
+        if (j == 1 && k != 11) {
+            return i + "st";
+        }
+        if (j == 2 && k != 12) {
+            return i + "nd";
+        }
+        if (j == 3 && k != 13) {
+            return i + "rd";
+        }
+        return i + "th";
     }
 
 };

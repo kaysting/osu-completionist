@@ -17,8 +17,8 @@
             <span class="icon <%= settings.includes.includes('loved') ? 'filled' : '' %>">favorite</span>
             Include loved
         </a>
-        <a href="<%= settings.basePath %>/<%= settings.mode %>/ranked<%= settings.includes.includes('loved') ? '-loved' : '' %><%= settings.includes.includes('converts') ? '' : '-converts' %>"
-            class="btn <%= settings.includes.includes('converts') ? 'primary' : '' %>">
+        <a <%- settings.modeKey == 'osu' ? 'title="osu!standard has no converts."' : `href="${settings.basePath}/${settings.mode}/ranked${settings.includes.includes('loved') ? '-loved' : ''}${settings.includes.includes('converts') ? '' : '-converts'}"` %>
+            class="btn <%= settings.includes.includes('converts') ? 'primary' : '' %> <%= settings.modeKey == 'osu' ? 'disabled' : '' %>">
             <span
                 class="icon <%= settings.includes.includes('converts') ? 'filled' : '' %>">swap_horizontal_circle</span>
             Include converts

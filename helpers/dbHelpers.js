@@ -16,8 +16,7 @@ const formatUserEntry = (entry) => ({
         id: entry.team_id,
         name: entry.team_name,
         flag_url: entry.team_flag_url
-    },
-    last_score_update_time: entry.last_score_update
+    }
 });
 
 const getBulkUserProfiles = (userIds) => {
@@ -25,7 +24,7 @@ const getBulkUserProfiles = (userIds) => {
         return [];
     }
     const rows = db.prepare(
-        `SELECT u.id, u.name, u.avatar_url, u.banner_url, u.country_code, u.team_id, u.team_name, u.team_flag_url, c.name AS country_name, u.last_score_update
+        `SELECT u.id, u.name, u.avatar_url, u.banner_url, u.country_code, u.team_id, u.team_name, u.team_flag_url, c.name AS country_name
          FROM users u
          LEFT JOIN country_names c ON u.country_code = c.code
          WHERE u.id IN (${userIds.map(() => '?').join(',')})`
@@ -327,8 +326,8 @@ const getBeatmapset = (mapsetId, includeBeatmaps, includeConverts) => {
     return getBulkBeatmapsets([mapsetId], includeBeatmaps, includeConverts)?.[0] || null;
 };
 
-const getBeatmap = (mapId, includeMapset) => {
-    return getBulkBeatmaps([mapId], includeMapset)?.[0] || null;
+const getBeatmap = (mapId, includeMapset, mode) => {
+    return getBulkBeatmaps([mapId], includeMapset, mode)?.[0] || null;
 };
 
 const getUserRecentPasses = (userId, mode, includeLoved, includeConverts, limit = 100, offset = 0) => {
@@ -363,19 +362,24 @@ const getUserRecentPasses = (userId, mode, includeLoved, includeConverts, limit 
 };
 
 const getUserUpdateStatus = (userId) => {
-    const entry = db.prepare(`SELECT * FROM user_update_tasks WHERE user_id = ?`).get(userId);
+    const entry = db.prepare(`SELECT * FROM user_import_queue WHERE user_id = ?`).get(userId);
     if (entry) {
         const position = db.prepare(
-            `SELECT COUNT(*) AS pos FROM user_update_tasks
+            `SELECT COUNT(*) AS pos FROM user_import_queue
              WHERE time_queued < ?`
         ).get(entry.time_queued)?.pos || 0;
+        const time_remaining_secs = entry.percent_complete > 0
+            ? Math.round(((Date.now() - entry.time_started) / (entry.percent_complete / 100)) * ((100 - entry.percent_complete) / 100) / 1000)
+            : null;
         return {
             updating: true,
             details: {
                 time_queued: entry.time_queued,
+                time_started: entry.time_started,
+                time_remaining_secs,
                 position,
                 percent_completed: entry.percent_complete,
-                count_new_passes: entry.count_new_passes
+                count_passes_imported: entry.count_passes_imported
             }
         };
     } else {
@@ -598,7 +602,7 @@ const searchUsers = (query, limit = 50, offset = 0) => {
 };
 
 const getQueuedUsers = () => {
-    const rows = db.prepare(`SELECT * FROM user_update_tasks ORDER BY time_queued ASC`).all();
+    const rows = db.prepare(`SELECT * FROM user_import_queue ORDER BY time_queued ASC`).all();
     const inProgressUserIds = [];
     const waitingUserIds = [];
     for (const row of rows) {

@@ -15,10 +15,10 @@ router.get('/:id', ensureUserExists, (req, res) => {
 
 router.get('/:id/update', async (req, res) => {
     if (!req.me || req.me.id != req.params.id) {
-        utils.log(`Unauthorized update request for user ${req.params.id} by ${req.me?.id}`);
+        utils.log(`Unauthorized reimport request for user ${req.params.id} by ${req.me?.id}`);
         return res.redirect(`/u/${req.params.id}`);
     }
-    await updater.queueUser(req.params.id);
+    await updater.queueUserForImport(req.params.id);
     res.redirect(`/u/${req.params.id}`);
 });
 
@@ -42,6 +42,14 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
     const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, modeKey, includeLoved, includeConverts);
     const recentPasses = dbHelpers.getUserRecentPasses(req.user.id, modeKey, includeLoved, includeConverts, 100, 0);
     const updateStatus = dbHelpers.getUserUpdateStatus(req.user.id);
+    // Format update status
+    if (updateStatus.updating) {
+        console.log(updateStatus);
+        updateStatus.details.time_remaining = utils.getRelativeTimestamp(
+            (Date.now() + (updateStatus.details.time_remaining_secs * 1000)), undefined, false
+        );
+        updateStatus.details.position_ordinal = utils.ordinalSuffix(updateStatus.details.position);
+    }
     // If viewing our own profile, get user trends and recommended maps
     let recommended = null;
     let recommendedQuery = null;
@@ -50,7 +58,7 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
         let minStars, maxStars, minTime, maxTime = null;
         let passesToCheck = 20;
         let passesChecked = 0;
-        let limit = 5;
+        let limit = 6;
         for (const pass of recentPasses) {
             if (passesChecked >= passesToCheck) break;
             const stars = pass.beatmap.stars;
@@ -85,9 +93,9 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
     ];
     for (const year of yearly) {
         const checkbox = year.count_completed === year.count_total ? '☑' : '☐';
-        statsText.push(`${checkbox} ${year.year}: ${year.count_completed.toLocaleString()} / ${year.count_total.toLocaleString()} (${year.percentage_completed}%)`);
+        statsText.push(`${checkbox} ${year.year}: ${year.count_completed.toLocaleString()} / ${year.count_total.toLocaleString()} (${year.percentage_completed.toFixed(2)}%)`);
     }
-    statsText.push(`\nTotal: ${stats.count_completed.toLocaleString()} / ${stats.count_total.toLocaleString()} (${stats.percentage_completed}%)`);
+    statsText.push(`\nTotal: ${stats.count_completed.toLocaleString()} / ${stats.count_total.toLocaleString()} (${stats.percentage_completed.toFixed(2)}%)`);
     // Render
     const includesString = `${includeLoved ? 'ranked and loved' : 'ranked only'}, ${includeConverts ? 'with converts' : 'no converts'}`;
     res.render('layout', {

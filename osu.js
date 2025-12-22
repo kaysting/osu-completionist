@@ -100,8 +100,7 @@ const makeGetRequest = async (endpoint, params = {}) => {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                 },
-                params: params,
-                timeout: 1000 * 60
+                params: params
             });
             // Update rate limit info
             lastRequestTime = Date.now();
