@@ -396,8 +396,8 @@ const importUser = async (userId) => {
                 if (!validStatuses.includes(map.status)) continue;
                 // Save mapset data if not already saved
                 const existingMapset = db.prepare(`SELECT 1 FROM beatmapsets WHERE id = ? LIMIT 1`).get(map.beatmapset_id);
-                if (!existingMapset) {
-                    await saveMapset(map.beatmapset_id);
+                if (!existingMapset || existingMapset.status !== map.status) {
+                    await saveMapset(map.beatmapset_id, !existingMapset);
                 }
                 // Push pass data
                 passes.push({ mapId: map.id, mapsetId: map.beatmapset_id, mode: map.mode, status: map.status, isConvert: false });
@@ -515,8 +515,8 @@ const savePassesFromGlobalRecents = async () => {
             // Save mapset data if not already saved
             const mapsetId = map.beatmapset.id;
             const existingMapset = db.prepare(`SELECT 1 FROM beatmapsets WHERE id = ? LIMIT 1`).get(mapsetId);
-            if (!existingMapset) {
-                await saveMapset(mapsetId);
+            if (!existingMapset || existingMapset.status !== map.beatmapset.status) {
+                await saveMapset(mapsetId, !existingMapset);
             }
         }
         // Process scores

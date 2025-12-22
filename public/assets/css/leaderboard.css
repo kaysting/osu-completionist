@@ -44,7 +44,7 @@
 }
 
 #leaderboard .entry:hover>.overlay {
-    background: hsla(220, 20%, 50%, 0.1);
+    background: hsla(220, 20%, 50%, 0.2);
     transition: none;
 }
 
@@ -66,9 +66,9 @@
 
 #leaderboard .entry .profile {
     position: relative;
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
-    padding: 8px;
+    padding: 4px;
 }
 
 #leaderboard .entry .banner {
@@ -89,7 +89,7 @@
     width: 100%;
     height: 100%;
     z-index: 0;
-    background: radial-gradient(circle at top left, hsla(220, 20%, 18%, 60%), hsl(220, 20%, 15%));
+    background: linear-gradient(to right, hsla(220, 20%, 12%, 60%), hsl(220, 20%, 12%));
 }
 
 #leaderboard .entry .profile .text,
@@ -98,8 +98,8 @@
 }
 
 #leaderboard .entry .profile .avatar {
-    height: 40px;
-    border-radius: 8px;
+    height: 48px;
+    border-radius: 12px;
     background: hsl(220, 20%, 25%);
     object-fit: cover;
     flex-shrink: 0;
