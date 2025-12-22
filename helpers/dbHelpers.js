@@ -16,7 +16,9 @@ const formatUserEntry = (entry) => ({
         id: entry.team_id,
         name: entry.team_name,
         flag_url: entry.team_flag_url
-    }
+    },
+    last_login_time: entry.last_login_time,
+    last_import_time: entry.last_import_time
 });
 
 const getBulkUserProfiles = (userIds) => {
@@ -24,7 +26,7 @@ const getBulkUserProfiles = (userIds) => {
         return [];
     }
     const rows = db.prepare(
-        `SELECT u.id, u.name, u.avatar_url, u.banner_url, u.country_code, u.team_id, u.team_name, u.team_flag_url, c.name AS country_name
+        `SELECT u.id, u.name, u.avatar_url, u.banner_url, u.country_code, u.team_id, u.team_name, u.team_flag_url, c.name AS country_name, u.last_login_time, u.last_import_time
          FROM users u
          LEFT JOIN country_names c ON u.country_code = c.code
          WHERE u.id IN (${userIds.map(() => '?').join(',')})`

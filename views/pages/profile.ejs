@@ -25,6 +25,10 @@
     <div class="card">
         <div class="banner" style="background-image: url('<%= user.banner_url %>')">
             <div class="buttons">
+                <a class="btn translucent square" href="https://osu.ppy.sh/users/<%= user.id %>" target="_blank"
+                    title="View profile on osu! website">
+                    <span class="icon">open_in_new</span>
+                </a>
                 <button class="btn translucent" onClick="copyText(`<%= copyable %>`)">
                     <span class="icon">content_copy</span>
                     <span>copy stats</span>
