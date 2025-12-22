@@ -19,7 +19,7 @@
 
 #leaderboard .entry {
     position: relative;
-    border-radius: 8px;
+    border-radius: 12px;
     background: hsl(220, 20%, 10%);
     overflow: hidden;
     color: inherit;
@@ -59,7 +59,7 @@
 
 #leaderboard .entry .content {
     position: relative;
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
     background: hsl(220, 20%, 20%);
 }
@@ -178,13 +178,22 @@
 }
 
 @media (max-width: 900px) {
+    #leaderboard .entry {
+        flex-direction: column;
+        align-items: unset;
+    }
+
+    #leaderboard .entry .rank {
+        padding: 8px;
+    }
+
     #leaderboard .entry .content {
         flex-direction: column;
         align-items: unset;
     }
 
     #leaderboard .entry .statsCont {
-        padding: 8px;
+        padding: 6px;
     }
 
     #leaderboard .entry .stats {
@@ -193,6 +202,12 @@
 
     #leaderboard .entry .stats>div {
         align-items: center;
+    }
+}
+
+@media (max-width: 500px) {
+    #leaderboard .entry .stats>div:first-child {
+        flex-basis: 100%;
     }
 }
 
