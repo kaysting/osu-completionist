@@ -66,7 +66,11 @@ CREATE TABLE
 		"team_name" TEXT,
 		"team_name_short" TEXT,
 		"team_flag_url" TEXT,
-		last_score_submit INTEGER NOT NULL DEFAULT 0,
+		last_pass_time integer not null default 0,
+		last_import_time integer not null default 0,
+		time_created integer not null default 1766376098955,
+		last_profile_update_time integer not null default 0,
+		last_login_time integer not null default 0,
 		PRIMARY KEY ("id")
 	);
 
@@ -212,8 +216,6 @@ CREATE TABLE
 CREATE TABLE
 	IF NOT EXISTS 'users_search_config' (k PRIMARY KEY, v) WITHOUT ROWID;
 
-CREATE INDEX idx_users_last_pass ON users (last_score_submit);
-
 CREATE TABLE
 	global_recents_cursors (
 		mode TEXT NOT NULL PRIMARY KEY,
@@ -228,3 +230,5 @@ CREATE TABLE
 		"percent_complete" REAL DEFAULT 0,
 		"count_passes_imported" INTEGER DEFAULT 0
 	);
+
+CREATE INDEX idx_users_last_pass ON users (last_pass_time);

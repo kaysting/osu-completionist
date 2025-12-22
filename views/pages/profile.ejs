@@ -10,8 +10,8 @@
                 <b>Importing completion data from osu!</b>
                 <br>Discovered
                 <%= user.updateStatus.details.count_passes_imported.toLocaleString() %> passes so far.
-                <br><%= user.updateStatus.details.percent_completed.toFixed(2) %>% complete,
-                ~<%= user.updateStatus.details.time_remaining %> remaining
+                <br><%= Math.floor(user.updateStatus.details.percent_completed) %>% complete,
+                about <%= user.updateStatus.details.time_remaining %> remaining
             </p>
             <% } else { %>
             <p>

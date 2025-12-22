@@ -28,11 +28,12 @@ const fetchNewMapData = async () => {
             // Loop through mapsets
             let foundExistingMapset = false;
             for (const mapset of mapsets) {
-                // Break if we've found an existing mapset
+                // Skip if we already have this mapset
+                foundExistingMapset = false;
                 const existingMapset = db.prepare(`SELECT 1 FROM beatmapsets WHERE id = ? LIMIT 1`).get(mapset.id);
                 if (existingMapset) {
                     foundExistingMapset = true;
-                    break;
+                    continue;
                 }
                 // Fetch full mapset and save
                 await saveMapset(mapset.id, true);
@@ -44,7 +45,7 @@ const fetchNewMapData = async () => {
             }
         }
         // Update beatmap status
-        if (countNewlySaved > 0 || FETCH_ALL_MAPS)
+        if (countNewlySaved > 0)
             updateBeatmapStats();
         utils.log('Beatmap database is up to date');
     } catch (error) {
@@ -108,9 +109,15 @@ const updateBeatmapStats = () => {
 // Returns the fetched user data
 const updateUserProfile = async (userId, userObj) => {
     try {
-        const user = userObj || (await osu.getUsers({ ids: [userId] })).users[0];
         // Check if a user entry already exists
-        const existingUser = db.prepare(`SELECT * FROM users WHERE id = ?`).get(user.id);
+        const existingUser = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
+        // Stop now if it's been too soon since last profile update
+        const msSinceLastUpdate = Date.now() - (existingUser?.last_profile_update_time || 0);
+        if (existingUser && msSinceLastUpdate < (1000 * 60 * 15)) {
+            return existingUser;
+        }
+        // Fetch user from osu
+        const user = userObj || (await osu.getUsers({ ids: [userId] })).users[0];
         // Check if username has changed
         if (existingUser?.name !== user.username) {
             const oldNames = (await osu.getUser(user.id)).previous_usernames || [];
@@ -144,12 +151,12 @@ const updateUserProfile = async (userId, userObj) => {
         } else {
             // Create new user entry
             db.prepare(
-                `INSERT INTO users (id, name, avatar_url, banner_url, country_code, team_id, team_name, team_name_short, team_flag_url)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-            ).run(user.id, user.username, user.avatar_url, user.cover.url, user.country.code, user.team?.id, user.team?.name, user.team?.short_name, user.team?.flag_url);
+                `INSERT INTO users (id, name, avatar_url, banner_url, country_code, team_id, team_name, team_name_short, team_flag_url, time_created)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            ).run(user.id, user.username, user.avatar_url, user.cover.url, user.country.code, user.team?.id, user.team?.name, user.team?.short_name, user.team?.flag_url, Date.now());
             utils.log(`Stored user data for ${user.username}`);
         }
-        return user;
+        return db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
     } catch (error) {
         utils.log('Error while fetching/updating user profile:', error);
         return null;
@@ -387,6 +394,11 @@ const importUser = async (userId) => {
                 // Skip if no leaderboard
                 const validStatuses = ['ranked', 'loved', 'approved'];
                 if (!validStatuses.includes(map.status)) continue;
+                // Save mapset data if not already saved
+                const existingMapset = db.prepare(`SELECT 1 FROM beatmapsets WHERE id = ? LIMIT 1`).get(map.beatmapset_id);
+                if (!existingMapset) {
+                    await saveMapset(map.beatmapset_id);
+                }
                 // Push pass data
                 passes.push({ mapId: map.id, mapsetId: map.beatmapset_id, mode: map.mode, status: map.status, isConvert: false });
             }
@@ -428,15 +440,21 @@ const importUser = async (userId) => {
                 SET percent_complete = ?, count_passes_imported = ?
                 WHERE user_id = ?`
             ).run(percentComplete, passCount, userId);
-            // Update user's last score submit time
-            db.prepare(`UPDATE users SET last_score_submit = ? WHERE id = ?`).run(Date.now(), userId);
+            // Update user's times
+            db.prepare(
+                `UPDATE users
+                SET last_pass_time = ?, last_import_time = ?
+                WHERE id = ?`
+            ).run(Date.now(), Date.now(), userId);
             // Log
             utils.log(`[Importing ${percentComplete}%] Saved ${passes.length} new passes for ${user.name}`);
         }
-        // Update user stats
-        await updateUserStats(userId);
         // Remove from import queue
         db.prepare(`DELETE FROM user_import_queue WHERE user_id = ?`).run(userId);
+        // Update user stats
+        await updateUserStats(userId);
+        // Save last import time
+        db.prepare(`UPDATE users SET last_import_time = ? WHERE id = ?`).run(Date.now(), userId);
         utils.log(`Completed import of ${passCount} passes for ${user.name}`);
     } catch (error) {
         utils.logError(`Error while importing user ${user.name}:`, error);
@@ -451,6 +469,7 @@ const savePassesFromGlobalRecents = async () => {
         // Fetch all global recent scores
         const mapIds = new Set();
         const scoresByUser = {};
+        const newCursors = {};
         for (const mode of modes) {
             const cursor = db.prepare(
                 `SELECT cursor FROM global_recents_cursors WHERE mode = ?`
@@ -468,10 +487,14 @@ const savePassesFromGlobalRecents = async () => {
                 scoresByUser[score.user_id].push(score);
                 mapIds.add(score.beatmap_id);
             }
-            // Save new cursor
-            const newCursor = res.cursor_string;
-            db.prepare(`INSERT OR REPLACE INTO global_recents_cursors (mode, cursor) VALUES (?, ?)`).run(mode, newCursor);
+            // Make note of new cursor
+            newCursors[mode] = res.cursor_string;
         };
+        // Stop here if no scores found
+        if (mapIds.size === 0) {
+            utils.log('No new scores found in global recents');
+            return;
+        }
         // Fetch all maps in batches of 50
         utils.log(`Fetching data for ${mapIds.size} beatmaps found in global recents...`);
         const mapsById = {};
@@ -481,6 +504,19 @@ const savePassesFromGlobalRecents = async () => {
             const res = await osu.getBeatmaps({ ids });
             for (const map of res.beatmaps) {
                 mapsById[map.id] = map;
+            }
+        }
+        // Save mapset data if not already saved
+        for (const mapId in mapsById) {
+            const map = mapsById[mapId];
+            // Skip if map doesn't have a leaderboard
+            const validStatuses = ['ranked', 'loved', 'approved'];
+            if (!validStatuses.includes(map.status)) continue;
+            // Save mapset data if not already saved
+            const mapsetId = map.beatmapset.id;
+            const existingMapset = db.prepare(`SELECT 1 FROM beatmapsets WHERE id = ? LIMIT 1`).get(mapsetId);
+            if (!existingMapset) {
+                await saveMapset(mapsetId);
             }
         }
         // Process scores
@@ -518,14 +554,20 @@ const savePassesFromGlobalRecents = async () => {
                     );
                     newCount++;
                 }
-                // Update user's last score submit time
-                db.prepare(`UPDATE users SET last_score_submit = ? WHERE id = ?`).run(latestTime, userId);
+                // Update user's last pass time
+                db.prepare(`UPDATE users SET last_pass_time = ? WHERE id = ?`).run(latestTime, userId);
             });
             transaction();
             if (newCount === 0) continue;
             // Update user stats
             utils.log(`Saved ${newCount} new passes for ${user.name}`);
             await updateUserStats(userId);
+        }
+        // Save new cursors
+        // We do this down here so if something fails above, we don't lose the cursor position
+        for (const mode of modes) {
+            const newCursor = newCursors[mode];
+            db.prepare(`INSERT OR REPLACE INTO global_recents_cursors (mode, cursor) VALUES (?, ?)`).run(mode, newCursor);
         }
     } catch (error) {
         utils.logError(`Error while processing global recents:`, error);

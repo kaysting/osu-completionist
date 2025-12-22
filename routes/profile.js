@@ -44,7 +44,6 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
     const updateStatus = dbHelpers.getUserUpdateStatus(req.user.id);
     // Format update status
     if (updateStatus.updating) {
-        console.log(updateStatus);
         updateStatus.details.time_remaining = utils.getRelativeTimestamp(
             (Date.now() + (updateStatus.details.time_remaining_secs * 1000)), undefined, false
         );

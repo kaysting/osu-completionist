@@ -5,7 +5,7 @@
 const fs = require('fs');
 const SqlDumpParser = require('./helpers/mysql-stream-parser');
 const db = require('./db');
-const { saveMapset } = require('./helpers/updaterHelpers');
+const updateHelpers = require('./helpers/updaterHelpers');
 
 const dumpFolder = process.argv[2];
 
@@ -23,7 +23,7 @@ const importBeatmapsets = async () => {
         const mapsetId = row.beatmapset_id;
         // Skip if already stored
         if (storedMapsetIds.includes(mapsetId)) continue;
-        await saveMapset(mapsetId);
+        await updateHelpers.saveMapset(mapsetId);
         newMapsetCount++;
     }
     console.timeEnd('Import beatmaps from dump');
@@ -48,7 +48,7 @@ const importBeatmapsets = async () => {
         ).all()
     ];
     for (const row of rows) {
-        await saveMapset(row.mapset_id, false);
+        await updateHelpers.saveMapset(row.mapset_id, false);
         newMapsetCount++;
     }
     console.timeEnd('Import incomplete beatmaps');
@@ -88,6 +88,12 @@ const importBeatmapsets = async () => {
         db.prepare("INSERT INTO beatmaps_search(beatmaps_search) VALUES('optimize')").run();
         console.timeEnd(`Optimize FTS`);
     }
+
+    // Recalculate beatmap stats
+    console.log('Updating beatmap stats...');
+    console.time('Update beatmap stats');
+    updateHelpers.updateBeatmapStats();
+    console.timeEnd('Update beatmap stats');
 
 };
 

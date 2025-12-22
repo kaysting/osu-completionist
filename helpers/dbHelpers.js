@@ -589,7 +589,7 @@ const searchUsers = (query, limit = 50, offset = 0) => {
         } else {
             const rows = db.prepare(`
                 SELECT id, COUNT(*) OVER() AS total_matches FROM users
-                ORDER BY last_score_submit DESC
+                ORDER BY last_pass_time DESC
                 LIMIT ? OFFSET ?
             `).all(limit, offset);
             total_matches = rows.length > 0 ? rows[0].total_matches : 0;

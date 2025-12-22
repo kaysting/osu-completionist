@@ -2,6 +2,7 @@ const express = require('express');
 
 const { rulesetNameToKey, rulesetKeyToName } = require('../utils.js');
 const { getLeaderboard } = require('../helpers/dbHelpers.js');
+const utils = require('../utils.js');
 
 const router = express.Router();
 
@@ -29,11 +30,17 @@ router.get('/:mode/:includes', (req, res) => {
     }
     // Get leaderboard data
     const { leaderboard, total_players } = getLeaderboard(modeKey, includeLoved, includeConverts, limit, offset);
+    // Get colors for completion progress bars and format time spent
+    for (const entry of leaderboard) {
+        const percentage = parseFloat(entry.stats.percentage_completed) / 100;
+        entry.color = utils.percentageToColor(percentage);
+        entry.stats.time_spent = Math.round(entry.stats.time_spent_secs / 3600);
+    }
     // Calculate total page count
     const maxPages = Math.ceil(total_players / limit);
     const pagesToShow = [];
     for (let i = 1; i <= maxPages; i++) {
-        if (i === 1 || i === maxPages || (i >= page - 1 && i <= page + 1)) {
+        if (i === 1 || i === maxPages || (i >= page - 2 && i <= page + 2)) {
             pagesToShow.push(i);
         } else if (pagesToShow[pagesToShow.length - 1] !== '...') {
             pagesToShow.push('...');

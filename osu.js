@@ -100,6 +100,7 @@ const makeGetRequest = async (endpoint, params = {}) => {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                 },
+                timeout: 1000 * 15,
                 params: params
             });
             // Update rate limit info
@@ -114,7 +115,11 @@ const makeGetRequest = async (endpoint, params = {}) => {
             return res.data;
         } catch (error) {
             const status = error?.response?.status || null;
-            if ((status === 429 || status >= 500) && tries < maxRetries) {
+            if (error.code === 'ECONNABORTED' && tries < maxRetries) {
+                // Timeout, wait and retry
+                console.log(`[osu.js] Timeout on GET ${endpoint}, trying again (${tries + 1}/${maxRetries}) in ${Math.round(waitTime)}ms`);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            } else if ((status === 429 || status >= 500) && tries < maxRetries) {
                 // Rate limited, wait and retry
                 // Use exponential backoff with some jitter
                 console.log(`[osu.js] HTTP ${status} on GET ${endpoint}, trying again (${tries + 1}/${maxRetries}) in ${Math.round(waitTime)}ms`);
