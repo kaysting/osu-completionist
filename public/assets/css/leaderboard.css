@@ -146,7 +146,7 @@
 
 #leaderboard .entry .stat .name {
     color: var(--textDim);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600
 }
 
@@ -158,6 +158,7 @@
 
 #leaderboard .entry .stat .value.primary {
     color: white;
+    font-weight: 600;
 }
 
 #leaderboard .entry .content .bar {
@@ -177,23 +178,14 @@
     border-radius: 4px;
 }
 
-@media (max-width: 900px) {
-    #leaderboard .entry {
-        flex-direction: column;
-        align-items: unset;
-    }
-
-    #leaderboard .entry .rank {
-        padding: 8px;
-    }
-
+@media (max-width: 800px) {
     #leaderboard .entry .content {
         flex-direction: column;
         align-items: unset;
     }
 
     #leaderboard .entry .statsCont {
-        padding: 6px;
+        padding: 6px 12px;
     }
 
     #leaderboard .entry .stats {
@@ -205,9 +197,26 @@
     }
 }
 
-@media (max-width: 500px) {
+@media (max-width: 550px) { 
+    #leaderboard .entry {
+        flex-direction: column;
+        align-items: unset;
+    }
+
+    #leaderboard .entry .rank {
+        padding: 8px;
+    }
+
     #leaderboard .entry .stats>div:first-child {
         flex-basis: 100%;
+    }
+
+    #leaderboard .entry .stats .value.primary {
+        font-size: 22px;
+    }
+
+    #leaderboard .entry .stats .value {
+        font-size: 18px;
     }
 }
 
