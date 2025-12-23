@@ -440,19 +440,17 @@ const importUser = async (userId) => {
             ).run(percentComplete, passCount, userId);
             // Update user's times
             db.prepare(
-                `UPDATE users
-                SET last_pass_time = ?, last_import_time = ?
-                WHERE id = ?`
-            ).run(Date.now(), Date.now(), userId);
+                `UPDATE users SET last_pass_time = ? WHERE id = ?`
+            ).run(Date.now(), userId);
             // Log
             utils.log(`[Importing ${percentComplete}%] Saved ${passes.length} new passes for ${user.name}`);
         }
         // Remove from import queue
         db.prepare(`DELETE FROM user_import_queue WHERE user_id = ?`).run(userId);
-        // Update user stats
-        await updateUserStats(userId);
         // Save last import time
         db.prepare(`UPDATE users SET last_import_time = ? WHERE id = ?`).run(Date.now(), userId);
+        // Update user stats
+        await updateUserStats(userId);
         utils.log(`Completed import of ${passCount} passes for ${user.name}`);
     } catch (error) {
         utils.logError(`Error while importing user ${user.name}:`, error);
