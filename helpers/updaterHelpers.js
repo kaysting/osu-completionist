@@ -116,6 +116,10 @@ const updateUserProfile = async (userId, userObj) => {
         }
         // Fetch user from osu
         const user = userObj || (await osu.getUsers({ ids: [userId] })).users[0];
+        // Make sure we got a user
+        if (!user?.username) {
+            throw new Error(`User with ID ${userId} not found on osu! API`);
+        }
         // Check if username has changed
         if (existingUser?.name !== user.username) {
             const oldNames = (await osu.getUser(user.id)).previous_usernames || [];
@@ -156,7 +160,7 @@ const updateUserProfile = async (userId, userObj) => {
         }
         return db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
     } catch (error) {
-        utils.log('Error while fetching/updating user profile:', error);
+        utils.logError('Error while fetching/updating user profile:', error);
         return null;
     }
 };
@@ -320,7 +324,7 @@ const saveMapsetTransaction = db.transaction((mapset, shouldIndex) => {
         if (shouldIndex)
             stmtInsertMapIndex.run(mapset.title, mapset.artist, map.version, map.id, map.mode);
     }
-    console.log(`Saved mapset ${mapset.id} with ${maps.length} maps: ${mapset.artist} - ${mapset.title}`);
+    utils.log(`Saved mapset ${mapset.id} with ${maps.length} maps: ${mapset.artist} - ${mapset.title}`);
 });
 
 // Function to fetch and save a mapset
@@ -344,11 +348,12 @@ const importUser = async (userId) => {
         const uniqueStdMapsetIds = new Set();
         const pendingMapsetIds = [];
         // Update start time in queue
+        const timeStarted = Date.now();
         db.prepare(
             `UPDATE user_import_queue
             SET time_started = ?, percent_complete = 0, count_passes_imported = 0
             WHERE user_id = ?`
-        ).run(Date.now(), userId);
+        ).run(timeStarted, userId);
         // Outer loop to fetch and process passes
         let mostPlayedOffset = 0;
         let passCount = 0;
@@ -443,7 +448,10 @@ const importUser = async (userId) => {
                 `UPDATE users SET last_pass_time = ? WHERE id = ?`
             ).run(Date.now(), userId);
             // Log
-            utils.log(`[Importing ${percentComplete}%] Saved ${passes.length} new passes for ${user.name}`);
+            const scoresPerMinute = Math.round(
+                (mostPlayedOffset / (Date.now() - timeStarted)) * 1000 * 60
+            );
+            utils.log(`[Importing ${percentComplete}%] Saved ${passes.length} new passes for ${user.name} (${scoresPerMinute} scores/min)`);
         }
         // Remove from import queue
         db.prepare(`DELETE FROM user_import_queue WHERE user_id = ?`).run(userId);
@@ -451,7 +459,14 @@ const importUser = async (userId) => {
         db.prepare(`UPDATE users SET last_import_time = ? WHERE id = ?`).run(Date.now(), userId);
         // Update user stats
         await updateUserStats(userId);
-        utils.log(`Completed import of ${passCount} passes for ${user.name}`);
+        // Log import completion and speed
+        const importDurationMs = (Date.now() - timeStarted);
+        const scoresPerMinute = Math.round(
+            (mostPlayedOffset / (Date.now() - timeStarted)) * 1000 * 60
+        );
+        const status = `Completed import of ${passCount} passes for ${user.name} in ${utils.secsToDuration(Math.round(importDurationMs / 1000))} (${scoresPerMinute} scores/min)`;
+        utils.log(status);
+        utils.logError(`NOT AN ERROR:`, status);
     } catch (error) {
         utils.logError(`Error while importing user ${user.name}:`, error);
     }
@@ -575,7 +590,13 @@ const startQueuedImports = async () => {
     if (!nextEntry) return;
     if (isImportRunning) return;
     const userId = nextEntry.user_id;
-    await updateUserProfile(userId);
+    const userEntry = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
+    if (!userEntry) {
+        // Remove from queue if user doesn't exist
+        db.prepare(`DELETE FROM user_import_queue WHERE user_id = ?`).run(userId);
+        utils.logError(`User with ID ${userId} not found in database, removed from import queue`);
+        return;
+    }
     importUser(userId);
 };
 
@@ -583,15 +604,21 @@ const queueUserForImport = async (userId) => {
     try {
         const existingTask = db.prepare(`SELECT 1 FROM user_import_queue WHERE user_id = ? LIMIT 1`).get(userId);
         if (!existingTask) {
-            // Update user profile before import
-            await updateUserProfile(userId);
+            console.log(existingTask);
+            // Fetch playcounts count
+            const user = await osu.getUser(userId);
+            const playcountsCount = user?.beatmap_playcounts_count || 0;
+            if (!user || playcountsCount === 0) {
+                utils.log(`User ${user?.username} has no playcounts, not queueing for import`);
+                return false;
+            }
             // Add to queue
             db.prepare(
                 `INSERT OR IGNORE INTO user_import_queue
-                (user_id, time_queued)
-                VALUES (?, ?)`
-            ).run(userId, Date.now());
-            utils.log(`Queued ${userId} for import`);
+                (user_id, time_queued, playcounts_count)
+                VALUES (?, ?, ?)`
+            ).run(userId, Date.now(), playcountsCount);
+            utils.log(`Queued ${user.username} for import`);
             return true;
         }
         return false;

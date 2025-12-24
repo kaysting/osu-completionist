@@ -53,10 +53,12 @@ const getBulkUserCompletionStats = (userIds, mode, includeLoved, includeConverts
     const rows = db.prepare(`
         SELECT s1.*,
                (SELECT COUNT(*) FROM user_stats s2
-                WHERE s2.mode = s1.mode
-                AND s2.includes_loved = s1.includes_loved
-                AND s2.includes_converts = s1.includes_converts
-                AND s2.time_spent_secs > s1.time_spent_secs
+               INNER JOIN users u ON s2.user_id = u.id
+               WHERE s2.mode = s1.mode
+               AND s2.includes_loved = s1.includes_loved
+               AND s2.includes_converts = s1.includes_converts
+               AND s2.time_spent_secs > s1.time_spent_secs
+               AND u.last_import_time != 0
                ) + 1 AS rank
         FROM user_stats s1
         WHERE s1.user_id IN (${userIds.map(() => '?').join(',')})
@@ -154,15 +156,16 @@ const getUserCompletionStats = (userId, mode, includeLoved, includeConverts) => 
 const getLeaderboard = (mode, includeLoved, includeConverts, limit = 100, offset = 0) => {
     const totalRows = db.prepare(
         `SELECT COUNT(*) AS count
-         FROM user_stats
-         WHERE mode = ? AND includes_loved = ? AND includes_converts = ?`
+         FROM user_stats s
+         JOIN users u ON s.user_id = u.id
+         WHERE s.mode = ? AND s.includes_loved = ? AND s.includes_converts = ? AND u.last_import_time != 0`
     ).get(mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0);
     const totalPlayers = totalRows.count;
     const rows = db.prepare(
         `SELECT u.id
          FROM users u
          JOIN user_stats us ON u.id = us.user_id
-         WHERE us.mode = ? AND us.includes_loved = ? AND us.includes_converts = ?
+         WHERE us.mode = ? AND us.includes_loved = ? AND us.includes_converts = ? AND u.last_import_time != 0
          ORDER BY us.time_spent_secs DESC
          LIMIT ? OFFSET ?`
     ).all(mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0, limit, offset);
@@ -364,15 +367,21 @@ const getUserRecentPasses = (userId, mode, includeLoved, includeConverts, limit 
 };
 
 const getUserUpdateStatus = (userId) => {
+    const SCORES_PER_MINUTE = 450; // determined through testing
     const entry = db.prepare(`SELECT * FROM user_import_queue WHERE user_id = ?`).get(userId);
     if (entry) {
-        const position = db.prepare(
-            `SELECT COUNT(*) AS pos FROM user_import_queue
+        const entriesAhead = db.prepare(
+            `SELECT * FROM user_import_queue
              WHERE time_queued < ?`
-        ).get(entry.time_queued)?.pos || 0;
-        const time_remaining_secs = entry.percent_complete > 0
-            ? Math.round(((Date.now() - entry.time_started) / (entry.percent_complete / 100)) * ((100 - entry.percent_complete) / 100) / 1000)
-            : null;
+        ).all(entry.time_queued);
+        let playcountsCountAhead = 0;
+        for (const e of [...entriesAhead, entry]) {
+            const scoresCompleted = e.playcounts_count * (e.percent_complete / 100);
+            const scoresRemaining = e.playcounts_count - scoresCompleted;
+            playcountsCountAhead += scoresRemaining;
+        }
+        const position = entriesAhead.length || 0;
+        const time_remaining_secs = playcountsCountAhead / (SCORES_PER_MINUTE / 60);
         return {
             updating: true,
             details: {

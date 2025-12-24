@@ -228,7 +228,8 @@ CREATE TABLE
 		"time_queued" INTEGER DEFAULT 0,
 		"time_started" INTEGER DEFAULT 0,
 		"percent_complete" REAL DEFAULT 0,
-		"count_passes_imported" INTEGER DEFAULT 0
+		"count_passes_imported" INTEGER DEFAULT 0,
+		playcounts_count integer default 0
 	);
 
 CREATE INDEX idx_users_last_pass ON users (last_pass_time);

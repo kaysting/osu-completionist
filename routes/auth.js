@@ -40,10 +40,14 @@ router.get('/callback', async (req, res) => {
             return res.redirect('/auth/login');
         }
         log(`User ${user.data.username} (${user.data.id}) logged in via OAuth`);
+        // Save user data to db
+        const wasProfileUpdated = await updaterHelpers.updateUserProfile(user.data.id, user.data);
+        if (wasProfileUpdated === null) {
+            return res.redirect('/auth/login');
+        }
         // Queue user if they're new
         const userEntry = db.prepare('SELECT * FROM users WHERE id = ?').get(user.data.id);
         if (!userEntry) {
-            log(`${user.data.username} is new here!`);
             await updaterHelpers.queueUserForImport(user.data.id);
         }
         // Set JWT cookie
