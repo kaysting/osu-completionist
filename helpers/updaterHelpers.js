@@ -347,13 +347,14 @@ const importUser = async (userId) => {
         const uniqueMapsetIds = new Set();
         const uniqueStdMapsetIds = new Set();
         const pendingMapsetIds = [];
-        // Update start time in queue
+        // Update queue entry
         const timeStarted = Date.now();
         db.prepare(
             `UPDATE user_import_queue
             SET time_started = ?, percent_complete = 0, count_passes_imported = 0
+                time_queued = 0, playcounts_count = ?
             WHERE user_id = ?`
-        ).run(timeStarted, userId);
+        ).run(timeStarted, playcountsCount, userId);
         // Outer loop to fetch and process passes
         let mostPlayedOffset = 0;
         let passCount = 0;

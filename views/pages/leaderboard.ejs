@@ -10,19 +10,19 @@
                 <div class="rank"><%= `#${entry.stats.rank}` %></div>
                 <div class="content flex align-center flex-grow">
                     <div class="profile flex gap-16 align-center flex-grow">
-                        <img src="<%= entry.user.banner_url %>" class="banner">
+                        <img src="<%= entry.user.banner_url %>" class="banner" loading="lazy">
                         <div class="dimming"></div>
-                        <img src="<%= entry.user.avatar_url %>" class="avatar">
+                        <img src="<%= entry.user.avatar_url %>" class="avatar" loading="lazy">
                         <div class="text flex col gap-8 flex-grow">
                             <div class="name"><%= entry.user.name %></div>
                             <div class="flags flex gap-16 align-center">
                                 <div class="country flex gap-4 align-center" title="<%= entry.user.country.name %>">
-                                    <img src="<%= entry.user.country.flag_url %>" class="flag">
+                                    <img src="<%= entry.user.country.flag_url %>" class="flag" loading="lazy">
                                     <span class="name"><%= entry.user.country.name %></span>
                                 </div>
                                 <% if (entry.user.team.name) { %>
                                 <div class="team flex gap-4 align-center" title="<%= entry.user.team.name %>">
-                                    <img src="<%= entry.user.team.flag_url %>" class="flag">
+                                    <img src="<%= entry.user.team.flag_url %>" class="flag" loading="lazy">
                                     <span class="name"><%= entry.user.team.name %></span>
                                 </div>
                                 <% } %>

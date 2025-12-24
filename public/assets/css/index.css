@@ -496,6 +496,22 @@ img {
     overflow: auto;
 }
 
+#topbar .top .title {
+    display: none;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 16px;
+    border-left: 1px solid var(--textDim);
+    padding: 4px 0px 4px 16px;
+}
+
+#topbar.overflowing .top .title {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 #topbar .container {
     height: 100%;
     width: 100%;
@@ -1181,6 +1197,15 @@ img {
     white-space: nowrap;
     text-overflow: ellipsis;
     line-height: 1.2;
+}
+
+img {
+    opacity: 0;
+    transition: opacity 0.1s ease-in;
+}
+
+img.loaded {
+    opacity: 1;
 }
 
 .flex {

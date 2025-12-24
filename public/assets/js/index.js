@@ -55,3 +55,65 @@ const audioButtonClick = (event, audioUrl) => {
     audioPlayer.src = audioUrl;
     audioPlayer.play();
 };
+
+// Handle image load states
+const images = document.querySelectorAll('img');
+images.forEach(img => {
+    if (img.complete) {
+        img.classList.add('loaded');
+    } else {
+        img.addEventListener('load', () => {
+            img.classList.add('loaded');
+        });
+    }
+});
+
+const topbar = document.getElementById('topbar');
+const btnToggleMenu = document.getElementById('navToggleMenu');
+
+// Handle topbar scrolled state
+document.addEventListener('scroll', () => {
+    if (window.scrollY > 20) {
+        topbar.classList.add('scrolled');
+    } else {
+        topbar.classList.remove('scrolled');
+    }
+});
+
+// Handle topbar overflowing state
+const topbarResizeObserver = new ResizeObserver(() => {
+    topbar.classList.remove('overflowing');
+    if (topbar.scrollWidth > topbar.clientWidth) {
+        topbar.classList.add('overflowing');
+    } else {
+        topbar.classList.remove('open');
+        topbar.style.height = '';
+    }
+});
+topbarResizeObserver.observe(topbar);
+
+// Handle menu toggling
+btnToggleMenu.addEventListener('click', () => {
+    if (topbar.classList.contains('open')) {
+        topbar.classList.remove('open');
+        topbar.style.height = '';
+    } else {
+        topbar.classList.add('open');
+        topbar.style.height = 'auto';
+    }
+});
+
+// Show notice if not seen
+const devMsgVersion = 1;
+const seenVersion = parseInt(localStorage.getItem('devNoticeVersion') || '0');
+const devNoticePopup = document.getElementById('devNoticePopup');
+const devNoticeClose = document.getElementById('devNoticeClose');
+if (seenVersion < devMsgVersion) {
+    devNoticePopup.showModal();
+}
+
+// Close notice
+devNoticeClose.addEventListener('click', () => {
+    devNoticePopup.close();
+    localStorage.setItem('devNoticeVersion', devMsgVersion.toString());
+});

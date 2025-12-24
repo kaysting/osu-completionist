@@ -1,7 +1,7 @@
 <a href="/u/<%= user.id %>" class="userCard flex gap-16 align-center">
-    <img class="banner" src="<%= user.banner_url %>">
+    <img class="banner" src="<%= user.banner_url %>" loading="lazy">
     <div class="bannerDimming"></div>
-    <img class="avatar" src="<%= user.avatar_url %>">
+    <img class="avatar" src="<%= user.avatar_url %>" loading="lazy">
     <div class="content flex-grow flex col justify-center gap-4">
         <div class="name"><%= user.name %></div>
         <div class="flags flex">

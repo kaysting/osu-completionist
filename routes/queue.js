@@ -7,10 +7,10 @@ router.get('/', (req, res) => {
     const results = getQueuedUsers();
     res.render('layout', {
         page: 'queue',
-        title: 'Queue',
+        title: 'Import queue',
         meta: {
-            title: 'User update queue',
-            description: `${results.in_progress.length} users are currently being updated and ${results.waiting.length} users are waiting in the queue.`
+            title: 'Import queue',
+            description: `${results.in_progress.length} users are currently being imported and ${results.waiting.length} users are waiting in the queue.`
         },
         results,
         me: req.me

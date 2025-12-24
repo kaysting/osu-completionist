@@ -51,16 +51,17 @@ const getBulkUserCompletionStats = (userIds, mode, includeLoved, includeConverts
          WHERE mode = ? AND includes_loved = ? AND includes_converts = ?`
     ).get(mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0);
     const rows = db.prepare(`
-        SELECT s1.*,
+        SELECT s1.*, u.*,
                (SELECT COUNT(*) FROM user_stats s2
                INNER JOIN users u ON s2.user_id = u.id
-               WHERE s2.mode = s1.mode
+               WHERE u.last_import_time != 0
+               AND s2.mode = s1.mode
                AND s2.includes_loved = s1.includes_loved
                AND s2.includes_converts = s1.includes_converts
                AND s2.time_spent_secs > s1.time_spent_secs
-               AND u.last_import_time != 0
                ) + 1 AS rank
         FROM user_stats s1
+        JOIN users u ON s1.user_id = u.id
         WHERE s1.user_id IN (${userIds.map(() => '?').join(',')})
         AND s1.mode = ? AND s1.includes_loved = ? AND s1.includes_converts = ?
     `).all(...userIds, mode, includeLoved ? 1 : 0, includeConverts ? 1 : 0);
@@ -82,7 +83,9 @@ const getBulkUserCompletionStats = (userIds, mode, includeLoved, includeConverts
         stats.time_remaining_secs = totals.time_total_secs - row.time_spent_secs;
         stats.time_total_secs = totals.time_total_secs;
         stats.percentage_completed = row.time_spent_secs > 0 ? ((row.time_spent_secs / totals.time_total_secs) * 100) : 0;
-        stats.rank = row.rank;
+        // Only assign rank if user has been imported
+        if (row.last_import_time > 0)
+            stats.rank = row.rank;
         statsByUserId[row.user_id] = stats;
     }
     return userIds.map(id => ({
@@ -367,7 +370,7 @@ const getUserRecentPasses = (userId, mode, includeLoved, includeConverts, limit 
 };
 
 const getUserUpdateStatus = (userId) => {
-    const SCORES_PER_MINUTE = 450; // determined through testing
+    const SCORES_PER_MINUTE = 550; // determined through testing
     const entry = db.prepare(`SELECT * FROM user_import_queue WHERE user_id = ?`).get(userId);
     if (entry) {
         const entriesAhead = db.prepare(
@@ -380,7 +383,7 @@ const getUserUpdateStatus = (userId) => {
             const scoresRemaining = e.playcounts_count - scoresCompleted;
             playcountsCountAhead += scoresRemaining;
         }
-        const position = entriesAhead.length || 0;
+        const position = entriesAhead.length || 1;
         const time_remaining_secs = Math.round(playcountsCountAhead / (SCORES_PER_MINUTE / 60));
         return {
             updating: true,

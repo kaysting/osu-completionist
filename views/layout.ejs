@@ -21,9 +21,7 @@
     <% } %>
     <meta name="theme-color" content="#6EF79C">
     <link rel="icon" type="image/png" href="/assets/images/icon.png">
-    <link rel="stylesheet" href="/assets/css/index.css">
-    <script src="/assets/js/index.js"></script>
-    <script src="/assets/js/triangles-bg.js"></script>
+    <link rel="stylesheet" href="/assets/css/index.css?v=2">
 </head>
 
 <body data-page="<%= page %>">
@@ -39,6 +37,25 @@
                         <span class="white">osu!</span><span class="green">complete</span>
                     </div>
                 </a>
+                <div class="title"><%=
+                    (() =>{
+                        switch (page) {
+                            case 'home':
+                                return 'home';
+                            case 'search':
+                                return 'search';
+                            case 'leaderboard':
+                                return 'leaderboard';
+                            case 'queue':
+                                return 'import queue';
+                            case 'recommended':
+                                return 'play next';
+                            case 'profile':
+                                return 'profile';
+                            default: return '';
+                        }
+                    })()
+                %></div>
             </div>
             <div class="left">
                 <a id="navSearch" class="btn <%= page == 'search' ? 'text bright' : 'text muted' %>" href="/search"
@@ -104,52 +121,6 @@
             <button class="btn primary medium" id="devNoticeClose" autofocus>Got it!</button>
         </div>
     </dialog>
-    <script>
-        const topbar = document.getElementById('topbar');
-        const btnToggleMenu = document.getElementById('navToggleMenu');
-        // Handle topbar scrolled state
-        document.addEventListener('scroll', () => {
-            if (window.scrollY > 20) {
-                topbar.classList.add('scrolled');
-            } else {
-                topbar.classList.remove('scrolled');
-            }
-        });
-        // Handle topbar overflowing state
-        const topbarResizeObserver = new ResizeObserver(() => {
-            topbar.classList.remove('overflowing');
-            if (topbar.scrollWidth > topbar.clientWidth) {
-                topbar.classList.add('overflowing');
-            } else {
-                topbar.classList.remove('open');
-                topbar.style.height = '';
-            }
-        });
-        topbarResizeObserver.observe(topbar);
-        // Handle menu toggling
-        btnToggleMenu.addEventListener('click', () => {
-            if (topbar.classList.contains('open')) {
-                topbar.classList.remove('open');
-                topbar.style.height = '';
-            } else {
-                topbar.classList.add('open');
-                topbar.style.height = 'auto';
-            }
-        });
-        // Show notice if not seen
-        const devMsgVersion = 1;
-        const seenVersion = parseInt(localStorage.getItem('devNoticeVersion') || '0');
-        const devNoticePopup = document.getElementById('devNoticePopup');
-        const devNoticeClose = document.getElementById('devNoticeClose');
-        if (seenVersion < devMsgVersion) {
-            devNoticePopup.showModal();
-        }
-        // Close notice
-        devNoticeClose.addEventListener('click', () => {
-            devNoticePopup.close();
-            localStorage.setItem('devNoticeVersion', devMsgVersion.toString());
-        });
-    </script>
     <div id="main">
         <%- include('pages/' + page) %>
         <div id="footer">
@@ -160,6 +131,7 @@
             </p>
         </div>
     </div>
+    <script src="/assets/js/index.js?v=2"></script>
 </body>
 
 </html>

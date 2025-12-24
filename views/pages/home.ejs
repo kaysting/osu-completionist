@@ -1,16 +1,4 @@
 <link rel="stylesheet" href="/assets/css/home.css">
-<script>
-    initTriangleBackground(document.getElementById('bgCanvas'), {
-        triColor: 'hsl(140, 30%, 50%)',
-        bgColor1: 'hsl(220, 20%, 10%)',
-        bgColor2: 'hsl(220, 20%, 10%)',
-        density: 20000,
-        speed: 0.25,
-        strokeWidth: 2,
-        maxSize: 150,
-        opacity: 0.3
-    });
-</script>
 <div id="home">
     <div class="header">
         <div class="logo">
@@ -66,3 +54,16 @@
         </div>
     </div>
 </div>
+<script src="/assets/js/triangles-bg.js"></script>
+<script>
+    initTriangleBackground(document.getElementById('bgCanvas'), {
+        triColor: 'hsl(140, 30%, 50%)',
+        bgColor1: 'hsl(220, 20%, 10%)',
+        bgColor2: 'hsl(220, 20%, 10%)',
+        density: 20000,
+        speed: 0.25,
+        strokeWidth: 2,
+        maxSize: 150,
+        opacity: 0.3
+    });
+</script>
