@@ -381,7 +381,7 @@ const getUserUpdateStatus = (userId) => {
             playcountsCountAhead += scoresRemaining;
         }
         const position = entriesAhead.length || 0;
-        const time_remaining_secs = playcountsCountAhead / (SCORES_PER_MINUTE / 60);
+        const time_remaining_secs = Math.round(playcountsCountAhead / (SCORES_PER_MINUTE / 60));
         return {
             updating: true,
             details: {
