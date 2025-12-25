@@ -233,3 +233,24 @@ CREATE TABLE
 	);
 
 CREATE INDEX idx_users_last_pass ON users (last_pass_time);
+
+CREATE TABLE
+	IF NOT EXISTS "user_category_stats" (
+		"user_id" INTEGER NOT NULL,
+		"category" TEXT NOT NULL,
+		"count" INTEGER NOT NULL DEFAULT 0,
+		"time_spent_secs" INTEGER NOT NULL DEFAULT 0,
+		PRIMARY KEY ("user_id", "category")
+	);
+
+CREATE TABLE
+	IF NOT EXISTS "user_category_stats_yearly" (
+		"user_id" INTEGER NOT NULL,
+		"category" TEXT NOT NULL,
+		"year" INTEGER NOT NULL,
+		"count" INTEGER NOT NULL DEFAULT 0,
+		"time_spent_secs" INTEGER NOT NULL DEFAULT 0,
+		PRIMARY KEY ("user_id", "category", "year")
+	);
+
+CREATE INDEX idx_category_stats_leaderboard ON user_category_stats (category, time_spent_secs DESC);

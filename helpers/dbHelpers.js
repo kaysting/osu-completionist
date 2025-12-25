@@ -372,36 +372,35 @@ const getUserRecentPasses = (userId, mode, includeLoved, includeConverts, limit 
 const getUserUpdateStatus = (userId) => {
     const SCORES_PER_MINUTE = 550; // determined through testing
     const entry = db.prepare(`SELECT * FROM user_import_queue WHERE user_id = ?`).get(userId);
-    if (entry) {
-        const entriesAhead = db.prepare(
-            `SELECT * FROM user_import_queue
-             WHERE time_queued < ?`
-        ).all(entry.time_queued);
-        let playcountsCountAhead = 0;
-        for (const e of [...entriesAhead, entry]) {
-            const scoresCompleted = e.playcounts_count * (e.percent_complete / 100);
-            const scoresRemaining = e.playcounts_count - scoresCompleted;
-            playcountsCountAhead += scoresRemaining;
-        }
-        const position = entriesAhead.length || 1;
-        const time_remaining_secs = Math.round(playcountsCountAhead / (SCORES_PER_MINUTE / 60));
-        return {
-            updating: true,
-            details: {
-                time_queued: entry.time_queued,
-                time_started: entry.time_started,
-                time_remaining_secs,
-                position,
-                percent_completed: entry.percent_complete,
-                count_passes_imported: entry.count_passes_imported
-            }
-        };
-    } else {
+    if (!entry) {
         return {
             updating: false,
             details: null
         };
     }
+    const entriesAhead = db.prepare(
+        `SELECT * FROM user_import_queue
+             WHERE time_queued < ?`
+    ).all(entry.time_queued);
+    let playcountsCountAhead = 0;
+    for (const e of [...entriesAhead, entry]) {
+        const scoresCompleted = e.playcounts_count * (e.percent_complete / 100);
+        const scoresRemaining = e.playcounts_count - scoresCompleted;
+        playcountsCountAhead += scoresRemaining;
+    }
+    const position = entriesAhead.length || 1;
+    const time_remaining_secs = Math.round(playcountsCountAhead / (SCORES_PER_MINUTE / 60));
+    return {
+        updating: true,
+        details: {
+            time_queued: entry.time_queued,
+            time_started: entry.time_started,
+            time_remaining_secs,
+            position,
+            percent_completed: entry.percent_complete,
+            count_passes_imported: entry.count_passes_imported
+        }
+    };
 };
 
 const searchBeatmaps = (query, includeLoved, includeConverts, sort, notPlayedByUserId, limit = 50, offset = 0) => {
