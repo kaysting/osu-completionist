@@ -9,7 +9,7 @@ const dayjs = require('dayjs');
 const app = express();
 
 app.use((req, res, next) => {
-    if (!req.headers['cf-ray']) {
+    if (!req.headers['cf-ray'] && process.env.ENFORCE_CLOUDFLARE_ONLY === 'true') {
         res.status(403).send('Forbidden');
         return;
     }
