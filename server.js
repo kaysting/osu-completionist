@@ -3,7 +3,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const db = require('./helpers/db');
 const { log, logError } = require('./helpers/utils');
-const { getAuthenticatedUser } = require('./middleware');
+const { getAuthenticatedUser } = require('./helpers/middleware');
 const dayjs = require('dayjs');
 
 const app = express();

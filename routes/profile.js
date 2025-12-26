@@ -1,7 +1,7 @@
 const express = require('express');
 
 const statCatDefs = require('../statCategoryDefinitions');
-const { ensureUserExists } = require('../middleware.js');
+const { ensureUserExists } = require('../helpers/middleware.js');
 const utils = require('../helpers/utils.js');
 const { rulesetNameToKey, rulesetKeyToName } = utils;
 const updater = require('../helpers/updaterHelpers.js');
