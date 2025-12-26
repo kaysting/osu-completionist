@@ -6,7 +6,8 @@
   "scripts": {
     "generate-jwt-secret": "node maintenance.js getJwtSecret",
     "import-beatmaps": "node maintenance.js importBeatmaps",
-    "update-category-stats": "node maintenance.js updateCatStats"
+    "update-category-stats": "node maintenance.js updateCatStats",
+    "dump-schema": "node maintenance.js dumpSchema"
   },
   "keywords": [],
   "author": "Kayla Kersting (kaysting@github)",

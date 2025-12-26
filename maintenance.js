@@ -1,8 +1,10 @@
 const fs = require('fs');
 const crypto = require('crypto');
+const cp = require('child_process');
 const SqlDumpParser = require('./helpers/mysql-stream-parser');
 const db = require('./helpers/db');
 const updateHelpers = require('./helpers/updaterHelpers');
+const path = require('path');
 
 const importBeatmapsets = async () => {
     const dumpFolder = process.argv[3];
@@ -112,6 +114,12 @@ const jwtSecret = () => {
     console.log(`Use this cryptographically secure token as the JWT_TOKEN environment variable:\n${secret}`);
 };
 
+const dumpSchema = () => {
+    const dbPath = path.resolve(process.env.DB_PATH || './storage.db');
+    const schemaPath = path.resolve(__dirname, './schema.sql');
+    cp.execSync(`sqlite3 "${dbPath}" .schema > "${schemaPath}"`);
+};
+
 switch (process.argv[2]) {
     case 'importBeatmaps':
         importBeatmapsets();
@@ -121,5 +129,8 @@ switch (process.argv[2]) {
         break;
     case 'getJwtSecret':
         jwtSecret();
+        break;
+    case 'dumpSchema':
+        dumpSchema();
         break;
 }
