@@ -1,27 +1,41 @@
-<div id="statSettings">
+<div id="statSettings" class="flex flex-wrap justify-center">
     <div class="section mode">
         <div class="btnGroup">
-            <a href="<%= settings.basePath %>/osu/<%= settings.includes.join('-') %>"
-                class="btn <%= settings.modeKey === 'osu' ? 'primary' : '' %>">osu!</a>
-            <a href="<%= settings.basePath %>/taiko/<%= settings.includes.join('-') %>"
-                class="btn <%= settings.modeKey === 'taiko' ? 'primary' : '' %>">osu!taiko</a>
-            <a href="<%= settings.basePath %>/catch/<%= settings.includes.join('-') %>"
-                class="btn <%= settings.modeKey === 'fruits' ? 'primary' : '' %>">osu!catch</a>
-            <a href="<%= settings.basePath %>/mania/<%= settings.includes.join('-') %>"
-                class="btn <%= settings.modeKey === 'mania' ? 'primary' : '' %>">osu!mania</a>
+            <a href="<%= category_navigation.osu %>"
+                class="btn <%= category.includes('osu-') ? 'primary' : '' %>">osu!</a>
+            <a href="<%= category_navigation.taiko %>"
+                class="btn <%= category.includes('taiko-') ? 'primary' : '' %>">osu!taiko</a>
+            <a href="<%= category_navigation.catch %>"
+                class="btn <%= category.includes('catch-') ? 'primary' : '' %>">osu!catch</a>
+            <a href="<%= category_navigation.mania %>"
+                class="btn <%= category.includes('mania-') ? 'primary' : '' %>">osu!mania</a>
         </div>
     </div>
-    <div class="section includes">
-        <a href="<%= settings.basePath %>/<%= settings.mode %>/ranked<%= settings.includes.includes('loved') ? '' : '-loved' %><%= settings.includes.includes('converts') ? '-converts' : '' %>"
-            class="btn <%= settings.includes.includes('loved') ? 'primary' : '' %>">
-            <span class="icon <%= settings.includes.includes('loved') ? 'filled' : '' %>">favorite</span>
+    <% if (category.includes('mania-')) { %>
+    <div class="section">
+        <div class="btnGroup">
+            <a href="<%= category_navigation.mania %>" class="btn <%= !category.match(/\dk$/) ? 'primary' : '' %>">
+                <span class="icon filled">piano</span>
+                <span class="label">All</span>
+            </a>
+            <a href="<%= category_navigation.mania4k %>"
+                class="btn <%= category.includes('-4k') ? 'primary' : '' %>">4K</a>
+            <a href="<%= category_navigation.mania7k %>"
+                class="btn <%= category.includes('-7k') ? 'primary' : '' %>">7K</a>
+        </div>
+    </div>
+    <% } %>
+    <div class="section flex gap-8 flex-wrap">
+        <a href="<%= category_navigation.toggleLoved %>" class="btn <%= category.includes('loved') ? 'primary' : '' %>">
+            <span class="icon <%= category.includes('loved') ? 'filled' : '' %>">favorite</span>
             Include loved
         </a>
-        <a <%- settings.modeKey == 'osu' ? 'title="osu!standard has no converts."' : `href="${settings.basePath}/${settings.mode}/ranked${settings.includes.includes('loved') ? '-loved' : ''}${settings.includes.includes('converts') ? '' : '-converts'}"` %>
-            class="btn <%= settings.includes.includes('converts') ? 'primary' : '' %> <%= settings.modeKey == 'osu' ? 'disabled' : '' %>">
-            <span
-                class="icon <%= settings.includes.includes('converts') ? 'filled' : '' %>">swap_horizontal_circle</span>
+        <% if (!category.includes('osu-')) { %>
+        <a href="<%= category_navigation.toggleConverts %>"
+            class="btn <%= category.includes('converts') ? 'primary' : '' %>">
+            <span class="icon <%= category.includes('converts') ? 'filled' : '' %>">swap_horizontal_circle</span>
             Include converts
         </a>
+        <% } %>
     </div>
 </div>

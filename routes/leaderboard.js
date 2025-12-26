@@ -1,4 +1,5 @@
 const express = require('express');
+const statCatDefs = require('../statCategoryDefinitions');
 
 const { rulesetNameToKey, rulesetKeyToName } = require('../utils.js');
 const { getLeaderboard } = require('../helpers/dbHelpers.js');
@@ -7,29 +8,21 @@ const utils = require('../utils.js');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-    res.redirect(`/leaderboard/osu/ranked`);
+    res.redirect(`/leaderboard/osu-ranked`);
 });
 
-router.get('/:mode', (req, res) => {
-    res.redirect(`/leaderboard/${req.params.mode}/ranked`);
-});
-
-router.get('/:mode/:includes', (req, res) => {
+router.get('/:category', (req, res) => {
     // Get params
+    const category = req.params.category.toLowerCase();
     const page = parseInt(req.query.p) || 1;
-    const mode = req.params.mode || 'osu';
-    const includes = req.params.includes?.split('-') || ['ranked'];
-    const includeConverts = includes.includes('converts') ? 1 : 0;
-    const includeLoved = includes.includes('loved') ? 1 : 0;
     const limit = 50;
     const offset = (page - 1) * limit;
     // Check params
-    const modeKey = rulesetNameToKey(mode);
-    if (!modeKey) {
-        return res.redirect('/leaderboard/osu/ranked-loved');
+    if (!statCatDefs.find(cat => cat.id === category)) {
+        return res.redirect('/leaderboard/osu-ranked');
     }
     // Get leaderboard data
-    const { leaderboard, total_players } = getLeaderboard(modeKey, includeLoved, includeConverts, limit, offset);
+    const { leaderboard, total_players } = getLeaderboard(category, limit, offset);
     // Get colors for completion progress bars and format time spent
     for (const entry of leaderboard) {
         const percentage = parseFloat(entry.stats.percentage_completed) / 100;
@@ -47,19 +40,18 @@ router.get('/:mode/:includes', (req, res) => {
         }
     }
     // Render
-    const modeNameFull = rulesetKeyToName(modeKey, true);
+    const modeName = rulesetKeyToName(rulesetNameToKey(category.split('-')[0]), true);
     res.render('layout', {
-        title: `${modeNameFull} leaderboard`,
+        title: `${modeName} leaderboard`,
         meta: {
-            title: `${modeNameFull} completionist leaderboard`,
-            description: `View the players who have passed the most ${modeNameFull} beatmaps!`
+            title: `${modeName} completionist leaderboard`,
+            description: `View the players who have passed the most ${modeName} beatmaps!`
         },
         page: 'leaderboard',
-        settings: {
-            modeKey, mode, includes, basePath: '/leaderboard'
-        },
+        category,
+        category_navigation: utils.getCatNavPaths('/leaderboard', category),
         pagination: {
-            current: page, nav: pagesToShow, basePath: `/leaderboard/${mode}/${includes.join('-')}`
+            current: page, nav: pagesToShow, basePath: `/leaderboard/${category}`
         },
         leaderboard,
         me: req.me

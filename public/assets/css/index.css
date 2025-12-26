@@ -731,29 +731,7 @@ img {
 }
 
 #statSettings {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-#statSettings .section {
-    display: flex;
-    gap: 8px;
-}
-
-#statSettings .section.mode {
-    flex-grow: 1;
-}
-
-@media (max-width: 700px) {
-    #statSettings {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    #statSettings .section.mode {
-        flex-grow: 0;
-    }
+    gap: 8px 24px;
 }
 
 @keyframes fadeInUp {

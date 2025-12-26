@@ -8,7 +8,7 @@ router.get('/', (req, res) => {
     const limits = 12;
     const users = searchUsers(query, limits, 0);
     const maps = searchBeatmaps(
-        query, true, false,
+        query, null,
         query ? null : 'date_desc',
         null, limits, 0
     );

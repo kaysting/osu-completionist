@@ -1,6 +1,6 @@
 const express = require('express');
-const db = require('../db');
 
+const statCatDefs = require('../statCategoryDefinitions');
 const { ensureUserExists } = require('../middleware.js');
 const utils = require('../utils.js');
 const { rulesetNameToKey, rulesetKeyToName } = utils;
@@ -12,7 +12,7 @@ const router = express.Router();
 const minMsSinceLastImport = 1000 * 60 * 60 * 24 * 7;
 
 router.get('/:id', ensureUserExists, (req, res) => {
-    res.redirect(`/u/${req.user.id}/osu/ranked`);
+    res.redirect(`/u/${req.user.id}/osu-ranked`);
 });
 
 router.get('/:id/update', async (req, res) => {
@@ -28,25 +28,20 @@ router.get('/:id/update', async (req, res) => {
     res.redirect(`/u/${req.params.id}`);
 });
 
-router.get('/:id/:mode', ensureUserExists, (req, res) => {
-    res.redirect(`/u/${req.user.id}/${req.params.mode}/ranked`);
-});
-
-router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
+router.get('/:id/:category', ensureUserExists, (req, res) => {
     const user = req.user;
-    const mode = req.params.mode || 'osu';
-    const includes = req.params.includes?.split('-') || ['ranked'];
-    const includeConverts = includes.includes('converts') ? 1 : 0;
-    const includeLoved = includes.includes('loved') ? 1 : 0;
-    // Ensure mode is valid
-    const modeKey = rulesetNameToKey(mode);
-    if (!modeKey) {
-        return res.redirect(`/u/${user.id}/osu/ranked`);
+    const category = req.params.category.toLowerCase();
+    // Check category
+    if (!statCatDefs.find(cat => cat.id === category)) {
+        return res.redirect('/profile/osu-ranked');
     }
+    const includeLoved = category.includes('-loved');
+    const includeConverts = category.includes('-converts');
+    const mode = rulesetNameToKey(category.split('-')[0]);
     // Get data
-    const stats = dbHelpers.getUserCompletionStats(req.user.id, modeKey, includeLoved, includeConverts);
-    const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, modeKey, includeLoved, includeConverts);
-    const recentPasses = dbHelpers.getUserRecentPasses(req.user.id, modeKey, includeLoved, includeConverts, 100, 0);
+    const stats = dbHelpers.getUserCompletionStats(req.user.id, category);
+    const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
+    const recentPasses = dbHelpers.getUserRecentPasses(req.user.id, category, 100, 0);
     const updateStatus = dbHelpers.getUserUpdateStatus(req.user.id);
     // Format update status
     if (updateStatus.updating) {
@@ -86,7 +81,7 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
         if (passesChecked) {
             // Get recommended maps
             recommendedQuery = `stars > ${(minStars - 0.5).toFixed(1)} stars < ${(maxStars + 0.5).toFixed(1)} year >= ${new Date(minTime).getUTCFullYear()} year <= ${new Date(maxTime).getUTCFullYear()}`;
-            recommended = dbHelpers.searchBeatmaps(`${recommendedQuery} mode=${mode}`, includeLoved, includeConverts, 'random', req.user.id, limit);
+            recommended = dbHelpers.searchBeatmaps(`${recommendedQuery} mode=${mode}`, category, 'random', req.user.id, limit);
         }
     }
     // Format times
@@ -101,7 +96,7 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
         pass.timeSincePass = utils.getRelativeTimestamp(pass.time_passed);
     }
     // Generate copyable text
-    const modeName = rulesetKeyToName(modeKey, true);
+    const modeName = rulesetKeyToName(rulesetNameToKey(category.split('-')[0]), true);
     const statsText = [
         `${user.name}'s ${modeName} ${includeLoved ? 'ranked and loved' : 'ranked only'} (${includeConverts ? 'with converts' : 'no converts'}) completion stats:\n`
     ];
@@ -124,9 +119,8 @@ router.get('/:id/:mode/:includes', ensureUserExists, (req, res) => {
             ...user, stats, yearly, recentPasses, updateStatus, recommended, recommendedQuery
         },
         copyable: statsText.join('\n'),
-        settings: {
-            modeKey, mode, includes, basePath: `/u/${user.id}`
-        },
+        category,
+        category_navigation: utils.getCatNavPaths(`/u/${req.user.id}`, category),
         me: req.me
     });
 });

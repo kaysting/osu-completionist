@@ -13,7 +13,8 @@ app.use((req, res, next) => {
         res.status(403).send('Forbidden');
         return;
     }
-    log(req.headers['cf-connecting-ip'], req.method, req.url);
+    const ip = req.headers['cf-connecting-ip'] || req.ip;
+    log(ip, req.method, req.url);
     next();
 });
 
