@@ -58,9 +58,9 @@ router.get('/:category', (req, res) => {
             description: `Complete faster by using advanced filters and sorting to get the perfect list of maps to play next.`
         },
         category,
-        category_navigation: statCategories.getCategoryNavPaths(`/recommended`, category),
+        category_navigation: statCategories.getCategoryNavPaths(`/recommended`, category, `?q=${encodeURIComponent(query)}`),
         settings: {
-            sort, sortTypes
+            sort, sortTypes, query
         },
         placeholder,
         results,

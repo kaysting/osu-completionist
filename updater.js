@@ -16,7 +16,7 @@ const runBackupDatabase = async () => {
 const runSaveHistory = async () => {
     if (dayjs().hour() === 0) {
         log('Saving user history snapshot for the day...');
-        await updaterHelpers.saveUserHistory();
+        updaterHelpers.snapshotCategoryStats();
         setTimeout(runSaveHistory, 1000 * 60 * 60);
     } else {
         setTimeout(runSaveHistory, 1000 * 60);

@@ -47,25 +47,31 @@ for (const mode of ['global', 'osu', 'taiko', 'catch', 'mania']) {
     }
 }
 
-const getCategoryNavPaths = (basePath, categoryId) => {
+const getCategoryNavPaths = (basePath, categoryId, fullQueryString) => {
     const catSplit = categoryId.split('-');
     const mode = catSplit[0];
     const isLoved = catSplit.includes('loved');
     const isConverts = catSplit.includes('converts');
+    const loved = isLoved ? '-loved' : '';
+    const converts = isConverts ? '-converts' : '';
+    const lovedInvert = isLoved ? '' : '-loved';
+    const convertsInvert = isConverts ? '' : '-converts';
+    const query = fullQueryString ? fullQueryString : '';
     let keyCount = catSplit[catSplit.length - 1];
     if (!keyCount.match(/^[0-9]+k$/)) {
         keyCount = null;
     }
+    const segmentKeycount = keyCount ? `-${keyCount}` : '';
     const paths = {
-        global: `${basePath}/global-ranked${isLoved ? '-loved' : ''}${isConverts ? '-converts' : ''}`,
-        osu: `${basePath}/osu-ranked${isLoved ? '-loved' : ''}${isConverts ? '-converts' : ''}`,
-        taiko: `${basePath}/taiko-ranked${isLoved ? '-loved' : ''}${isConverts ? '-converts' : ''}`,
-        catch: `${basePath}/catch-ranked${isLoved ? '-loved' : ''}${isConverts ? '-converts' : ''}`,
-        mania: `${basePath}/mania-ranked${isLoved ? '-loved' : ''}${isConverts ? '-converts' : ''}`,
-        mania4k: `${basePath}/mania-ranked${isLoved ? '-loved' : ''}${isConverts ? '-converts' : ''}-4k`,
-        mania7k: `${basePath}/mania-ranked${isLoved ? '-loved' : ''}${isConverts ? '-converts' : ''}-7k`,
-        toggleConverts: `${basePath}/${mode}-ranked${isLoved ? '-loved' : ''}${isConverts ? '' : '-converts'}${keyCount ? `-${keyCount}` : ''}`,
-        toggleLoved: `${basePath}/${mode}-ranked${isLoved ? '' : '-loved'}${isConverts ? '-converts' : ''}${keyCount ? `-${keyCount}` : ''}`
+        global: `${basePath}/global-ranked${loved}${converts}${query}`,
+        osu: `${basePath}/osu-ranked${loved}${query}`,
+        taiko: `${basePath}/taiko-ranked${loved}${converts}${query}`,
+        catch: `${basePath}/catch-ranked${loved}${converts}${query}`,
+        mania: `${basePath}/mania-ranked${loved}${converts}${query}`,
+        mania4k: `${basePath}/mania-ranked${loved}${converts}-4k${query}`,
+        mania7k: `${basePath}/mania-ranked${loved}${converts}-7k${query}`,
+        toggleConverts: `${basePath}/${mode}-ranked${loved}${convertsInvert}${segmentKeycount}${query}`,
+        toggleLoved: `${basePath}/${mode}-ranked${lovedInvert}${converts}${segmentKeycount}${query}`
     };
     return paths;
 };
