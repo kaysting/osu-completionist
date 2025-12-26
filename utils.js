@@ -12,7 +12,7 @@ const utils = {
         try {
             await axios.post(webhookUrl, message);
         } catch (error) {
-            // Don't bother logging anything
+            console.error(`Failed POSTing to Discord webhook: ${error}`);
         }
     },
 

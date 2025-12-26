@@ -239,7 +239,7 @@ CREATE TABLE
 		"user_id" INTEGER NOT NULL,
 		"category" TEXT NOT NULL,
 		"count" INTEGER NOT NULL DEFAULT 0,
-		"time_spent_secs" INTEGER NOT NULL DEFAULT 0,
+		"seconds" INTEGER NOT NULL DEFAULT 0,
 		PRIMARY KEY ("user_id", "category")
 	);
 
@@ -249,8 +249,21 @@ CREATE TABLE
 		"category" TEXT NOT NULL,
 		"year" INTEGER NOT NULL,
 		"count" INTEGER NOT NULL DEFAULT 0,
-		"time_spent_secs" INTEGER NOT NULL DEFAULT 0,
+		"seconds" INTEGER NOT NULL DEFAULT 0,
 		PRIMARY KEY ("user_id", "category", "year")
 	);
 
-CREATE INDEX idx_category_stats_leaderboard ON user_category_stats (category, time_spent_secs DESC);
+CREATE TABLE
+	IF NOT EXISTS "user_category_stats_history" (
+		"date" TEXT NOT NULL,
+		"user_id" INTEGER NOT NULL,
+		"category" TEXT NOT NULL,
+		"count" INTEGER NOT NULL DEFAULT 0,
+		"seconds" INTEGER NOT NULL DEFAULT 0,
+		"percent" REAL NOT NULL DEFAULT 0,
+		"rank" INTEGER NOT NULL DEFAULT 0,
+		"time" INTEGER NOT NULL,
+		PRIMARY KEY ("user_id", "category", "date")
+	);
+
+CREATE INDEX idx_category_stats_leaderboard ON user_category_stats (category, seconds DESC);

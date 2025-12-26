@@ -20,7 +20,7 @@ for (const mode of ['osu', 'taiko', 'catch', 'mania']) {
             });
             definition.filters.push({
                 field: 'status',
-                oneOf: includeLoved ? ['ranked', 'approved', 'loved'] : ['ranked', 'approved']
+                in: includeLoved ? ['ranked', 'approved', 'loved'] : ['ranked', 'approved']
             });
             if (!includeConverts) {
                 definition.filters.push({
@@ -45,9 +45,9 @@ for (const mode of ['osu', 'taiko', 'catch', 'mania']) {
     }
 }
 
-console.log(`Registered ${definitions.length} stat category definitions:`, definitions.map(d => d.id).join(', '));
 // If not required from another module, output the definitions
 if (require.main === module) {
+    console.log(`Registered ${definitions.length} stat category definitions:`, definitions.map(d => d.id).join(', '));
     console.log(JSON.stringify(definitions, null, 2));
 }
 

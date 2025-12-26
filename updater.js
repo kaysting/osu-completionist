@@ -1,6 +1,7 @@
 const { log } = require('./utils');
 const osu = require('./osu');
 const updaterHelpers = require('./helpers/updaterHelpers');
+const dayjs = require('dayjs');
 
 const runGlobalRecentsUpdate = async () => {
     await updaterHelpers.savePassesFromGlobalRecents();
@@ -13,8 +14,13 @@ const runBackupDatabase = async () => {
 };
 
 const runSaveHistory = async () => {
-    await updaterHelpers.saveUserHistory();
-    setTimeout(runSaveHistory, 1000);
+    if (dayjs().hour() === 0) {
+        log('Saving user history snapshot for the day...');
+        await updaterHelpers.saveUserHistory();
+        setTimeout(runSaveHistory, 1000 * 60 * 60);
+    } else {
+        setTimeout(runSaveHistory, 1000 * 60);
+    }
 };
 
 const runImportQueue = async () => {
@@ -22,9 +28,9 @@ const runImportQueue = async () => {
     setTimeout(runImportQueue, 5000);
 };
 
-const runFetchMapData = async () => {
-    await updaterHelpers.fetchNewMapData();
-    setTimeout(runFetchMapData, 1000 * 60 * 60);
+const runUpdateMapData = async () => {
+    await updaterHelpers.updateMapData();
+    setTimeout(runUpdateMapData, 1000 * 60 * 60);
 };
 
 async function main() {
@@ -40,7 +46,7 @@ async function main() {
     runGlobalRecentsUpdate();
     runBackupDatabase();
     runImportQueue();
-    runFetchMapData();
+    runUpdateMapData();
     runSaveHistory();
 
 }

@@ -1,16 +1,15 @@
-// This script can be used to import beatmaps from a data.ppy.sh dump
-// This ensures that DMCA'd beatmaps are included in the database,
-// which otherwise can't be fetched by the Search Beatmapset API endpoint
-
 const fs = require('fs');
+const crypto = require('crypto');
 const SqlDumpParser = require('./helpers/mysql-stream-parser');
 const db = require('./db');
 const updateHelpers = require('./helpers/updaterHelpers');
 
-const dumpFolder = process.argv[2];
-
 const importBeatmapsets = async () => {
-
+    const dumpFolder = process.argv[3];
+    if (!dumpFolder || !fs.existsSync(dumpFolder)) {
+        console.error('Please provide the path to a fully extracted data.ppy.sh dump as the last argument.');
+        process.exit(1);
+    }
     console.time('Import beatmaps from dump');
     console.log('Importing unsaved beatmapsets...');
     const storedMapsetIds = db.prepare(`SELECT id FROM beatmapsets`).all().map(row => row.id);
@@ -97,12 +96,28 @@ const importBeatmapsets = async () => {
 
 };
 
-async function main() {
-    if (!dumpFolder) {
-        console.error('Usage: node importBeatmaps.js <path_to_sql_dump_folder>');
-        process.exit(1);
+const updateCategoryStats = () => {
+    const userIds = db.prepare(`SELECT id FROM users`).all().map(row => row.id);
+    userIds.push(0);
+    console.log(`Updating category stats for ${userIds.length} users...`);
+    for (const id of userIds) {
+        updateHelpers.updateUserCategoryStats(id);
     }
-    await importBeatmapsets();
-}
+};
 
-main().catch(console.error);
+const jwtSecret = () => {
+    const secret = crypto.randomBytes(32).toString('hex');
+    console.log(`Use this cryptographically secure token as the JWT_TOKEN environment variable:\n${secret}`);
+};
+
+switch (process.argv[2]) {
+    case 'importBeatmaps':
+        importBeatmapsets();
+        break;
+    case 'updateCatStats':
+        updateCategoryStats();
+        break;
+    case 'getJwtSecret':
+        jwtSecret();
+        break;
+}

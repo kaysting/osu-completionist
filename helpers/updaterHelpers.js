@@ -9,8 +9,57 @@ const dayjs = require('dayjs');
 
 const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'storage.db');
 
-// Function to fetch new beatmaps(ets)
-const fetchNewMapData = async () => {
+// Prepare mapset data saving statements and transaction
+const stmtInsertMapset = db.prepare(
+    `INSERT OR REPLACE INTO beatmapsets
+        (id, status, title, artist, time_ranked, mapper)
+    VALUES (?, ?, ?, ?, ?, ?)`
+);
+const stmtInsertMap = db.prepare(
+    `INSERT OR REPLACE INTO beatmaps
+        (id, mapset_id, mode, status, name, stars, is_convert,
+        duration_secs, cs, ar, od, hp, bpm)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+);
+const stmtInsertMapIndex = db.prepare(
+    `INSERT OR REPLACE INTO beatmaps_search (title, artist, name, map_id, mode)
+     VALUES (?, ?, ?, ?, ?)`
+);
+const saveMapsetTransaction = db.transaction((mapset, shouldIndex) => {
+    // Save mapset
+    const rankTime = new Date(mapset.ranked_date || mapset.submitted_date || undefined).getTime();
+    stmtInsertMapset.run(
+        mapset.id, mapset.status, mapset.title, mapset.artist, rankTime, mapset.creator
+    );
+    // Build list of all maps (including converts)
+    const maps = [...mapset.beatmaps];
+    if (mapset.converts) {
+        maps.push(...mapset.converts);
+    }
+    // Loop through map list and save
+    for (const map of maps) {
+        stmtInsertMap.run(map.id, mapset.id, map.mode, map.status, map.version, map.difficulty_rating, map.convert ? 1 : 0, map.total_length, map.cs, map.ar, map.accuracy, map.drain, map.bpm);
+        if (shouldIndex)
+            stmtInsertMapIndex.run(mapset.title, mapset.artist, map.version, map.id, map.mode);
+    }
+    utils.log(`Saved mapset ${mapset.id} with ${maps.length} maps: ${mapset.artist} - ${mapset.title}`);
+});
+
+/**
+ * Fetch and store data for a mapset
+ * @param {string} mapsetId The mapset ID to fetch and store
+ * @param {boolean} index Whether or not the newly saved mapset should be added to the search index
+ */
+const saveMapset = async (mapsetId, index = true) => {
+    // Fetch full mapset including converts and save it
+    let mapsetFull = await osu.getBeatmapset(mapsetId);
+    saveMapsetTransaction(mapsetFull, index);
+};
+
+/**
+ * Fetch and store new beatmaps(ets) from osu! API
+ */
+const updateMapData = async () => {
     try {
         utils.log(`Checking for new beatmaps...`);
         // Loop to get unsaved recent beatmapsets
@@ -43,68 +92,19 @@ const fetchNewMapData = async () => {
             }
         }
         // Update beatmap status
-        if (countNewlySaved > 0)
-            updateBeatmapStats();
+        if (countNewlySaved > 0) updateUserCategoryStats(0);
         utils.log('Beatmap database is up to date');
     } catch (error) {
         utils.logError('Error while updating stored beatmap data:', error);
     }
 };
 
-// Function to update beatmap stats and totals in the database
-const updateBeatmapStats = () => {
-    try {
-        utils.log(`Updating beatmap stats...`);
-        for (const mode of ['osu', 'taiko', 'fruits', 'mania']) {
-            for (const includesLoved of [1, 0]) {
-                for (const includesConverts of [1, 0]) {
-                    const where = [];
-                    where.push(`mode = '${mode}'`);
-                    if (includesLoved) {
-                        where.push(`status IN ('ranked', 'approved', 'loved')`);
-                    } else {
-                        where.push(`status IN ('ranked', 'approved')`);
-                    }
-                    if (!includesConverts) {
-                        where.push(`is_convert = 0`);
-                    }
-                    const stats = db.prepare(
-                        `SELECT COUNT(*) AS count, SUM(duration_secs) AS total_duration
-                                FROM beatmaps
-                                WHERE ${where.join(' AND ')}`
-                    ).get();
-                    db.prepare(`INSERT OR REPLACE INTO beatmap_stats (mode, includes_loved, includes_converts, count, time_total_secs) VALUES (?, ?, ?, ?, ?)`).run(
-                        mode, includesLoved, includesConverts, stats.count, stats.total_duration
-                    );
-                    // Update yearly stats
-                    const oldestYear = 2007;
-                    for (let year = oldestYear; year <= new Date().getFullYear(); year++) {
-                        const tsStart = new Date(year, 0, 1).getTime();
-                        const tsEnd = new Date(year + 1, 0, 1).getTime();
-                        const yearlyCount = db.prepare(
-                            `SELECT COUNT(*) AS total FROM beatmaps b
-                             INNER JOIN beatmapsets s ON b.mapset_id = s.id
-                             WHERE b.mode = ?
-                             AND ${includesLoved ? `b.status IN ('ranked', 'approved', 'loved')` : `b.status IN  ('ranked', 'approved')`}
-                             ${includesConverts ? '' : 'AND b.is_convert = 0'}
-                             AND s.time_ranked >= ? AND s.time_ranked < ?`
-                        ).get(mode, tsStart, tsEnd).total;
-                        if (yearlyCount == 0) continue;
-                        db.prepare(`INSERT OR REPLACE INTO beatmap_stats_yearly (year, mode, includes_loved, includes_converts, count) VALUES (?, ?, ?, ?, ?)`).run(
-                            year, mode, includesLoved, includesConverts, yearlyCount
-                        );
-                    }
-                }
-            }
-        }
-        utils.log('Updated beatmap stats');
-    } catch (error) {
-        utils.logError('Error while updating beatmap stats:', error);
-    }
-};
-
-// Function to fetch a user's profile and update their stored data
-// Returns the fetched user data
+/**
+ * Fetch and store up to date profile data for a user from the osu! API
+ * @param {number} userId The user ID whose data to update
+ * @param {Object} userObj A user object previously returned from the osu! API, so we don't have to fetch it again
+ * @returns A row from the users table
+ */
 const updateUserProfile = async (userId, userObj) => {
     try {
         // Check if a user entry already exists
@@ -165,175 +165,177 @@ const updateUserProfile = async (userId, userObj) => {
     }
 };
 
-// Function to update user stats and totals in the database
-const updateUserStats = async (userId) => {
+// Load category definitions
+const STAT_CATEGORY_DEFS = require('../statCategoryDefinitions');
+
+/**
+ * Internal function to check if a row matches a category definition's filters
+ * @param {Object} row The database row to check
+ * @param {Object} catDef The category definition
+ */
+const matchesCatDefFilters = (row, catDef) => {
+    for (const filter of catDef.filters) {
+        const rowValue = row[filter.field];
+        if (filter.equals !== undefined) {
+            if (rowValue != filter.equals) return false;
+        }
+        if (filter.in !== undefined) {
+            if (!filter.in.includes(rowValue)) return false;
+        }
+        if (filter.range !== undefined) {
+            if (rowValue < filter.range[0] || rowValue > filter.range[1]) return false;
+        }
+        if (filter.min !== undefined && rowValue < filter.min) return false;
+        if (filter.max !== undefined && rowValue > filter.max) return false;
+    }
+    return true;
+};
+
+/**
+ * Update a user's category stats based on their passes
+ * @param {number} userId The user whose category stats to update, or 0 for beatmap totals
+ */
+const updateUserCategoryStats = (userId) => {
+    const IS_GLOBAL = userId === 0;
+    let user;
     try {
-        // Loop through modes and inclusion options
-        const userEntry = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
-        for (const mode of ['osu', 'taiko', 'fruits', 'mania']) {
-            for (const includesLoved of [1, 0]) {
-                for (const includesConverts of [1, 0]) {
-                    // Build where clause
-                    const where = [];
-                    where.push(`user_id = ${userId}`);
-                    where.push(`mode = '${mode}'`);
-                    if (includesLoved) {
-                        where.push(`status IN ('ranked', 'approved', 'loved')`);
-                    } else {
-                        where.push(`status IN ('ranked', 'approved')`);
-                    }
-                    if (!includesConverts) {
-                        where.push(`is_convert = 0`);
-                    }
-                    // Get and save stats
-                    const passCount = db.prepare(
-                        `SELECT COUNT(*) AS count
-                                FROM user_passes
-                                WHERE ${where.join(' AND ')}`
-                    ).get().count;
-                    const timeSpent = db.prepare(
-                        `SELECT SUM(b.duration_secs) AS secs FROM user_passes up
-                        JOIN beatmaps b ON up.map_id = b.id AND b.mode = up.mode
-                        WHERE up.user_id = ?
-                        AND up.mode = ?
-                        AND ${includesLoved ? `up.status IN ('ranked', 'approved', 'loved')` : `up.status IN ('ranked', 'approved')`}
-                        ${includesConverts ? '' : 'AND b.is_convert = 0'}`
-                    ).get(userId, mode)?.secs || 0;
-                    db.prepare(`INSERT OR REPLACE INTO user_stats (user_id, mode, includes_loved, includes_converts, count, time_spent_secs) VALUES (?, ?, ?, ?, ?, ?)`).run(
-                        userId, mode, includesLoved, includesConverts, passCount, timeSpent
-                    );
-                    // Group and count passes by year
-                    const stats = db.prepare(`
-                        SELECT 
-                            CAST(strftime('%Y', s.time_ranked / 1000, 'unixepoch') AS INTEGER) as year,
-                            COUNT(*) as count
-                        FROM user_passes up
-                        INNER JOIN beatmapsets s ON up.mapset_id = s.id
-                        WHERE up.user_id = ?
-                        AND up.mode = '${mode}'
-                        AND ${includesLoved ? "up.status IN ('ranked', 'approved', 'loved')" : "up.status IN ('ranked', 'approved')"}
-                        ${includesConverts ? '' : 'AND up.is_convert = 0'}
-                        GROUP BY year
-                    `).all(userId);
-                    // Create yearly insert statement
-                    const yearlyStmt = db.prepare(`
-                        INSERT OR REPLACE INTO user_stats_yearly
-                        (user_id, mode, includes_loved, includes_converts, year, count) 
-                        VALUES (?, ?, ?, ?, ?, ?)
-                    `);
-                    // Transaction insert
-                    const updateStats = db.transaction((rows) => {
-                        const countsByYear = new Map(rows.map(r => [r.year, r.count]));
-                        const oldestYear = 2007;
-                        const newestYear = new Date().getFullYear();
-                        for (let year = newestYear; year >= oldestYear; year--) {
-                            const count = countsByYear.get(year) || 0;
-                            yearlyStmt.run(userId, mode, includesLoved, includesConverts, year, count);
-                        }
-                    });
-                    updateStats(stats);
+        // Get user info or global placeholder
+        user = IS_GLOBAL ? {
+            id: 0,
+            name: 'all beatmaps',
+        } : db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
+        if (!user) {
+            throw new Error(`User with ID ${userId} not found in database`);
+        }
+        // Load unfiltered data into memory
+        const cols = [
+            `diff.mode AS mode`,
+            `diff.status AS status`,
+            `diff.is_convert AS is_convert`,
+            `diff.cs AS cs`,
+            `diff.ar AS ar`,
+            `diff.od AS od`,
+            `diff.hp AS hp`,
+            `diff.duration_secs AS duration_secs`,
+            `CAST(strftime('%Y', mapset.time_ranked / 1000, 'unixepoch') AS INTEGER) as year`
+        ];
+        let rows;
+        if (IS_GLOBAL) {
+            rows = db.prepare(`
+                SELECT ${cols.join(', ')}
+                FROM beatmaps diff
+                JOIN beatmapsets mapset ON diff.mapset_id = mapset.id
+            `).all();
+        } else {
+            rows = db.prepare(`
+                SELECT ${cols.join(', ')}
+                FROM user_passes pass
+                JOIN beatmaps diff ON pass.map_id = diff.id AND pass.mode = diff.mode
+                JOIN beatmapsets mapset ON diff.mapset_id = mapset.id
+                WHERE pass.user_id = ?
+            `).all(userId);
+        }
+        // Prepare insert statements
+        const stmtMain = db.prepare(`
+            INSERT OR REPLACE INTO user_category_stats 
+            (user_id, category, count, seconds) VALUES (?, ?, ?, ?)
+        `);
+        const stmtYearly = db.prepare(`
+            INSERT OR REPLACE INTO user_category_stats_yearly 
+            (user_id, category, year, count, seconds) VALUES (?, ?, ?, ?, ?)
+        `);
+        // Do the updates in a transaction
+        const transaction = db.transaction(() => {
+            // Loop through categories
+            for (const cat of STAT_CATEGORY_DEFS) {
+                // Track totals
+                let totalCount = 0;
+                let totalSecs = 0;
+                const defaultYearlyData = { count: 0, seconds: 0 };
+                const yearlyTotals = {};
+                // Loop through rows and see if they match the category definition
+                for (const row of rows) {
+                    if (!matchesCatDefFilters(row, cat)) continue;
+                    // Add to totals
+                    totalCount++;
+                    totalSecs += row.duration_secs;
+                    if (!yearlyTotals[row.year])
+                        yearlyTotals[row.year] = { ...defaultYearlyData };
+                    yearlyTotals[row.year].count++;
+                    yearlyTotals[row.year].seconds += row.duration_secs;
+                }
+                // Insert main stats
+                stmtMain.run(user.id, cat.id, totalCount, totalSecs);
+                // Insert yearly stats
+                const startYear = 2007;
+                const currentYear = new Date().getFullYear();
+                for (let year = startYear; year <= currentYear; year++) {
+                    const yearly = yearlyTotals[year] || defaultYearlyData;
+                    stmtYearly.run(user.id, cat.id, year, yearly.count, yearly.seconds);
                 }
             }
-        }
-        utils.log('Updated user stats for', userEntry?.name || userId);
-        return true;
+        });
+        transaction();
+        utils.log(`Updated stats in ${STAT_CATEGORY_DEFS.length} categories for ${user.name}`);
     } catch (error) {
-        utils.logError('Error while updating user stats:', error);
-        return false;
+        utils.logError(`Error while updating category stats for ${user.name}:`, error);
     }
 };
 
-const saveUserHistory = async () => {
+/**
+ * Save a snapshot of the current state of category stats for all users. Only works once per calendar day.
+ */
+const snapshotCategoryStats = () => {
     try {
-        const hhmm = dayjs().format('HHmm');
-        if (hhmm !== '0000') return;
-        log('Starting daily user history save...');
-        const stmt = db.prepare(
-            `INSERT OR REPLACE INTO user_stats_history
-                (user_id, mode, includes_loved, includes_converts,
-                time, count, time_spent_secs, percent)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-        );
-        let offset = 0;
-        while (true) {
-            const userIds = db.prepare(`SELECT id FROM users LIMIT ? OFFSET ?`)
-                .all(50, offset).map(e => e.id);
-            if (userIds.length === 0) break;
-            offset += userIds.length;
-            let countEntries = 0;
-            let countUsers = 0;
-            const transaction = db.transaction((userIds) => {
-                for (const mode of ['osu', 'taiko', 'fruits', 'mania']) {
-                    for (const includesLoved of [1, 0]) {
-                        for (const includesConverts of [1, 0]) {
-                            const bulkStats = dbHelpers.getBulkUserCompletionStats(userIds, mode, includesLoved, includesConverts);
-                            for (const entry of bulkStats) {
-                                const userId = entry.id;
-                                const stats = entry.stats;
-                                stmt.run(
-                                    userId, mode, includesLoved, includesConverts, Date.now(), stats.count_completed, stats.time_spent_secs, stats.percentage_completed
-                                );
-                                countEntries++;
-                            }
-                        }
-                    }
-                }
-                countUsers += userIds.length;
-            });
-            transaction(userIds);
-            log(`Saved ${countEntries} history entries for ${countUsers} users`);
-            await sleep(100);
+        const dateString = dayjs().format('YYYY-MM-DD');
+        // Get totals
+        const globalStats = db.prepare('SELECT category, seconds FROM user_category_stats WHERE user_id = 0').all();
+        const categoryToTotalSecs = {};
+        for (const row of globalStats) {
+            categoryToTotalSecs[row.category] = row.seconds;
         }
-        log('Completed daily user history save');
-        await sleep(1000 * 60);
+        // Get all user stats sorted by implicit rank
+        const allUserStats = db.prepare(`
+            SELECT user_id, category, count, seconds
+            FROM user_category_stats
+            WHERE user_id != 0
+            ORDER BY category, seconds DESC
+        `).all();
+        if (allUserStats.length === 0) return;
+        // Prepare insert
+        const stmtInsert = db.prepare(`
+            INSERT OR IGNORE INTO user_category_stats_history 
+            (user_id, category, date, count, seconds, percent, rank, time) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+        // Do the inserts in a transaction
+        const transaction = db.transaction(() => {
+            let category = null;
+            let rank = 0;
+            for (const row of allUserStats) {
+                // Reset numbers on new category
+                if (row.category !== category) {
+                    category = row.category;
+                    rank = 0;
+                }
+                rank++;
+                // Calculate percentage
+                const globalSecs = categoryToTotalSecs[row.category] || 0;
+                const percent = globalSecs > 0 ? (row.seconds / globalSecs) * 100 : 0;
+                // Insert
+                stmtInsert.run(
+                    row.user_id, row.category, dateString, row.count, row.seconds, percent, rank, Date.now()
+                );
+            }
+        });
+        transaction();
+        utils.log(`Saved history snapshot`);
     } catch (error) {
-        logError('Error while saving user history:', error);
+        utils.logError('Error saving category stats history:', error);
     }
 };
 
-// Prepare mapset data saving statements and transaction
-const stmtInsertMapset = db.prepare(
-    `INSERT OR REPLACE INTO beatmapsets
-        (id, status, title, artist, time_ranked, mapper)
-    VALUES (?, ?, ?, ?, ?, ?)`
-);
-const stmtInsertMap = db.prepare(
-    `INSERT OR REPLACE INTO beatmaps
-        (id, mapset_id, mode, status, name, stars, is_convert,
-        duration_secs, cs, ar, od, hp, bpm)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-);
-const stmtInsertMapIndex = db.prepare(
-    `INSERT OR REPLACE INTO beatmaps_search (title, artist, name, map_id, mode)
-     VALUES (?, ?, ?, ?, ?)`
-);
-const saveMapsetTransaction = db.transaction((mapset, shouldIndex) => {
-    // Save mapset
-    const rankTime = new Date(mapset.ranked_date || mapset.submitted_date || undefined).getTime();
-    stmtInsertMapset.run(
-        mapset.id, mapset.status, mapset.title, mapset.artist, rankTime, mapset.creator
-    );
-    // Build list of all maps (including converts)
-    const maps = [...mapset.beatmaps];
-    if (mapset.converts) {
-        maps.push(...mapset.converts);
-    }
-    // Loop through map list and save
-    for (const map of maps) {
-        stmtInsertMap.run(map.id, mapset.id, map.mode, map.status, map.version, map.difficulty_rating, map.convert ? 1 : 0, map.total_length, map.cs, map.ar, map.accuracy, map.drain, map.bpm);
-        if (shouldIndex)
-            stmtInsertMapIndex.run(mapset.title, mapset.artist, map.version, map.id, map.mode);
-    }
-    utils.log(`Saved mapset ${mapset.id} with ${maps.length} maps: ${mapset.artist} - ${mapset.title}`);
-});
-
-// Function to fetch and save a mapset
-const saveMapset = async (mapsetId, index = true) => {
-    // Fetch full mapset including converts and save it
-    let mapsetFull = await osu.getBeatmapset(mapsetId);
-    saveMapsetTransaction(mapsetFull, index);
-};
-
+// Function to import a user's passes from their most played beatmaps
 let isImportRunning = false;
 const importUser = async (userId) => {
     const user = await db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
@@ -351,7 +353,7 @@ const importUser = async (userId) => {
         const timeStarted = Date.now();
         db.prepare(
             `UPDATE user_import_queue
-            SET time_started = ?, percent_complete = 0, count_passes_imported = 0
+            SET time_started = ?, percent_complete = 0, count_passes_imported = 0,
                 time_queued = 0, playcounts_count = ?
             WHERE user_id = ?`
         ).run(timeStarted, playcountsCount, userId);
@@ -394,6 +396,7 @@ const importUser = async (userId) => {
                 exclude_converts: true,
                 no_diff_reduction: false
             });
+            let savedNewMapsets = false;
             for (const map of res.beatmaps_passed) {
                 // Skip if no leaderboard
                 const validStatuses = ['ranked', 'loved', 'approved'];
@@ -402,9 +405,14 @@ const importUser = async (userId) => {
                 const existingMapset = db.prepare(`SELECT * FROM beatmapsets WHERE id = ? LIMIT 1`).get(map.beatmapset_id);
                 if (!existingMapset || existingMapset.status !== map.status) {
                     await saveMapset(map.beatmapset_id, !existingMapset);
+                    savedNewMapsets = true;
                 }
                 // Push pass data
                 passes.push({ mapId: map.id, mapsetId: map.beatmapset_id, mode: map.mode, status: map.status, isConvert: false });
+            }
+            // Update beatmap stats if we saved any new mapsets
+            if (savedNewMapsets) {
+                updateUserCategoryStats(0);
             }
             // Get convert passes on standard maps
             if (stdIds.length > 0) {
@@ -459,7 +467,7 @@ const importUser = async (userId) => {
         // Save last import time
         db.prepare(`UPDATE users SET last_import_time = ? WHERE id = ?`).run(Date.now(), userId);
         // Update user stats
-        await updateUserStats(userId);
+        updateUserCategoryStats(userId);
         // Log import completion and speed
         const importDurationMs = (Date.now() - timeStarted);
         const scoresPerMinute = Math.round(
@@ -474,6 +482,7 @@ const importUser = async (userId) => {
     isImportRunning = false;
 };
 
+// Function to save passes from global recents
 const savePassesFromGlobalRecents = async () => {
     try {
         utils.log(`Fetching global recents in all modes...`);
@@ -519,6 +528,7 @@ const savePassesFromGlobalRecents = async () => {
             }
         }
         // Save mapset data if not already saved
+        let savedNewMapsets = false;
         for (const mapId in mapsById) {
             const map = mapsById[mapId];
             // Skip if map doesn't have a leaderboard
@@ -529,7 +539,12 @@ const savePassesFromGlobalRecents = async () => {
             const existingMapset = db.prepare(`SELECT * FROM beatmapsets WHERE id = ? LIMIT 1`).get(mapsetId);
             if (!existingMapset || existingMapset.status !== map.beatmapset.status) {
                 await saveMapset(mapsetId, !existingMapset);
+                savedNewMapsets = true;
             }
+        }
+        // Update beatmap stats if we saved any new mapsets
+        if (savedNewMapsets) {
+            updateUserCategoryStats(0);
         }
         // Process scores
         utils.log(`Processing and saving passes from global recents...`);
@@ -573,7 +588,7 @@ const savePassesFromGlobalRecents = async () => {
             if (newCount === 0) continue;
             // Update user stats
             utils.log(`Saved ${newCount} new passes for ${user.name}`);
-            await updateUserStats(userId);
+            updateUserCategoryStats(userId);
         }
         // Save new cursors
         // We do this down here so if something fails above, we don't lose the cursor position
@@ -586,6 +601,7 @@ const savePassesFromGlobalRecents = async () => {
     }
 };
 
+// Function to start the next queued user import
 const startQueuedImports = async () => {
     const nextEntry = db.prepare(`SELECT * FROM user_import_queue ORDER BY time_queued ASC LIMIT 1`).get();
     if (!nextEntry) return;
@@ -601,6 +617,7 @@ const startQueuedImports = async () => {
     importUser(userId);
 };
 
+// Function to queue a user for import
 const queueUserForImport = async (userId) => {
     try {
         const existingTask = db.prepare(`SELECT 1 FROM user_import_queue WHERE user_id = ? LIMIT 1`).get(userId);
@@ -629,6 +646,7 @@ const queueUserForImport = async (userId) => {
     }
 };
 
+// Function to backup the database periodically
 const backupDatabase = async () => {
     try {
         const backupsDir = process.env.DB_BACKUPS_DIR || path.join(__dirname, '../backups');
@@ -667,13 +685,12 @@ const backupDatabase = async () => {
 module.exports = {
     updateUserProfile,
     saveMapset,
-    updateUserStats,
     savePassesFromGlobalRecents,
     importUser,
     backupDatabase,
     startQueuedImports,
     queueUserForImport,
-    updateBeatmapStats,
-    fetchNewMapData,
-    saveUserHistory
+    updateMapData,
+    updateUserCategoryStats,
+    snapshotCategoryStats,
 };

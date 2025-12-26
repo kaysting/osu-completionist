@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "A live completionist tracker and leaderboard for osu! players.",
   "main": "server.js",
-  "scripts": {},
+  "scripts": {
+    "generate-jwt-secret": "node maintenance.js getJwtSecret",
+    "import-beatmaps": "node maintenance.js importBeatmaps",
+    "update-category-stats": "node maintenance.js updateCatStats"
+  },
   "keywords": [],
   "author": "Kayla Kersting (kaysting@github)",
   "license": "Apache-2.0",
