@@ -3,7 +3,7 @@ const { searchBeatmaps } = require('../helpers/dbHelpers');
 const utils = require('../helpers/utils');
 const marked = require('marked');
 const fs = require('fs');
-const statCatDefs = require('../statCategoryDefinitions');
+const statCategories = require('../helpers/statCategories');
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ router.get('/:category', (req, res) => {
     const limit = 96;
     const offset = (page - 1) * limit;
     // Check category
-    if (!statCatDefs.find(cat => cat.id === category)) {
+    if (!statCategories.definitions.find(cat => cat.id === category)) {
         return res.redirect('/recommended/osu-ranked');
     }
     // Get results
@@ -58,7 +58,7 @@ router.get('/:category', (req, res) => {
             description: `Complete faster by using advanced filters and sorting to get the perfect list of maps to play next.`
         },
         category,
-        category_navigation: utils.getCatNavPaths(`/recommended`, category),
+        category_navigation: statCategories.getCategoryNavPaths(`/recommended`, category),
         settings: {
             sort, sortTypes
         },

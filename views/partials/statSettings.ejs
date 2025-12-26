@@ -1,14 +1,16 @@
 <div id="statSettings" class="flex flex-wrap justify-center">
     <div class="section mode">
         <div class="btnGroup">
+            <a href="<%= category_navigation.global %>"
+                class="btn <%= category.includes('global-') ? 'primary' : '' %>">Global</a>
             <a href="<%= category_navigation.osu %>"
-                class="btn <%= category.includes('osu-') ? 'primary' : '' %>">osu!</a>
+                class="btn <%= category.includes('osu-') ? 'primary' : '' %>">osu</a>
             <a href="<%= category_navigation.taiko %>"
-                class="btn <%= category.includes('taiko-') ? 'primary' : '' %>">osu!taiko</a>
+                class="btn <%= category.includes('taiko-') ? 'primary' : '' %>">taiko</a>
             <a href="<%= category_navigation.catch %>"
-                class="btn <%= category.includes('catch-') ? 'primary' : '' %>">osu!catch</a>
+                class="btn <%= category.includes('catch-') ? 'primary' : '' %>">catch</a>
             <a href="<%= category_navigation.mania %>"
-                class="btn <%= category.includes('mania-') ? 'primary' : '' %>">osu!mania</a>
+                class="btn <%= category.includes('mania-') ? 'primary' : '' %>">mania</a>
         </div>
     </div>
     <% if (category.includes('mania-')) { %>

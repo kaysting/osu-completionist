@@ -1,6 +1,6 @@
 const express = require('express');
 
-const statCatDefs = require('../statCategoryDefinitions');
+const statCategories = require('../helpers/statCategories.js');
 const { ensureUserExists } = require('../helpers/middleware.js');
 const utils = require('../helpers/utils.js');
 const { rulesetNameToKey, rulesetKeyToName } = utils;
@@ -32,12 +32,14 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     const user = req.user;
     const category = req.params.category.toLowerCase();
     // Check category
-    if (!statCatDefs.find(cat => cat.id === category)) {
-        return res.redirect('/profile/osu-ranked');
+    if (!statCategories.definitions.find(cat => cat.id === category)) {
+        return res.redirect(`/u/${req.user.id}/osu-ranked`);
     }
     const includeLoved = category.includes('-loved');
     const includeConverts = category.includes('-converts');
-    const mode = rulesetNameToKey(category.split('-')[0]);
+    const mode = category.split('-')[0];
+    const modeKey = rulesetNameToKey(mode);
+    const modeName = mode == 'global' ? 'Global' : rulesetKeyToName(modeKey, true);
     // Get data
     const stats = dbHelpers.getUserCompletionStats(req.user.id, category);
     const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
@@ -81,7 +83,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         if (passesChecked) {
             // Get recommended maps
             recommendedQuery = `stars > ${(minStars - 0.5).toFixed(1)} stars < ${(maxStars + 0.5).toFixed(1)} year >= ${new Date(minTime).getUTCFullYear()} year <= ${new Date(maxTime).getUTCFullYear()}`;
-            recommended = dbHelpers.searchBeatmaps(`${recommendedQuery} mode=${mode}`, category, 'random', req.user.id, limit);
+            recommended = dbHelpers.searchBeatmaps(recommendedQuery, category, 'random', req.user.id, limit);
         }
     }
     // Format times
@@ -96,9 +98,8 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         pass.timeSincePass = utils.getRelativeTimestamp(pass.time_passed);
     }
     // Generate copyable text
-    const modeName = rulesetKeyToName(rulesetNameToKey(category.split('-')[0]), true);
     const statsText = [
-        `${user.name}'s ${modeName} ${includeLoved ? 'ranked and loved' : 'ranked only'} (${includeConverts ? 'with converts' : 'no converts'}) completion stats:\n`
+        `${user.name}'s ${modeName.toLowerCase()} ${includeLoved ? 'ranked and loved' : 'ranked only'} (${includeConverts ? 'with converts' : 'no converts'}) completion stats:\n`
     ];
     for (const year of yearly) {
         const checkbox = year.count_completed === year.count_total ? '☑' : '☐';
@@ -111,8 +112,8 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         page: 'profile',
         title: req.user.name,
         meta: {
-            title: `${req.user.name}'s ${modeName} completionist profile`,
-            description: `${req.user.name} has passed ${stats.percentage_completed.toFixed(2)}% of all ${modeName} beatmaps (${includesString})! Click to view more of their completionist stats.`,
+            title: `${req.user.name}'s ${modeName.toLowerCase()} completionist profile`,
+            description: `${req.user.name} has passed ${stats.percentage_completed.toFixed(2)}% of all${modeKey == 'global' ? '' : ` ${modeName}`} beatmaps (${includesString})! Click to view more of their completionist stats.`,
             thumbnail: user.avatar_url
         },
         user: {
@@ -120,7 +121,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         },
         copyable: statsText.join('\n'),
         category,
-        category_navigation: utils.getCatNavPaths(`/u/${req.user.id}`, category),
+        category_navigation: statCategories.getCategoryNavPaths(`/u/${req.user.id}`, category),
         me: req.me
     });
 });

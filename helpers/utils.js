@@ -334,28 +334,6 @@ const utils = {
             return i + "rd";
         }
         return i + "th";
-    },
-
-    getCatNavPaths: (basePath, category) => {
-        const catSplit = category.split('-');
-        const mode = catSplit[0];
-        const isLoved = catSplit.includes('loved');
-        const isConverts = catSplit.includes('converts');
-        let keyCount = catSplit[catSplit.length - 1];
-        if (!keyCount.match(/^[0-9]+k$/)) {
-            keyCount = null;
-        }
-        const paths = {
-            osu: `${basePath}/osu-ranked${isLoved ? '-loved' : ''}${isConverts ? '-converts' : ''}`,
-            taiko: `${basePath}/taiko-ranked${isLoved ? '-loved' : ''}${isConverts ? '-converts' : ''}`,
-            catch: `${basePath}/catch-ranked${isLoved ? '-loved' : ''}${isConverts ? '-converts' : ''}`,
-            mania: `${basePath}/mania-ranked${isLoved ? '-loved' : ''}${isConverts ? '-converts' : ''}`,
-            mania4k: `${basePath}/mania-ranked${isLoved ? '-loved' : ''}${isConverts ? '-converts' : ''}-4k`,
-            mania7k: `${basePath}/mania-ranked${isLoved ? '-loved' : ''}${isConverts ? '-converts' : ''}-7k`,
-            toggleConverts: `${basePath}/${mode}-ranked${isLoved ? '-loved' : ''}${isConverts ? '' : '-converts'}${keyCount ? `-${keyCount}` : ''}`,
-            toggleLoved: `${basePath}/${mode}-ranked${isLoved ? '' : '-loved'}${isConverts ? '-converts' : ''}${keyCount ? `-${keyCount}` : ''}`
-        };
-        return paths;
     }
 
 };

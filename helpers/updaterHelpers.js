@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
 const dayjs = require('dayjs');
+const statCategories = require('./statCategories');
 
 const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'storage.db');
 
@@ -165,9 +166,6 @@ const updateUserProfile = async (userId, userObj) => {
     }
 };
 
-// Load category definitions
-const STAT_CATEGORY_DEFS = require('../statCategoryDefinitions');
-
 /**
  * Internal function to check if a row matches a category definition's filters
  * @param {Object} row The database row to check
@@ -247,7 +245,7 @@ const updateUserCategoryStats = (userId) => {
         // Do the updates in a transaction
         const transaction = db.transaction(() => {
             // Loop through categories
-            for (const cat of STAT_CATEGORY_DEFS) {
+            for (const cat of statCategories.definitions) {
                 // Track totals
                 let totalCount = 0;
                 let totalSecs = 0;
@@ -276,7 +274,7 @@ const updateUserCategoryStats = (userId) => {
             }
         });
         transaction();
-        utils.log(`Updated stats in ${STAT_CATEGORY_DEFS.length} categories for ${user.name}`);
+        utils.log(`Updated stats in ${statCategories.definitions.length} categories for ${user.name}`);
     } catch (error) {
         utils.logError(`Error while updating category stats for ${user.name}:`, error);
     }

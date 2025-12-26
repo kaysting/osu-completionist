@@ -1,46 +1,7 @@
 const dayjs = require('dayjs');
 const db = require('./db');
 const utils = require('./utils');
-const STAT_CATEGORY_DEFS = require('../statCategoryDefinitions');
-
-/**
- * Converts a Category ID into SQL WHERE clauses based on its definition.
- * @param {string} categoryId The category ID to look up
- * @param {string} tablePrefix The table alias to prefix columns with (e.g. 'map' or 'b')
- */
-const categoryToSql = (categoryId, tablePrefix = 'map') => {
-    const def = STAT_CATEGORY_DEFS.find(d => d.id === categoryId);
-    if (!def) {
-        throw new Error(`Invalid category ID: ${categoryId}`);
-    }
-    const clauses = [];
-    const params = [];
-    for (const filter of def.filters) {
-        const col = `${tablePrefix}.${filter.field}`;
-
-        if (filter.equals !== undefined) {
-            clauses.push(`${col} = ?`);
-            params.push(filter.equals);
-        } else if (filter.in !== undefined) {
-            const placeholders = filter.in.map(() => '?').join(', ');
-            clauses.push(`${col} IN (${placeholders})`);
-            params.push(...filter.in);
-        } else if (filter.range !== undefined) {
-            clauses.push(`${col} BETWEEN ? AND ?`);
-            params.push(filter.range[0], filter.range[1]);
-        } else if (filter.min !== undefined) {
-            clauses.push(`${col} >= ?`);
-            params.push(filter.min);
-        } else if (filter.max !== undefined) {
-            clauses.push(`${col} <= ?`);
-            params.push(filter.max);
-        }
-    }
-    return {
-        where: clauses.length > 0 ? clauses.join(' AND ') : '1=1',
-        params, def
-    };
-};
+const statCategories = require('./statCategories');
 
 const formatUserEntry = (entry) => ({
     id: entry.id,
@@ -414,7 +375,7 @@ const getBeatmap = (mapId, includeMapset, mode) => {
 
 const getUserRecentPasses = (userId, categoryId, limit = 100, offset = 0) => {
     // Convert category filters to SQL
-    const { where, params, def } = categoryToSql(categoryId, 'b');
+    const { where, params, def } = statCategories.categoryToSql(categoryId, 'b');
 
     // Fetch recent passes
     const rows = db.prepare(`
@@ -502,7 +463,7 @@ const searchBeatmaps = (query, category, sort, notPlayedByUserId, limit = 50, of
     // Apply category filters if category is specified
     let categorySql;
     if (category) {
-        categorySql = categoryToSql(category, 'map');
+        categorySql = statCategories.categoryToSql(category, 'map');
         whereClauses.push(categorySql.where);
         params.push(...categorySql.params);
     }

@@ -1,5 +1,5 @@
 const express = require('express');
-const statCatDefs = require('../statCategoryDefinitions');
+const statCategories = require('../helpers/statCategories.js');
 
 const { rulesetNameToKey, rulesetKeyToName } = require('../helpers/utils.js');
 const { getLeaderboard } = require('../helpers/dbHelpers.js');
@@ -18,7 +18,7 @@ router.get('/:category', (req, res) => {
     const limit = 50;
     const offset = (page - 1) * limit;
     // Check params
-    if (!statCatDefs.find(cat => cat.id === category)) {
+    if (!statCategories.definitions.find(cat => cat.id === category)) {
         return res.redirect('/leaderboard/osu-ranked');
     }
     // Get leaderboard data
@@ -40,16 +40,18 @@ router.get('/:category', (req, res) => {
         }
     }
     // Render
-    const modeName = rulesetKeyToName(rulesetNameToKey(category.split('-')[0]), true);
+    const mode = category.split('-')[0];
+    const modeKey = rulesetNameToKey(mode);
+    const modeName = mode == 'global' ? 'Global' : rulesetKeyToName(modeKey, true);
     res.render('layout', {
         title: `${modeName} leaderboard`,
         meta: {
             title: `${modeName} completionist leaderboard`,
-            description: `View the players who have passed the most ${modeName} beatmaps!`
+            description: `View the players who have passed the most${mode == 'global' ? '' : ` ${modeName}`} beatmaps!`
         },
         page: 'leaderboard',
         category,
-        category_navigation: utils.getCatNavPaths('/leaderboard', category),
+        category_navigation: statCategories.getCategoryNavPaths('/leaderboard', category),
         pagination: {
             current: page, nav: pagesToShow, basePath: `/leaderboard/${category}`
         },
