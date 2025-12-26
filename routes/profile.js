@@ -2,7 +2,7 @@ const express = require('express');
 
 const statCatDefs = require('../statCategoryDefinitions');
 const { ensureUserExists } = require('../middleware.js');
-const utils = require('../utils.js');
+const utils = require('../helpers/utils.js');
 const { rulesetNameToKey, rulesetKeyToName } = utils;
 const updater = require('../helpers/updaterHelpers.js');
 const dbHelpers = require('../helpers/dbHelpers.js');

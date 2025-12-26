@@ -1,6 +1,6 @@
 const dayjs = require('dayjs');
-const db = require('../db');
-const utils = require('../utils');
+const db = require('./db');
+const utils = require('./utils');
 const STAT_CATEGORY_DEFS = require('../statCategoryDefinitions');
 
 /**

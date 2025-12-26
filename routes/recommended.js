@@ -1,6 +1,6 @@
 const express = require('express');
 const { searchBeatmaps } = require('../helpers/dbHelpers');
-const utils = require('../utils');
+const utils = require('../helpers/utils');
 const marked = require('marked');
 const fs = require('fs');
 const statCatDefs = require('../statCategoryDefinitions');

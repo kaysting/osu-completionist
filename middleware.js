@@ -1,6 +1,6 @@
-const db = require('./db');
+const db = require('./helpers/db');
 const fs = require('fs');
-const utils = require('./utils');
+const utils = require('./helpers/utils');
 const { getUserProfile } = require('./helpers/dbHelpers');
 
 const middleware = {

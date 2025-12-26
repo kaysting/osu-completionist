@@ -1,10 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
-const utils = require('../utils');
+const utils = require('../helpers/utils');
 const updaterHelpers = require('../helpers/updaterHelpers');
 const { log } = utils;
-const db = require('../db');
+const db = require('../helpers/db');
 
 const router = express.Router();
 

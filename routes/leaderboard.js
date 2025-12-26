@@ -1,9 +1,9 @@
 const express = require('express');
 const statCatDefs = require('../statCategoryDefinitions');
 
-const { rulesetNameToKey, rulesetKeyToName } = require('../utils.js');
+const { rulesetNameToKey, rulesetKeyToName } = require('../helpers/utils.js');
 const { getLeaderboard } = require('../helpers/dbHelpers.js');
-const utils = require('../utils.js');
+const utils = require('../helpers/utils.js');
 
 const router = express.Router();
 

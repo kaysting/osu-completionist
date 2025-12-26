@@ -1,5 +1,5 @@
-const { log } = require('./utils');
-const osu = require('./osu');
+const { log } = require('./helpers/utils');
+const osu = require('./helpers/osu');
 const updaterHelpers = require('./helpers/updaterHelpers');
 const dayjs = require('dayjs');
 

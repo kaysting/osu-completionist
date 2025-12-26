@@ -1,8 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const cookieParser = require('cookie-parser');
-const db = require('./db');
-const { log, logError } = require('./utils');
+const db = require('./helpers/db');
+const { log, logError } = require('./helpers/utils');
 const { getAuthenticatedUser } = require('./middleware');
 const dayjs = require('dayjs');
 

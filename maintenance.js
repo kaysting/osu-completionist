@@ -1,7 +1,7 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const SqlDumpParser = require('./helpers/mysql-stream-parser');
-const db = require('./db');
+const db = require('./helpers/db');
 const updateHelpers = require('./helpers/updaterHelpers');
 
 const importBeatmapsets = async () => {
@@ -97,12 +97,14 @@ const importBeatmapsets = async () => {
 };
 
 const updateCategoryStats = () => {
+    console.time('Update category stats');
     const userIds = db.prepare(`SELECT id FROM users`).all().map(row => row.id);
     userIds.push(0);
     console.log(`Updating category stats for ${userIds.length} users...`);
     for (const id of userIds) {
         updateHelpers.updateUserCategoryStats(id);
     }
+    console.timeEnd('Update category stats');
 };
 
 const jwtSecret = () => {
