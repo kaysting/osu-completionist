@@ -107,7 +107,7 @@ const getBulkUserCompletionStats = (userIds, categoryId) => {
 const getUserHistoricalCompletionStats = (userId, categoryId, aggregate = 'day') => {
     // Fetch all daily stats for this category
     const rows = db.prepare(
-        `SELECT time, count, percent, seconds 
+        `SELECT time, count, percent, seconds, date, rank
          FROM user_category_stats_history
          WHERE user_id = ? AND category = ?
          ORDER BY time ASC`
@@ -117,10 +117,11 @@ const getUserHistoricalCompletionStats = (userId, categoryId, aggregate = 'day')
     if (aggregate === 'day') {
         // Return most recent 90 days
         return rows.reverse().slice(0, 90).map(row => ({
-            date: dayjs(row.time).format('YYYY-MM-DD'),
+            date: row.date,
             count_completed: row.count,
-            percentage_completed: row.percent,
             time_spent_secs: row.seconds,
+            percentage_completed: row.percent,
+            rank: row.rank,
             time_saved: row.time
         }));
     } else if (aggregate === 'month') {
@@ -145,18 +146,21 @@ const getUserHistoricalCompletionStats = (userId, categoryId, aggregate = 'day')
                     time_saved: first.time,
                     count_completed: first.count,
                     percentage_completed: first.percent,
+                    rank: first.rank,
                     time_spent_secs: first.seconds
                 },
                 end: {
                     time_saved: last.time,
                     count_completed: last.count,
                     percentage_completed: last.percent,
+                    rank: last.rank,
                     time_spent_secs: last.seconds
                 },
                 delta: {
                     count_completed: last.count - first.count,
                     percentage_completed: last.percent - first.percent,
-                    time_spent_secs: last.seconds - first.seconds
+                    time_spent_secs: last.seconds - first.seconds,
+                    rank: first.rank - last.rank
                 }
             });
         }
@@ -374,6 +378,10 @@ const getBeatmap = (mapId, includeMapset, mode) => {
 };
 
 const getUserRecentPasses = (userId, categoryId, limit = 100, offset = 0) => {
+    // Get user entry
+    const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
+    if (!user) return [];
+
     // Convert category filters to SQL
     const { where, params, def } = statCategories.categoryToSql(categoryId, 'b');
 
@@ -383,10 +391,10 @@ const getUserRecentPasses = (userId, categoryId, limit = 100, offset = 0) => {
         FROM user_passes up
         JOIN beatmaps b ON up.map_id = b.id AND up.mode = b.mode
         WHERE up.user_id = ?
-        AND ${where}
+        AND ${where} AND up.time_passed > ?
         ORDER BY up.time_passed DESC
         LIMIT ? OFFSET ?
-    `).all(userId, ...params, limit, offset);
+    `).all(userId, ...params, user.last_import_time || Date.now(), limit, offset);
 
     // Get full map data
     const beatmapIdsToMaps = {};
