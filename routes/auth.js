@@ -49,6 +49,8 @@ router.get('/callback', async (req, res) => {
         const userEntry = db.prepare('SELECT * FROM users WHERE id = ?').get(user.data.id);
         if (!userEntry) {
             await updaterHelpers.queueUserForImport(user.data.id);
+            const userCount = db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
+            utils.logToDiscord(`${user.data.username} logged in as our ${utils.ordinalSuffix(userCount)} user!`);
         }
         // Set JWT cookie
         const jwt = utils.generateJWT({ id: user.data.id });

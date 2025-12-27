@@ -3,11 +3,6 @@ const axios = require('axios');
 
 const utils = {
 
-    log: (...args) => {
-        const timestamp = new Date().toISOString();
-        console.log(`[${timestamp}]`, ...args);
-    },
-
     postDiscordWebhook: async (webhookUrl, message) => {
         try {
             await axios.post(webhookUrl, message);
@@ -16,24 +11,39 @@ const utils = {
         }
     },
 
+    parseArgsToDiscordContent: args => {
+        return args.map(arg => {
+            if (arg instanceof Error) {
+                return `\`\`\`${arg.stack}\`\`\``;
+            } else if (typeof arg === 'object') {
+                return `\`\`\`json\n${JSON.stringify(arg, null, 2)}\`\`\``;
+            } else {
+                return arg.toString();
+            }
+        }).join('\n');
+    },
+
+    log: (...args) => {
+        const timestamp = new Date().toISOString();
+        console.log(`[${timestamp}]`, ...args);
+    },
+
+    logToDiscord: (...args) => {
+        utils.log(...args);
+        const url = process.env.INFO_LOGS_DISCORD_WEBHOOK_URL;
+        if (url) {
+            utils.postDiscordWebhook(url, {
+                content: utils.parseArgsToDiscordContent(args)
+            });
+        }
+    },
+
     logError: (...args) => {
         const timestamp = new Date().toISOString();
         console.error(`[${timestamp}]`, ...args);
-        const url = process.env.ERROR_LOGS_DISCORD_WEBHOOK_URL;
-        if (url) {
-            const content = args.map(arg => {
-                if (arg instanceof Error) {
-                    return `\`\`\`${arg.stack}\`\`\``;
-                } else if (typeof arg === 'object') {
-                    return `\`\`\`json\n${JSON.stringify(arg, null, 2)}\`\`\``;
-                } else {
-                    return arg.toString();
-                }
-            }).join('\n');
-            utils.postDiscordWebhook(url, {
-                content
-            });
-        }
+        utils.postDiscordWebhook(process.env.ERROR_LOGS_DISCORD_WEBHOOK_URL, {
+            content: utils.parseArgsToDiscordContent(args)
+        });
     },
 
     sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),

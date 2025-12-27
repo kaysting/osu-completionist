@@ -294,10 +294,15 @@ const snapshotCategoryStats = () => {
         }
         // Get all user stats sorted by implicit rank
         const allUserStats = db.prepare(`
-            SELECT user_id, category, count, seconds
-            FROM user_category_stats
-            WHERE user_id != 0
-            ORDER BY category, seconds DESC
+            SELECT
+                s.user_id AS user_id,
+                s.category AS category,
+                s.count AS count,
+                s.seconds AS seconds
+            FROM user_category_stats s
+            JOIN users u ON s.user_id = u.id
+            WHERE s.user_id != 0 AND u.last_import_time != 0
+            ORDER BY s.category, s.seconds DESC
         `).all();
         if (allUserStats.length === 0) return;
         // Prepare insert
@@ -471,9 +476,7 @@ const importUser = async (userId) => {
         const scoresPerMinute = Math.round(
             (mostPlayedOffset / (Date.now() - timeStarted)) * 1000 * 60
         );
-        const status = `Completed import of ${passCount} passes for ${user.name} in ${utils.secsToDuration(Math.round(importDurationMs / 1000))} (${scoresPerMinute} scores/min)`;
-        utils.log(status);
-        utils.logError(`NOT AN ERROR:`, status);
+        utils.logToDiscord(`Completed import of ${passCount} passes for ${user.name} in ${utils.secsToDuration(Math.round(importDurationMs / 1000))} (${scoresPerMinute} scores/min)`);
     } catch (error) {
         utils.logError(`Error while importing user ${user.name}:`, error);
     }
