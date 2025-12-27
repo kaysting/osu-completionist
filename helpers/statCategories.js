@@ -1,3 +1,5 @@
+const utils = require("./utils");
+
 const definitions = [];
 
 for (const mode of ['global', 'osu', 'taiko', 'catch', 'mania']) {
@@ -115,6 +117,16 @@ const categoryToSql = (categoryId, tablePrefix = 'map') => {
     };
 };
 
+const getCategoryName = categoryId => {
+    const split = categoryId.split('-');
+    const mode = split[0];
+    const includesLoved = split.includes('loved');
+    const includesConverts = split.includes('converts');
+    const keyCount = split[split.length - 1].match(/^[0-9]+k$/) ? split[split.length - 1].toUpperCase() : null;
+    const modeName = mode === 'global' ? 'Global' : utils.rulesetKeyToName(utils.rulesetNameToKey(mode), true);
+    return `${modeName}${mode !== 'mania' ? '' : keyCount ? ` ${keyCount}` : ''} (ranked${includesLoved ? ' and loved' : ' only'}${mode === 'osu' ? '' : includesConverts ? ', including converts' : ', no converts'})`;
+};
+
 // If not required from another module, output the definitions
 if (require.main === module) {
     console.log(`Registered ${definitions.length} stat category definitions:`, definitions.map(d => d.id).join(', '));
@@ -124,5 +136,6 @@ if (require.main === module) {
 module.exports = {
     definitions,
     getCategoryNavPaths,
-    categoryToSql
+    categoryToSql,
+    getCategoryName
 };

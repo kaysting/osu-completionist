@@ -14,7 +14,6 @@
   "license": "Apache-2.0",
   "type": "commonjs",
   "dependencies": {
-    "@resvg/resvg-js": "^2.6.2",
     "axios": "^1.13.2",
     "better-sqlite3": "^12.4.1",
     "cookie-parser": "^1.4.7",
@@ -24,7 +23,6 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "marked": "^17.0.1",
-    "satori": "^0.18.3",
-    "satori-html": "^0.3.2"
+    "puppeteer": "^24.34.0"
   }
 }

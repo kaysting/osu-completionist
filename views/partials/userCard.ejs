@@ -1,16 +1,16 @@
 <a href="/u/<%= user.id %>" class="userCard flex gap-16 align-center">
-    <img class="banner" src="<%= user.banner_url %>" loading="lazy">
+    <img class="banner <%= locals?.noFade || '' %>" src="<%= user.banner_url %>" loading="lazy">
     <div class="bannerDimming"></div>
-    <img class="avatar" src="<%= user.avatar_url %>" loading="lazy">
+    <img class="avatar <%= locals?.noFade || '' %>" src="<%= user.avatar_url %>" loading="lazy">
     <div class="content flex-grow flex col justify-center gap-4">
         <div class="name"><%= user.name %></div>
         <div class="flags flex">
             <div class="flag country flex gap-4 align-center flex-no-shrink">
-                <img class="flex-no-shrink" src="<%= user.country.flag_url %>">
+                <img class="flex-no-shrink <%= locals?.noFade || '' %>" src="<%= user.country.flag_url %>">
                 <span class="name"><%= user.country.name %></span>
             </div>
             <div class="flag team flex gap-4 align-center">
-                <img class="flex-no-shrink" src="<%= user.team.flag_url %>">
+                <img class="flex-no-shrink <%= locals?.noFade || '' %>" src="<%= user.team.flag_url %>">
                 <span class="name"><%= user.team.name %></span>
             </div>
         </div>

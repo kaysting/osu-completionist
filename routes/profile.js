@@ -3,9 +3,10 @@ const express = require('express');
 const statCategories = require('../helpers/statCategories.js');
 const { ensureUserExists } = require('../helpers/middleware.js');
 const utils = require('../helpers/utils.js');
-const { rulesetNameToKey, rulesetKeyToName } = utils;
 const updater = require('../helpers/updaterHelpers.js');
 const dbHelpers = require('../helpers/dbHelpers.js');
+const ejs = require('ejs');
+const imageRenderer = require('../helpers/imageRenderer.js');
 
 const router = express.Router();
 
@@ -35,11 +36,9 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     if (!statCategories.definitions.find(cat => cat.id === category)) {
         return res.redirect(`/u/${req.user.id}/osu-ranked`);
     }
-    const includeLoved = category.includes('-loved');
-    const includeConverts = category.includes('-converts');
     const mode = category.split('-')[0];
-    const modeKey = rulesetNameToKey(mode);
-    const modeName = mode == 'global' ? 'Global' : rulesetKeyToName(modeKey, true);
+    const modeKey = utils.rulesetNameToKey(mode);
+    const modeName = mode == 'global' ? 'Global' : utils.rulesetKeyToName(modeKey, true);
     // Get data
     const stats = dbHelpers.getUserCompletionStats(req.user.id, category);
     const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
@@ -98,8 +97,9 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         pass.timeSincePass = utils.getRelativeTimestamp(pass.time_passed);
     }
     // Generate copyable text
+    const categoryName = statCategories.getCategoryName(category);
     const statsText = [
-        `${user.name}'s ${modeName.toLowerCase()} ${includeLoved ? 'ranked and loved' : 'ranked only'} (${includeConverts ? 'with converts' : 'no converts'}) completion stats:\n`
+        `${user.name}'s ${modeName.toLowerCase()} ${categoryName.toLowerCase()} completion stats:\n`
     ];
     for (const year of yearly) {
         const checkbox = year.count_completed === year.count_total ? '☑' : '☐';
@@ -107,14 +107,13 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     }
     statsText.push(`\nTotal: ${stats.count_completed.toLocaleString()} / ${stats.count_total.toLocaleString()} (${stats.percentage_completed.toFixed(2)}%)`);
     // Render
-    const includesString = `${includeLoved ? 'ranked and loved' : 'ranked only'}, ${includeConverts ? 'with converts' : 'no converts'}`;
     res.render('layout', {
         page: 'profile',
         title: req.user.name,
         meta: {
             title: `${req.user.name}'s ${modeName.toLowerCase()} completionist profile`,
-            description: `${req.user.name} has passed ${stats.percentage_completed.toFixed(2)}% of all${modeKey == 'global' ? '' : ` ${modeName}`} beatmaps (${includesString})! Click to view more of their completionist stats.`,
-            thumbnail: user.avatar_url
+            description: `${req.user.name} has passed ${stats.percentage_completed.toFixed(2)}% of all ${categoryName.toLowerCase()} beatmaps! Click to view more of their completionist stats.`,
+            image: `/u/${user.id}/${category}/renders/main`
         },
         user: {
             ...user, stats, yearly, recentPasses, updateStatus, recommended, recommendedQuery
@@ -124,6 +123,35 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         category_navigation: statCategories.getCategoryNavPaths(`/u/${req.user.id}`, category),
         me: req.me
     });
+});
+
+imageRenderer.warmup();
+
+router.get('/:id/:category/renders/:type', ensureUserExists, async (req, res) => {
+    const user = req.user;
+    const userId = req.user.id;
+    const category = req.params.category.toLowerCase();
+    const type = req.params.type.toLowerCase();
+    // Check category
+    if (!statCategories.definitions.find(cat => cat.id === category)) {
+        return res.status(404).end();
+    }
+    // Check type
+    let template;
+    switch (type) {
+        case 'main': template = 'profileMain'; break;
+        default:
+            return res.status(404).end();
+    }
+    // Render image
+    const url = `http://localhost:${process.env.WEBSERVER_PORT}/renders/html/${template}?user_id=${userId}&category=${category}`;
+    const startTime = Date.now();
+    const buffer = await imageRenderer.urlToPng(url, undefined, undefined, 1);
+    utils.log(`Rendered social image ${type} for ${user.name} in category ${category} in ${Date.now() - startTime}ms`);
+    // Set headers and send image
+    res.set('Content-Type', 'image/png');
+    res.set('Cache-Control', 'no-store'); // Don't cache
+    res.send(buffer);
 });
 
 module.exports = router;

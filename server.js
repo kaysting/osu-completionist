@@ -9,11 +9,12 @@ const dayjs = require('dayjs');
 const app = express();
 
 app.use((req, res, next) => {
-    if (!req.headers['cf-ray'] && process.env.ENFORCE_CLOUDFLARE_ONLY === 'true') {
+    const ip = req.headers['cf-connecting-ip'] || req.ip.replace('::ffff:', '');
+    const isLocal = ip === '::1' || ip.match(/^(127|192|10|100)\.*/);
+    if (!req.headers['cf-ray'] && process.env.ENFORCE_CLOUDFLARE_ONLY === 'true' && !isLocal) {
         res.status(403).send('Forbidden');
         return;
     }
-    const ip = req.headers['cf-connecting-ip'] || req.ip;
     log(ip, req.method, req.url);
     next();
 });
@@ -35,6 +36,7 @@ app.use('/search', require('./routes/search'));
 app.use('/auth', require('./routes/auth'));
 app.use('/recommended', require('./routes/recommended'));
 app.use('/queue', require('./routes/queue'));
+app.use('/renders', require('./routes/renders'));
 
 app.use((req, res) => {
     res.status(404).render('layout', {
