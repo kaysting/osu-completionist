@@ -6,7 +6,19 @@ const { getUserProfile } = require('./dbHelpers');
 const middleware = {
 
     ensureUserExists: (req, res, next) => {
-        const userId = req.params.id;
+        let userId = req.params.id;
+        // If userId doesn't parse to int, attempt to find user by name
+        // This won't work for users whose names are purely numeric
+        if (isNaN(parseInt(userId))) {
+            const entry = db.prepare(`
+                SELECT u.id
+                FROM users u
+                LEFT JOIN user_previous_names un ON u.id = un.user_id
+                WHERE un.name = ? OR u.name = ?
+            `).get(userId, userId);
+            if (entry) userId = entry.id;
+        }
+        // Fetch user profile using resolved user ID
         const user = getUserProfile(userId);
         if (!user) {
             return res.status(404).render('layout', {
