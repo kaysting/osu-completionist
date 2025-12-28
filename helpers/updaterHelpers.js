@@ -147,16 +147,17 @@ const updateUserProfile = async (userId, userObj) => {
                     team_id = ?,
                     team_name = ?,
                     team_name_short = ?,
-                    team_flag_url = ?
+                    team_flag_url = ?,
+                    last_profile_update_time = ?
                 WHERE id = ?`
-            ).run(user.username, user.avatar_url, user.cover.url, user.country.code, user.team?.id, user.team?.name, user.team?.short_name, user.team?.flag_url, user.id);
+            ).run(user.username, user.avatar_url, user.cover.url, user.country.code, user.team?.id, user.team?.name, user.team?.short_name, user.team?.flag_url, Date.now(), user.id);
             utils.log(`Updated stored user data for ${user.username}`);
         } else {
             // Create new user entry
             db.prepare(
-                `INSERT INTO users (id, name, avatar_url, banner_url, country_code, team_id, team_name, team_name_short, team_flag_url, time_created)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-            ).run(user.id, user.username, user.avatar_url, user.cover.url, user.country.code, user.team?.id, user.team?.name, user.team?.short_name, user.team?.flag_url, Date.now());
+                `INSERT INTO users (id, name, avatar_url, banner_url, country_code, team_id, team_name, team_name_short, team_flag_url, time_created, last_profile_update_time)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            ).run(user.id, user.username, user.avatar_url, user.cover.url, user.country.code, user.team?.id, user.team?.name, user.team?.short_name, user.team?.flag_url, Date.now(), Date.now());
             utils.log(`Stored user data for ${user.username}`);
         }
         return db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
@@ -622,25 +623,22 @@ const startQueuedImports = async () => {
 const queueUserForImport = async (userId) => {
     try {
         const existingTask = db.prepare(`SELECT 1 FROM user_import_queue WHERE user_id = ? LIMIT 1`).get(userId);
-        if (!existingTask) {
-            console.log(existingTask);
-            // Fetch playcounts count
-            const user = await osu.getUser(userId);
-            const playcountsCount = user?.beatmap_playcounts_count || 0;
-            if (!user || playcountsCount === 0) {
-                utils.log(`User ${user?.username} has no playcounts, not queueing for import`);
-                return false;
-            }
-            // Add to queue
-            db.prepare(
-                `INSERT OR IGNORE INTO user_import_queue
-                (user_id, time_queued, playcounts_count)
-                VALUES (?, ?, ?)`
-            ).run(userId, Date.now(), playcountsCount);
-            utils.log(`Queued ${user.username} for import`);
-            return true;
+        if (existingTask) return false;
+        // Fetch playcounts count
+        const user = await osu.getUser(userId);
+        const playcountsCount = user?.beatmap_playcounts_count || 0;
+        if (!user || playcountsCount === 0) {
+            utils.log(`User ${user?.username} has no playcounts, not queueing for import`);
+            return false;
         }
-        return false;
+        // Add to queue
+        db.prepare(
+            `INSERT OR IGNORE INTO user_import_queue
+            (user_id, time_queued, playcounts_count)
+            VALUES (?, ?, ?)`
+        ).run(userId, Date.now(), playcountsCount);
+        utils.log(`Queued ${user.username} for import`);
+        return true;
     } catch (error) {
         utils.logError(`Error while queueing user ${userId} for import:`, error);
         return null;

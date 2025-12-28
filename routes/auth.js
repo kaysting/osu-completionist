@@ -40,17 +40,25 @@ router.get('/callback', async (req, res) => {
             return res.redirect('/auth/login');
         }
         log(`User ${user.data.username} (${user.data.id}) logged in via OAuth`);
-        // Save user data to db
-        const wasProfileUpdated = await updaterHelpers.updateUserProfile(user.data.id, user.data);
-        if (wasProfileUpdated === null) {
+        // Get existing user entry and queue entry
+        const existingUserEntry = db.prepare('SELECT * FROM users WHERE id = ?').get(user.data.id);
+        const existingQueueEntry = db.prepare('SELECT * FROM user_import_queue WHERE user_id = ?').get(user.data.id);
+        // Save/update user data to db
+        const userEntry = await updaterHelpers.updateUserProfile(user.data.id);
+        if (!userEntry) {
             return res.redirect('/auth/login');
         }
-        // Queue user if they're new
-        const userEntry = db.prepare('SELECT * FROM users WHERE id = ?').get(user.data.id);
-        if (!userEntry) {
+        if (!existingUserEntry) {
+            // Queue user if they're new
             await updaterHelpers.queueUserForImport(user.data.id);
             const userCount = db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
-            utils.logToDiscord(`${user.data.username} logged in as our ${utils.ordinalSuffix(userCount)} user!`);
+            utils.logToDiscord(`${user.data.username} registered as our ${utils.ordinalSuffix(userCount)} user!`);
+        } else if (!userEntry?.last_import_time && !existingQueueEntry) {
+            // Queue user if they haven't been imported and they aren't queued
+            // This can happen in some edge cases
+            await updaterHelpers.queueUserForImport(user.data.id);
+        } else {
+            utils.logToDiscord(`${user.data.username} logged in on a new device`);
         }
         // Set JWT cookie
         const jwt = utils.generateJWT({ id: user.data.id });
