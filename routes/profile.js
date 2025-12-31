@@ -62,8 +62,8 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     );
     // If viewing our own profile, get user trends and recommended maps
     let recommended = null;
-    let recommendedQuery = null;
-    if (req.me && req.user.id === req.me.id) {
+    let recommendedQuery = '';
+    if (req.user.id === req.me?.id) {
         // Determine min and max recent star rating and ranked time
         let minStars, maxStars, minTime, maxTime = null;
         let passesToCheck = 20;
@@ -79,23 +79,24 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
             maxTime = maxTime === undefined || timeRanked > maxTime ? timeRanked : maxTime;
             passesChecked++;
         }
+        // Put together a query to get recommended beatmaps if we got
+        // recommended filters from recent passes
         if (passesChecked) {
-            // Put together a query to get recommended beatmaps
             recommendedQuery = `stars > ${(minStars - 0.5).toFixed(1)} stars < ${(maxStars + 0.5).toFixed(1)} year >= ${new Date(minTime).getUTCFullYear()} year <= ${new Date(maxTime).getUTCFullYear()}`;
-            recommended = [];
-            // Loop while we don't have enough recommendations
-            // and we still have a query to use
-            while (recommendedQuery && recommended.length < limit) {
-                // If we have some but not enough recommendations,
-                // empty the query to fill the rest of the recommendations
-                // with any map the user hasn't passed
-                if (recommended.length > 0)
-                    recommendedQuery = '';
-                const needed = limit - recommended.length;
-                recommended.push(
-                    ...dbHelpers.searchBeatmaps(recommendedQuery, category, 'random', req.user.id, needed).beatmaps
-                );
-            }
+        }
+        recommended = [];
+        // Loop while we don't have enough recommendations
+        while (recommended.length < limit) {
+            // If we have some but not enough recommendations,
+            // empty the query to fill the rest of the recommendations
+            // with any map the user hasn't passed
+            if (recommended.length > 0) recommendedQuery = '';
+            const needed = limit - recommended.length;
+            recommended.push(
+                ...dbHelpers.searchBeatmaps(recommendedQuery, category, 'random', req.user.id, needed).beatmaps
+            );
+            // Break if we already got maps without a query
+            if (!recommendedQuery) break;
         }
     }
     // Format times

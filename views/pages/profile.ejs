@@ -128,7 +128,7 @@
             <div class="beatmapCardContainer">
                 <% if (user.recommended.length === 0) { %>
                 <div class="empty">
-                    <p>No recommendations could be made. Check again after passing some new maps.</p>
+                    <p>Either no recommendations could be made or you've passed all maps in this category.</p>
                 </div>
                 <% } %>
                 <% for (const beatmap of user.recommended) { %>
@@ -153,7 +153,7 @@
             <div class="beatmapNarrowContainer">
                 <% if (user.recentPasses.length === 0) { %>
                 <div class="empty">
-                    <p>No new passes saved since import</p>
+                    <p>No new passes saved since import.</p>
                 </div>
                 <% } %>
                 <% for (const pass of user.recentPasses) { %>
