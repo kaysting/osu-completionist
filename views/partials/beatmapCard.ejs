@@ -34,17 +34,17 @@
             </div>
         </div>
         <div class="buttons flex col justify-evenly align-center flex-no-shrink">
-            <a href="osu://b/<%= beatmap.id %>" class="btn square text" target="_blank"
-                title="Open beatmap in osu!direct">
-                <div class="icon">rocket_launch</div>
+            <a href="https://osu.ppy.sh/beatmapsets/<%= beatmap.mapset_id %>#<%= beatmap.mode %>/<%= beatmap.id %>"
+                class="btn square text" target="_blank" title="Open beatmap on osu! website">
+                <div class="icon">open_in_new</div>
             </a>
             <a href="https://beatconnect.io/b/<%= beatmap.mapset_id %>" class="btn square text" target="_blank"
                 title="Direct download from Beatconnect">
                 <div class="icon">download</div>
             </a>
-            <a href="https://osu.ppy.sh/beatmapsets/<%= beatmap.mapset_id %>#<%= beatmap.mode %>/<%= beatmap.id %>"
-                class="btn square text" target="_blank" title="Open beatmap on osu! website">
-                <div class="icon">open_in_new</div>
+            <a href="osu://b/<%= beatmap.id %>" class="btn square text" target="_blank"
+                title="Open beatmap in osu!direct">
+                <div class="icon">rocket_launch</div>
             </a>
         </div>
     </div>

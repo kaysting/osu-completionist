@@ -1,15 +1,15 @@
 const puppeteer = require('puppeteer');
 
 // CONFIGURATION
-const MAX_CONCURRENT_PAGES = 5;
+const MAX_CONCURRENT_PAGES = 2;
 const MAX_RENDERS_BEFORE_RESTART = 100;
 const BROWSER_ARGS = [
     '--no-sandbox',
     '--disable-setuid-sandbox',
     '--disable-dev-shm-usage',
-    '--font-render-hinting=none',    // Fixes "wonky" text positioning
-    '--force-color-profile=srgb',    // Ensures colors are accurate
-    '--hide-scrollbars'              // Clean screenshots
+    '--font-render-hinting=none',
+    '--force-color-profile=srgb',
+    '--hide-scrollbars'
 ];
 
 // STATE
@@ -25,7 +25,8 @@ async function getBrowser() {
     if (!browser) {
         browser = await puppeteer.launch({
             headless: 'new',
-            args: BROWSER_ARGS
+            args: BROWSER_ARGS,
+            protocolTimeout: 60000 // Increased to 60s to prevent premature timeouts
         });
 
         renderCount = 0;
@@ -41,7 +42,7 @@ async function getBrowser() {
  * Call this when your server starts to pre-launch Puppeteer.
  */
 function warmup() {
-    getBrowser().catch(console.error);
+    getBrowser().catch(() => { });
 }
 
 /**
@@ -49,7 +50,7 @@ function warmup() {
  */
 async function checkLifecycle() {
     if (renderCount >= MAX_RENDERS_BEFORE_RESTART && activeWorkers === 0 && browser) {
-        await browser.close();
+        await browser.close().catch(() => { });
         browser = null;
         renderCount = 0;
     }
@@ -78,8 +79,6 @@ async function processQueue() {
             deviceScaleFactor: task.scaleFactor
         });
 
-        // Default to networkidle0 for URLs (wait for external assets)
-        // Default to 'load' for HTML (faster)
         const defaultWait = task.url ? 'networkidle0' : 'load';
         const waitStrategy = task.waitUntil || defaultWait;
 
@@ -89,20 +88,20 @@ async function processQueue() {
             await page.setContent(task.html, { waitUntil: waitStrategy, timeout: 10000 });
         }
 
-        // --- FIX 1: FORCE LAZY IMAGES TO LOAD ---
+        // Force lazy images to load
         await page.evaluate(async () => {
             const selectors = Array.from(document.querySelectorAll("img"));
             await Promise.all(selectors.map(img => {
                 if (img.complete) return;
-                return new Promise((resolve, reject) => {
-                    img.loading = "eager"; // Force download
+                return new Promise((resolve) => {
+                    img.loading = "eager";
                     img.onload = resolve;
-                    img.onerror = resolve; // Don't fail if image missing
+                    img.onerror = resolve;
                 });
             }));
         });
 
-        // --- FIX 2: WAIT FOR FONTS ---
+        // Wait for fonts
         await page.evaluateHandle('document.fonts.ready');
 
         const imageBuffer = await page.screenshot({
@@ -116,6 +115,16 @@ async function processQueue() {
         renderCount++;
 
     } catch (error) {
+        // If the browser hangs or times out, kill it so the next request gets a fresh instance
+        const isCriticalError = error.message.includes('Protocol error') ||
+            error.message.includes('timed out') ||
+            error.message.includes('Target closed');
+
+        if (isCriticalError && browser) {
+            browser.close().catch(() => { });
+            browser = null;
+        }
+
         task.reject(error);
     } finally {
         if (page) { try { await page.close(); } catch (e) { } }
@@ -128,7 +137,6 @@ async function processQueue() {
 
 /**
  * Renders HTML string to PNG.
- * Default: 600x315 logical size @ 2x DPI -> 1200x630 output image.
  */
 function htmlToPng(html, viewportWidth = 600, viewportHeight = 315, scaleFactor = 2, waitUntil = 'load') {
     return new Promise((resolve, reject) => {
@@ -149,7 +157,7 @@ function urlToPng(url, viewportWidth = 600, viewportHeight = 315, scaleFactor = 
 
 async function closeBrowser() {
     if (browser) {
-        await browser.close();
+        await browser.close().catch(() => { });
         browser = null;
     }
 }
