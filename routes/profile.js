@@ -80,9 +80,22 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
             passesChecked++;
         }
         if (passesChecked) {
-            // Get recommended maps
+            // Put together a query to get recommended beatmaps
             recommendedQuery = `stars > ${(minStars - 0.5).toFixed(1)} stars < ${(maxStars + 0.5).toFixed(1)} year >= ${new Date(minTime).getUTCFullYear()} year <= ${new Date(maxTime).getUTCFullYear()}`;
-            recommended = dbHelpers.searchBeatmaps(recommendedQuery, category, 'random', req.user.id, limit);
+            recommended = [];
+            // Loop while we don't have enough recommendations
+            // and we still have a query to use
+            while (recommendedQuery && recommended.length < limit) {
+                // If we have some but not enough recommendations,
+                // empty the query to fill the rest of the recommendations
+                // with any map the user hasn't passed
+                if (recommended.length > 0)
+                    recommendedQuery = '';
+                const needed = limit - recommended.length;
+                recommended.push(
+                    ...dbHelpers.searchBeatmaps(recommendedQuery, category, 'random', req.user.id, needed).beatmaps
+                );
+            }
         }
     }
     // Format times

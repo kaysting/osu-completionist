@@ -126,12 +126,12 @@
                 <span class="header">what to play next</span>
             </div>
             <div class="beatmapCardContainer">
-                <% if (user.recommended.beatmaps.length === 0) { %>
+                <% if (user.recommended.length === 0) { %>
                 <div class="empty">
                     <p>No recommendations could be made. Check again after passing some new maps.</p>
                 </div>
                 <% } %>
-                <% for (const beatmap of user.recommended.beatmaps) { %>
+                <% for (const beatmap of user.recommended) { %>
                 <%- include('../partials/beatmapCard', { beatmap }) %>
                 <% } %>
             </div>
@@ -153,7 +153,7 @@
             <div class="beatmapNarrowContainer">
                 <% if (user.recentPasses.length === 0) { %>
                 <div class="empty">
-                    <p>No new passes saved since import :(</p>
+                    <p>No new passes saved since import</p>
                 </div>
                 <% } %>
                 <% for (const pass of user.recentPasses) { %>
