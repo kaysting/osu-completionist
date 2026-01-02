@@ -155,9 +155,9 @@ const updateUserProfile = async (userId, userObj) => {
         } else {
             // Create new user entry
             db.prepare(
-                `INSERT INTO users (id, name, avatar_url, banner_url, country_code, team_id, team_name, team_name_short, team_flag_url, time_created, last_profile_update_time)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-            ).run(user.id, user.username, user.avatar_url, user.cover.url, user.country.code, user.team?.id, user.team?.name, user.team?.short_name, user.team?.flag_url, Date.now(), Date.now());
+                `INSERT INTO users (id, name, avatar_url, banner_url, country_code, team_id, team_name, team_name_short, team_flag_url, time_created, last_profile_update_time, api_key)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            ).run(user.id, user.username, user.avatar_url, user.cover.url, user.country.code, user.team?.id, user.team?.name, user.team?.short_name, user.team?.flag_url, Date.now(), Date.now(), utils.generateSecretKey(32));
             utils.log(`Stored user data for ${user.username}`);
         }
         return db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);

@@ -115,20 +115,17 @@ const makeGetRequest = async (endpoint, params = {}) => {
             return res.data;
         } catch (error) {
             const status = error?.response?.status || null;
-            if (error.code === 'ECONNABORTED' && tries < maxRetries) {
-                // Timeout, wait and retry
-                console.log(`[osu.js] Timeout on GET ${endpoint}, trying again (${tries + 1}/${maxRetries}) in ${Math.round(waitTime)}ms`);
-                await new Promise(resolve => setTimeout(resolve, 2000));
-            } else if ((status === 429 || status >= 500) && tries < maxRetries) {
-                // Rate limited, wait and retry
-                // Use exponential backoff with some jitter
-                console.log(`[osu.js] HTTP ${status} on GET ${endpoint}, trying again (${tries + 1}/${maxRetries}) in ${Math.round(waitTime)}ms`);
+            // If status is undefined (network errors), 429 (rate limit), or 500 (server error),
+            // wait and retry using exponential backoff and jitter
+            // Otherwise, attach data and status to a new error and throw it
+            if ((!status || status === 429 || status >= 500) && tries < maxRetries) {
+                console.log(`[osu.js] ${status || error.code} on GET ${endpoint}, trying again (${tries + 1}/${maxRetries}) in ${Math.round(waitTime)}ms`);
                 await new Promise(resolve => setTimeout(resolve, waitTime));
                 waitTime = Math.min((waitTime * 2) + (0.2 * waitTime * Math.random()), 60 * 1000);
             } else {
                 const e = new Error(`Error making GET request to osu! API ${endpoint}: ${error}`);
                 e.data = error?.response?.data || null;
-                e.status = status || null;
+                e.status = status;
                 throw e;
             }
         }

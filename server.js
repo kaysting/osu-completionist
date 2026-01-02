@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const { rateLimit } = require('express-rate-limit');
 const db = require('./helpers/db');
 const { log, logError } = require('./helpers/utils');
 const { getAuthenticatedUser } = require('./helpers/middleware');
@@ -39,18 +40,34 @@ app.use((req, res, next) => {
     next();
 });
 
+// Add dayjs so it can be used in EJS templates
 app.locals.dayjs = dayjs;
 
-app.set('view engine', 'ejs');
-app.use(cookieParser());
-app.use(express.static('public', { dotfiles: 'allow' }));
-app.use(express.urlencoded({ extended: true }));
+// Register JSON middleware and API route
 app.use(express.json());
+app.use('/api', require('./routes/api'));
 
+// Register static files and view engine
+app.set('view engine', 'ejs');
+app.use(express.static('public', { dotfiles: 'allow' }));
+
+// Register webapp middleware
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 app.use(getAuthenticatedUser);
 
-app.get('/api', require('./routes/api'));
-app.get('/', require('./routes/home'));
+// Register client rate limiter
+app.use(rateLimit({
+    windowMs: (process.env.CLIENT_RATE_LIMIT_WINDOW_SECS || 300) * 1000,
+    limit: process.env.CLIENT_RATE_LIMIT_LIMIT || 50,
+    ipv6Subnet: 60,
+    handler: (req, res) => {
+        res.renderError(429, `You're going too fast! Slow down, play more.`);
+    }
+}));
+
+// Register webapp routes
+app.use('/', require('./routes/home'));
 app.use('/leaderboard', require('./routes/leaderboard'));
 app.use('/u', require('./routes/profile'));
 app.use('/search', require('./routes/search'));

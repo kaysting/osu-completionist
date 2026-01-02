@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
+const crypto = require('crypto');
 
 const utils = {
 
@@ -344,6 +345,10 @@ const utils = {
             return i + "rd";
         }
         return i + "th";
+    },
+
+    generateSecretKey: (length = 32) => {
+        return crypto.randomBytes(length).toString('hex').substring(0, length);
     }
 
 };

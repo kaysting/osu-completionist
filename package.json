@@ -21,6 +21,7 @@
     "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
     "jsonwebtoken": "^9.0.2",
     "marked": "^17.0.1",
     "puppeteer": "^24.34.0"

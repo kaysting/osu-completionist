@@ -1,10 +1,11 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const cp = require('child_process');
+const path = require('path');
 const SqlDumpParser = require('./helpers/SqlDumpParser');
 const db = require('./helpers/db');
 const updateHelpers = require('./helpers/updaterHelpers');
-const path = require('path');
+const utils = require('./helpers/utils');
 
 const importBeatmapsets = async () => {
     const dumpFolder = process.argv[3];
@@ -110,7 +111,7 @@ const updateCategoryStats = () => {
 };
 
 const jwtSecret = () => {
-    const secret = crypto.randomBytes(32).toString('hex');
+    const secret = utils.generateSecretKey(32);
     console.log(`Use this cryptographically secure token as the JWT_TOKEN environment variable:\n${secret}`);
 };
 

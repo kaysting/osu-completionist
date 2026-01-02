@@ -71,6 +71,7 @@ CREATE TABLE
 		time_created integer not null default 1766376098955,
 		last_profile_update_time integer not null default 0,
 		last_login_time integer not null default 0,
+		api_key text,
 		PRIMARY KEY ("id")
 	);
 
@@ -267,3 +268,11 @@ CREATE TABLE
 	);
 
 CREATE INDEX idx_category_stats_leaderboard ON user_category_stats (category, seconds DESC);
+
+CREATE TABLE
+	IF NOT EXISTS "user_api_usage" (
+		"user_id" INTEGER NOT NULL,
+		"expire_time" INTEGER NOT NULL,
+		"count" INTEGER NOT NULL,
+		PRIMARY KEY ("user_id")
+	);
