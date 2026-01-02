@@ -21,13 +21,7 @@ const middleware = {
         // Fetch user profile using resolved user ID
         const user = getUserProfile(userId);
         if (!user) {
-            return res.status(404).render('layout', {
-                title: 'User not found',
-                page: 'error',
-                number: 404,
-                message: `We aren't tracking the user with ID ${userId} yet. If you want to see their completion stats, have them visit this site and log in with osu!.`,
-                me: req.me
-            });
+            return res.renderError(404, 'User not found', `We aren't tracking the user with ID ${userId} yet. If you want to see their completion stats, ask them to log in here.`);
         }
         req.user = user;
         next();
@@ -42,6 +36,23 @@ const middleware = {
             db.prepare(`UPDATE users SET last_login_time = ? WHERE id = ?`).run(Date.now(), data.id);
         }
         next();
+    },
+
+    getApiUser: (req, res, next) => {
+        const bearerKey = req.headers?.authorization?.split(' ')[1];
+        const instructions = 'Copy/regenerate your API key by logging into osu!complete and going to https://osucomplete.org/api.';
+        if (!bearerKey) {
+            return res.sendError(401, 'unauthorized', `Missing API key. ${instructions}`);
+        }
+        req.user = db.prepare(`SELECT * FROM users WHERE api_key = ?`).get(bearerKey);
+        if (!req.user) {
+            return res.sendError(401, 'unauthorized', `Invalid API key. ${instructions}`);
+        }
+        next();
+    },
+
+    doApiRateLimit: (req, res, next) => {
+
     }
 
 };

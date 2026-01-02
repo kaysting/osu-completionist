@@ -119,8 +119,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     }
     statsText.push(`\nTotal: ${stats.count_completed.toLocaleString()} / ${stats.count_total.toLocaleString()} (${stats.percentage_completed.toFixed(2)}%)`);
     // Render
-    res.render('layout', {
-        page: 'profile',
+    res.renderPage('profile', {
         title: req.user.name,
         meta: {
             title: `${req.user.name}'s ${modeName.toLowerCase()} completionist profile`,
@@ -133,7 +132,6 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         copyable: statsText.join('\n'),
         category,
         category_navigation: statCategories.getCategoryNavPaths(`/u/${req.user.id}`, category),
-        me: req.me
     });
 });
 

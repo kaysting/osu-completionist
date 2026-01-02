@@ -25,9 +25,9 @@ app.use((req, res, next) => {
             me: req.me
         });
     };
-    res.renderError = (number, message) => {
+    res.renderError = (number, title, message) => {
         res.status(number).render('layout', {
-            title: number,
+            title: title || number,
             page: 'error',
             number,
             message,
@@ -45,7 +45,7 @@ app.locals.dayjs = dayjs;
 
 // Register JSON middleware and API route
 app.use(express.json());
-app.use('/api', require('./routes/api'));
+app.use('/api/v1', require('./routes/api-v1'));
 
 // Register static files and view engine
 app.set('view engine', 'ejs');
@@ -57,12 +57,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(getAuthenticatedUser);
 
 // Register client rate limiter
+app.set('trust proxy', 1);
 app.use(rateLimit({
     windowMs: (process.env.CLIENT_RATE_LIMIT_WINDOW_SECS || 300) * 1000,
     limit: process.env.CLIENT_RATE_LIMIT_LIMIT || 50,
     ipv6Subnet: 60,
     handler: (req, res) => {
-        res.renderError(429, `You're going too fast! Slow down, play more.`);
+        res.renderError(429, '429 rate limit exceeded', `You're going too fast! Slow down, play more.`);
     }
 }));
 
@@ -75,27 +76,15 @@ app.use('/auth', require('./routes/auth'));
 app.use('/recommended', require('./routes/recommended'));
 app.use('/queue', require('./routes/queue'));
 app.use('/renders', require('./routes/renders'));
+app.use('/api', require('./routes/apiDocs'));
 
 app.use((req, res) => {
-    res.status(404).render('layout', {
-        title: '404 not found',
-        page: 'error',
-        number: 404,
-        message: `The page you requested couldn't be found.`,
-        me: req.me
-    });
+    res.renderError(404, '404 not found', `The requested resource couldn't be found.`);
 });
 
 app.use((err, req, res, next) => {
     logError(err);
-    res.status(500);
-    res.render('layout', {
-        title: `500 internal server error`,
-        page: 'error',
-        number: 500,
-        message: `An internal server error occurred. Please try again later.`,
-        me: req.me
-    });
+    res.renderError(500, '500 internal server error', `An internal server error occurred. Please try again later.`);
 });
 
 const port = process.env.WEBSERVER_PORT || 8080;
