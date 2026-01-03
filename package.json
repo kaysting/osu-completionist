@@ -4,7 +4,7 @@
   "description": "A live completionist tracker and leaderboard for osu! players.",
   "main": "server.js",
   "scripts": {
-    "generate-jwt-secret": "node maintenance.js getJwtSecret",
+    "generate-secret": "node maintenance.js getSecret",
     "import-beatmaps": "node maintenance.js importBeatmaps",
     "update-category-stats": "node maintenance.js updateCatStats",
     "dump-schema": "node maintenance.js dumpSchema"
@@ -22,6 +22,7 @@
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "express-rate-limit": "^8.2.1",
+    "express-session": "^1.18.2",
     "jsonwebtoken": "^9.0.2",
     "marked": "^17.0.1",
     "puppeteer": "^24.34.0"

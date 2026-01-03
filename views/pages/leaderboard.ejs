@@ -5,7 +5,7 @@
         <%- include('../partials/pagination') %>
         <div class="entries">
             <% for (const entry of leaderboard) { %>
-            <a class="entry flex row align-center" href="/u/<%= entry.user.id %>/<%= category %>">
+            <a class="entry flex row align-center" href="/u/<%= entry.user.id %>">
                 <div class="rank"><%= `#${entry.stats.rank}` %></div>
                 <div class="content flex align-center flex-grow">
                     <div class="profile flex gap-16 align-center flex-grow">

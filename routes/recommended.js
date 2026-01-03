@@ -8,7 +8,8 @@ const statCategories = require('../helpers/statCategories');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-    res.redirect(`/recommended/osu-ranked`);
+    const category = req?.session?.category || 'osu-ranked';
+    res.redirect(`/recommended/${category}`);
 });
 
 router.get('/:category', (req, res) => {
@@ -22,6 +23,7 @@ router.get('/:category', (req, res) => {
     if (!statCategories.definitions.find(cat => cat.id === category)) {
         return res.redirect('/recommended/osu-ranked');
     }
+    req.session.category = category;
     // Get results
     const results = searchBeatmaps(
         query, category,

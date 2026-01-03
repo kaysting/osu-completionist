@@ -63,7 +63,13 @@ const getBulkUserCompletionStats = (userIds, categoryId) => {
                 FROM user_category_stats s2
                 JOIN users u2 ON s2.user_id = u2.id
                 WHERE s2.category = s1.category 
-                AND s2.seconds > s1.seconds
+                AND (
+                    s2.seconds > s1.seconds
+                    OR (
+                        s2.seconds = s1.seconds
+                        AND u2.last_pass_time < u.last_pass_time
+                    )
+                )
                 AND s2.user_id != 0
                 AND u2.last_import_time != 0
                ) AS rank
@@ -189,7 +195,7 @@ const getLeaderboard = (categoryId, limit = 100, offset = 0) => {
          FROM users u
          JOIN user_category_stats us ON u.id = us.user_id
          WHERE us.category = ? AND u.last_import_time != 0
-         ORDER BY us.seconds DESC
+         ORDER BY us.seconds DESC, u.last_pass_time ASC
          LIMIT ? OFFSET ?`
     ).all(categoryId, limit, offset);
     const userIds = rows.map(row => row.id);

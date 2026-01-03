@@ -8,7 +8,8 @@ const utils = require('../helpers/utils.js');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-    res.redirect(`/leaderboard/osu-ranked`);
+    const category = req?.session?.category || 'osu-ranked';
+    res.redirect(`/leaderboard/${category}`);
 });
 
 router.get('/:category', (req, res) => {
@@ -17,10 +18,11 @@ router.get('/:category', (req, res) => {
     const page = parseInt(req.query.p) || 1;
     const limit = 50;
     const offset = (page - 1) * limit;
-    // Check params
+    // Check category
     if (!statCategories.definitions.find(cat => cat.id === category)) {
         return res.redirect('/leaderboard/osu-ranked');
     }
+    req.session.category = category;
     // Get leaderboard data
     const { leaderboard, total_players } = getLeaderboard(category, limit, offset);
     // Get colors for completion progress bars and format time spent

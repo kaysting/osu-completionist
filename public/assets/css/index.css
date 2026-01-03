@@ -51,6 +51,15 @@ body {
     --text: hsl(220, 20%, 90%);
     --textDim: hsl(220, 20%, 65%);
     --accent: hsl(150, 90%, 60%);
+    --c-syntax-comment: #8b949e;
+    --c-syntax-constant: #79c0ff;
+    --c-syntax-entity: #d2a8ff;
+    --c-syntax-storage-modifier-import: #c9d1d9;
+    --c-syntax-entity-tag: #7ee787;
+    --c-syntax-keyword: #ff7b72;
+    --c-syntax-string: #a5d6ff;
+    --c-syntax-variable: #ffa657;
+    --globalWidth: 1000px;
     background: var(--bg);
     color: var(--text);
     font-family: 'Torus', sans-serif;
@@ -75,7 +84,7 @@ h3:not(:first-child),
 h4:not(:first-child),
 h5:not(:first-child),
 h6:not(:first-child) {
-    margin-top: 0.6em;
+    margin-top: 1.2em;
 }
 
 h1:not(:last-child),
@@ -84,14 +93,14 @@ h3:not(:last-child),
 h4:not(:last-child),
 h5:not(:last-child),
 h6:not(:last-child) {
-    margin-bottom: 0.3em;
+    margin-bottom: 0.5em;
 }
 
-h1,
-h2 {
+/* h1:not(.noBorder),
+h2:not(.noBorder) {
     padding-bottom: 0.2em;
     border-bottom: 1px solid hsl(220, 20%, 30%);
-}
+} */
 
 h1 {
     font-size: 28px;
@@ -130,13 +139,162 @@ strong {
     color: white;
 }
 
-code {
+table {
+    border-collapse: collapse;
+    overflow: auto;
+    margin-bottom: 1em;
+}
+
+td,
+th {
+    padding: 8px 12px;
+    line-height: 1.4;
+    border: 1px solid hsl(220, 20%, 30%);
+    font-size: 16px;
+}
+
+thead {
+    border-radius: 8px 8px 0px 0px;
+    overflow: hidden;
+}
+
+th {
+    background: hsl(220, 20%, 25%);
+    color: white;
+    font-weight: 600;
+}
+
+tr:nth-child(even) {
+    background: hsl(220, 20%, 15%);
+}
+
+tr:nth-child(even) {
+    background: hsl(220, 20%, 20%);
+}
+
+td {
+    color: var(--text);
+}
+
+code:not(pre code) {
     background: hsl(220, 20%, 25%);
     padding: 2px 4px;
     border-radius: 4px;
     font-family: monospace;
     font-size: 0.9em;
     color: var(--text);
+}
+
+pre code {
+    width: fit-content;
+    background: hsl(220, 20%, 20%);
+    border: 1px solid hsl(220, 20%, 25%);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 1em;
+    color: var(--text);
+    display: block;
+    overflow: auto;
+    margin-bottom: 1em;
+    line-height: 1.4;
+}
+
+.cm-comment,
+.cm-meta,
+.cm-hr,
+code .token.comment,
+code .token.deleted,
+code .token.prolog,
+code .token.doctype,
+code .token.cdata {
+    color: var(--c-syntax-comment) !important
+}
+
+.cm-header,
+.cm-def,
+.cm-variable,
+.cm-variable-3,
+.cm-number,
+.cm-builtin,
+.cm-atom,
+.cm-qualifier,
+.cm-attribute,
+code .token.class,
+code .token.builtin,
+code .token.property,
+code .token.attr-name,
+code .token.boolean,
+code .token.number,
+code .token.constant {
+    color: var(--c-syntax-constant) !important
+}
+
+.cm-variable-2,
+.cm-type,
+code .token.color,
+code .token.variable {
+    color: var(--c-syntax-variable) !important
+}
+
+.cm-calle,
+code .token.function,
+code .token.symbol,
+code .token.entity {
+    color: var(--c-syntax-entity) !important
+}
+
+.cm-tag,
+code .token.class-name,
+code .token.selector,
+code .token.tag {
+    color: var(--c-syntax-entity-tag) !important
+}
+
+.cm-keyword,
+.cm-operator,
+code .token.important,
+code .token.keyword,
+code .token.operator,
+code .token.atrule,
+code .token.unit {
+    color: var(--c-syntax-keyword) !important
+}
+
+.cm-quote,
+.cm-string,
+.cm-string-2,
+.cm-link,
+code .token.string,
+code .token.char,
+code .token.regex,
+code .token.url,
+code .token.attr-value {
+    color: var(--c-syntax-string) !important
+}
+
+.cm-property,
+.cm-positive,
+.cm-negative,
+.cm-bracket,
+.cm-error,
+.cm-invalidchar,
+code .token.punctuation,
+code .token.inserted,
+code .token.interpolation-punctuation {
+    color: white !important
+}
+
+code .token.bold {
+    font-weight: bold;
+}
+
+code .token.italic {
+    font-style: italic
+}
+
+code .token.namespace {
+    color: var(--c-syntax-namespace) !important
 }
 
 ul,
@@ -165,6 +323,12 @@ small {
     font-size: 14px;
     color: var(--textDim);
     line-height: 1.2;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid hsl(220, 20%, 30%);
+    margin: 24px 0px;
 }
 
 img {
@@ -573,7 +737,7 @@ img {
 #topbar .container {
     height: 100%;
     width: 100%;
-    max-width: 1200px;
+    max-width: var(--globalWidth);
     margin: 0 auto;
     display: flex;
     align-items: center;
@@ -676,7 +840,7 @@ img {
 }
 
 #main {
-    max-width: 1200px;
+    max-width: var(--globalWidth);
     margin: 0 auto;
     margin-top: calc(54px + 16px);
     padding: 0px 10px 20px 10px;
@@ -773,19 +937,6 @@ img {
 
 #footer a {
     text-decoration: underline;
-}
-
-#error {
-    max-width: 600px;
-    text-align: center;
-    margin: 30px auto;
-}
-
-#error h1 {
-    font-size: 64px;
-    color: var(--textDim);
-    font-weight: 200;
-    margin-bottom: 16px;
 }
 
 #statSettings {

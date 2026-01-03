@@ -1,5 +1,5 @@
 <div id="error">
-    <h1><%= number %></h1>
+    <h1 class="noBorder"><%= number %></h1>
     <p><%= message %></p>
     <div class="flex gap-8 flex-wrap justify-center">
         <a href="/" class="btn medium">
@@ -20,3 +20,19 @@
         <% } %>
     </div>
 </div>
+<style>
+    #error {
+        max-width: 600px;
+        text-align: center;
+        margin: 30px auto;
+    }
+
+    #error h1 {
+        font-size: 64px;
+        color: var(--textDim);
+        font-weight: 200;
+        margin: 0px;
+        padding: 0px;
+        margin-bottom: 16px;
+    }
+</style>

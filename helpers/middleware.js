@@ -38,9 +38,19 @@ const middleware = {
         next();
     },
 
+    updateLastUrl: (req, res, next) => {
+        if (!req.session) return next();
+        const url = req.originalUrl;
+        // Don't save auth or API URLs
+        if (url.startsWith('/auth') || url.startsWith('/api/v'))
+            return next();
+        req.session.lastUrl = url;
+        next();
+    },
+
     getApiUser: (req, res, next) => {
         const bearerKey = req.headers?.authorization?.split(' ')[1];
-        const instructions = 'Copy/regenerate your API key by logging into osu!complete and going to https://osucomplete.org/api.';
+        const instructions = 'Find your API key at https://osucomplete.org/api.';
         if (!bearerKey) {
             return res.sendError(401, 'unauthorized', `Missing API key. ${instructions}`);
         }

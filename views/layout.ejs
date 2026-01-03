@@ -52,7 +52,7 @@
                                 return 'play next';
                             case 'profile':
                                 return 'profile';
-                            default: return '';
+                            default: return locals?.title.toLowerCase() || '';
                         }
                     })()
                 %></div>
@@ -129,9 +129,10 @@
         <%- include('pages/' + page) %>
         <div id="footer">
             <p>
-                &copy; <a href="https://kaysting.dev">Kayla Kersting</a> 2025 &bullet; <a
-                    href="https://github.com/kaysting/osu-completion" target="_blank" rel="noopener noreferrer">source
-                    code on GitHub</a>
+                &copy; <a href="https://kaysting.dev">Kayla Kersting</a> 2026
+                <br> <a href="/tos">Terms of Service</a> &bullet; <a href="/privacy">Privacy Policy</a> &bullet; <a
+                    href="https://github.com/kaysting/osu-completion" target="_blank"
+                    rel="noopener noreferrer">GitHub</a>
             </p>
         </div>
     </div>

@@ -67,8 +67,14 @@ router.get('/callback', async (req, res) => {
             secure: true,
             expires: new Date(Date.now() + (1000 * 60 * 60 * 24 * 365))
         });
-        // Redirect to user page
-        res.redirect(`/u/${user.data.id}`);
+        // Redirect to saved path or user profile
+        // Only redirect to saved path if it's something the user
+        // was in the middle of
+        let redirectPath = `/u/${user.data.id}`;
+        if ((req.session?.lastUrl || '').match(/^\/api/)) {
+            redirectPath = req.session.lastUrl;
+        }
+        res.redirect(redirectPath);
     } catch (error) {
         console.error('OAuth callback error:', error);
         return res.redirect('/auth/login');
@@ -77,7 +83,7 @@ router.get('/callback', async (req, res) => {
 
 router.get('/logout', (req, res) => {
     res.clearCookie('token');
-    res.redirect('/');
+    res.redirect(req.session?.lastUrl || '/');
 });
 
 module.exports = router;

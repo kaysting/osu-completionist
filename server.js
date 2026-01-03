@@ -1,22 +1,21 @@
 require('dotenv').config();
+const fs = require('fs');
 const express = require('express');
+const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const { rateLimit } = require('express-rate-limit');
-const db = require('./helpers/db');
-const { log, logError } = require('./helpers/utils');
-const { getAuthenticatedUser } = require('./helpers/middleware');
+const { marked } = require('marked');
 const dayjs = require('dayjs');
+
+const { log, logError } = require('./helpers/utils');
+const db = require('./helpers/db');
+const { getAuthenticatedUser, updateLastUrl } = require('./helpers/middleware');
 
 const app = express();
 
+// Register global middleware
 app.use((req, res, next) => {
-    // Get IP and make sure it's allowed to access the server
-    const ip = req.headers['cf-connecting-ip'] || req.ip.replace('::ffff:', '');
-    const isLocal = ip === '::1' || ip.match(/^(127|192|10|100)\.*/);
-    if (!req.headers['cf-ray'] && process.env.ENFORCE_CLOUDFLARE_ONLY === 'true' && !isLocal) {
-        res.status(403).send('Forbidden');
-        return;
-    }
+    const ip = req.headers['cf-connecting-ip'] || req.ip;
     // Define functions to easily render with required data
     res.renderPage = (page, data = {}) => {
         res.render('layout', {
@@ -53,8 +52,15 @@ app.use(express.static('public', { dotfiles: 'allow' }));
 
 // Register webapp middleware
 app.use(cookieParser());
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    name: 'osucomplete.sid',
+    resave: false,
+    saveUninitialized: false
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(getAuthenticatedUser);
+app.use(updateLastUrl);
 
 // Register client rate limiter
 app.set('trust proxy', 1);
@@ -77,6 +83,26 @@ app.use('/recommended', require('./routes/recommended'));
 app.use('/queue', require('./routes/queue'));
 app.use('/renders', require('./routes/renders'));
 app.use('/api', require('./routes/apiDocs'));
+app.use('/tos', (req, res) => {
+    res.renderPage('raw', {
+        html: marked.parse(fs.readFileSync('views/markdown/tos.md', 'utf-8')),
+        title: 'Terms of Service',
+        meta: {
+            title: 'Terms of Service',
+            description: 'View the osu!complete terms of service.'
+        }
+    });
+});
+app.use('/privacy', (req, res) => {
+    res.renderPage('raw', {
+        html: marked.parse(fs.readFileSync('views/markdown/privacy.md', 'utf-8')),
+        title: 'Privacy Policy',
+        meta: {
+            title: 'Privacy Policy',
+            description: 'View the osu!complete privacy policy.'
+        }
+    });
+});
 
 app.use((req, res) => {
     res.renderError(404, '404 not found', `The requested resource couldn't be found.`);

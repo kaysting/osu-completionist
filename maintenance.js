@@ -110,9 +110,9 @@ const updateCategoryStats = () => {
     console.timeEnd('Update category stats');
 };
 
-const jwtSecret = () => {
+const getSecret = () => {
     const secret = utils.generateSecretKey(32);
-    console.log(`Use this cryptographically secure token as the JWT_TOKEN environment variable:\n${secret}`);
+    console.log(`Here's a cryptographically securely random secret:\n${secret}`);
 };
 
 const dumpSchema = () => {
@@ -128,8 +128,8 @@ switch (process.argv[2]) {
     case 'updateCatStats':
         updateCategoryStats();
         break;
-    case 'getJwtSecret':
-        jwtSecret();
+    case 'getSecret':
+        getSecret();
         break;
     case 'dumpSchema':
         dumpSchema();

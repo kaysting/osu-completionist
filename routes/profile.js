@@ -13,7 +13,8 @@ const router = express.Router();
 const minMsSinceLastImport = 1000 * 60 * 60 * 24 * 7;
 
 router.get('/:id', ensureUserExists, (req, res) => {
-    res.redirect(`/u/${req.user.id}/osu-ranked`);
+    const category = req?.session?.category || 'osu-ranked';
+    res.redirect(`/u/${req.user.id}/${category}`);
 });
 
 router.get('/:id/update', async (req, res) => {
@@ -36,6 +37,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     if (!statCategories.definitions.find(cat => cat.id === category)) {
         return res.redirect(`/u/${req.user.id}/osu-ranked`);
     }
+    req.session.category = category;
     const mode = category.split('-')[0];
     const modeKey = utils.rulesetNameToKey(mode);
     const modeName = mode == 'global' ? 'Global' : utils.rulesetKeyToName(modeKey, true);
