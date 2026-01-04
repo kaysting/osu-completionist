@@ -44,7 +44,8 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     // Get data
     const stats = dbHelpers.getUserCompletionStats(req.user.id, category);
     const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
-    const recentPasses = dbHelpers.getUserRecentPasses(req.user.id, category, 100, 0);
+    const timeRecentsAfter = Date.now() - (1000 * 60 * 60 * 24);
+    const recentPasses = dbHelpers.getUserRecentPasses(req.user.id, category, 100, 0, timeRecentsAfter);
     const updateStatus = dbHelpers.getUserUpdateStatus(req.user.id);
     // Format update status
     if (updateStatus.updating) {

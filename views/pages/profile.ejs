@@ -148,12 +148,12 @@
         <% } %>
         <div class="card lighter passes">
             <div>
-                <span class="header">recent passes</span>
+                <span class="header">recent passes (<%= user.recentPasses.length.toLocaleString() %>)</span>
             </div>
             <div class="beatmapNarrowContainer">
                 <% if (user.recentPasses.length === 0) { %>
                 <div class="empty">
-                    <p>No new passes saved since import.</p>
+                    <p>No new passes in the past 24 hours (or since import)</p>
                 </div>
                 <% } %>
                 <% for (const pass of user.recentPasses) { %>

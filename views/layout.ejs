@@ -11,9 +11,9 @@
     <meta property="og:description"
         content="<%= locals?.meta?.description || 'Track your osu! completionist progress across all game modes, ranked, loved, and convert maps, and compare your progress with others!' %>">
     <meta property="og:image"
-        content="<%= locals?.meta?.image || locals?.meta?.thumbnail || '/assets/images/promo.png?v=1' %>">
+        content="<%= locals?.meta?.image || locals?.meta?.thumbnail || '/assets/images/promo.png' %>">
     <meta name="twitter:image"
-        content="<%= locals?.meta?.image || locals?.meta?.thumbnail || '/assets/images/promo.png?v=1' %>">
+        content="<%= locals?.meta?.image || locals?.meta?.thumbnail || '/assets/images/promo.png' %>">
     <% if (!locals?.meta?.thumbnail) { %>
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="628" />
@@ -21,7 +21,7 @@
     <% } %>
     <meta name="theme-color" content="#6EF79C">
     <link rel="icon" type="image/png" href="/assets/images/icon.png">
-    <link rel="stylesheet" href="/assets/css/index.css?v=2">
+    <link rel="stylesheet" href="/assets/css/index.css">
 </head>
 
 <body data-page="<%= page %>">
@@ -136,7 +136,67 @@
             </p>
         </div>
     </div>
-    <script src="/assets/js/index.js?v=2"></script>
+    <script src="/assets/js/index.js"></script>
+    <script>
+
+        // We do this stuff inline so there isn't a delay on load
+
+        const topbar = document.getElementById('topbar');
+        const btnToggleMenu = document.getElementById('navToggleMenu');
+
+        // Handle topbar scrolled state
+        document.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                topbar.classList.add('scrolled');
+            } else {
+                topbar.classList.remove('scrolled');
+            }
+        });
+
+        // Handle topbar overflowing state
+        const topbarResizeObserver = new ResizeObserver(() => {
+            topbar.classList.remove('overflowing');
+            if (topbar.scrollWidth > topbar.clientWidth) {
+                topbar.classList.add('overflowing');
+            } else {
+                topbar.classList.remove('open');
+                topbar.style.height = '';
+            }
+        });
+        topbarResizeObserver.observe(topbar);
+
+        // Handle menu toggling
+        btnToggleMenu.addEventListener('click', () => {
+            if (topbar.classList.contains('open')) {
+                topbar.classList.remove('open');
+                topbar.style.height = '';
+            } else {
+                topbar.classList.add('open');
+                topbar.style.height = 'auto';
+            }
+        });
+
+        // Show notice if not seen
+        const devMsgVersion = 2;
+        const seenVersion = parseInt(localStorage.getItem('devNoticeVersion') || '0');
+        if (seenVersion < devMsgVersion) {
+            const dialog = showPopup('Welcome to the osu!complete beta!', `<%- includeMarkdown('views/markdown/notice.md') %>`, [
+                {
+                    label: 'Join the Discord server',
+                    href: 'https://discord.gg/fNSnMG7S3C',
+                    newTab: true,
+                    noClose: true
+                },
+                {
+                    label: 'Got it!', class: 'primary'
+                }
+            ]);
+            dialog.addEventListener('close', () => {
+                localStorage.setItem('devNoticeVersion', devMsgVersion.toString());
+            });
+        }
+
+    </script>
 </body>
 
 </html>

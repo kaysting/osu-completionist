@@ -35,7 +35,7 @@ for (const mode of ['global', 'osu', 'taiko', 'catch', 'mania']) {
             definitions.push(definition);
             // Add specific keycount categories for mania
             if (mode === 'mania') {
-                for (const keyCount of [4, 7]) {
+                for (const keyCount of [4, 5, 6, 7]) {
                     const maniaKeyCountDefinition = JSON.parse(JSON.stringify(definition));
                     maniaKeyCountDefinition.id += `-${keyCount}k`;
                     maniaKeyCountDefinition.filters.push({
@@ -71,6 +71,8 @@ const getCategoryNavPaths = (basePath, categoryId, fullQueryString) => {
         catch: `${basePath}/catch-ranked${loved}${converts}${query}`,
         mania: `${basePath}/mania-ranked${loved}${converts}${query}`,
         mania4k: `${basePath}/mania-ranked${loved}${converts}-4k${query}`,
+        mania5k: `${basePath}/mania-ranked${loved}${converts}-5k${query}`,
+        mania6k: `${basePath}/mania-ranked${loved}${converts}-6k${query}`,
         mania7k: `${basePath}/mania-ranked${loved}${converts}-7k${query}`,
         toggleConverts: `${basePath}/${mode}-ranked${loved}${convertsInvert}${segmentKeycount}${query}`,
         toggleLoved: `${basePath}/${mode}-ranked${lovedInvert}${converts}${segmentKeycount}${query}`

@@ -39,8 +39,9 @@ app.use((req, res, next) => {
     next();
 });
 
-// Add dayjs so it can be used in EJS templates
+// Add functions for use within EJS
 app.locals.dayjs = dayjs;
+app.locals.includeMarkdown = (filePath) => marked.parse(fs.readFileSync(filePath, 'utf-8'));
 
 // Register JSON middleware and API route
 app.use(express.json());

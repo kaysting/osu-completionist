@@ -59,7 +59,7 @@ body {
     --c-syntax-keyword: #ff7b72;
     --c-syntax-string: #a5d6ff;
     --c-syntax-variable: #ffa657;
-    --globalWidth: 1000px;
+    --globalWidth: 1200px;
     background: var(--bg);
     color: var(--text);
     font-family: 'Torus', sans-serif;
@@ -644,7 +644,7 @@ img {
 }
 
 .popup {
-    --width: 800px;
+    --width: 600px;
     --height: 800px;
     margin: auto;
     display: flex;

@@ -11,6 +11,54 @@ const copyText = async text => {
     }
 };
 
+const showPopup = (title, body, actions, closedby = 'none') => {
+    // Build base dialog element
+    const dialog = document.createElement('dialog');
+    dialog.classList.add('popup');
+    dialog.innerHTML = /*html*/`
+        <div class="title"></div>
+        <div class="body"></div>
+        <div class="actions"></div>
+    `;
+    dialog.closedby = closedby;
+    // Populate dialog
+    dialog.querySelector('.title').innerText = title;
+    // Populate body
+    if (typeof body === 'string') {
+        dialog.querySelector('.body').innerHTML = body;
+    } else {
+        dialog.querySelector('.body').appendChild(body);
+    }
+    // Populate actions
+    const actionsContainer = dialog.querySelector('.actions');
+    for (const action of actions) {
+        const btn = document.createElement(action.href ? 'a' : 'button');
+        btn.classList = `btn medium ${action.class}`;
+        btn.innerText = action.label;
+        if (action.href) {
+            btn.href = action.href;
+            if (action.newTab) {
+                btn.target = '_blank';
+            }
+        }
+        btn.addEventListener('click', event => {
+            if (action.onClick) action.onClick(dialog);
+            if (action.noClose) return;
+            dialog.close(event);
+        });
+        actionsContainer.appendChild(btn);
+    }
+    // Show dialog
+    document.body.appendChild(dialog);
+    dialog.showModal();
+    // Delete on close
+    dialog.addEventListener('close', () => {
+        document.body.removeChild(dialog);
+    });
+    // Return
+    return dialog;
+};
+
 let lastAudioButtonElement;
 let audioPlayer = new Audio();
 // Update button state on audio events
@@ -66,54 +114,4 @@ images.forEach(img => {
             img.classList.add('loaded');
         });
     }
-});
-
-const topbar = document.getElementById('topbar');
-const btnToggleMenu = document.getElementById('navToggleMenu');
-
-// Handle topbar scrolled state
-document.addEventListener('scroll', () => {
-    if (window.scrollY > 20) {
-        topbar.classList.add('scrolled');
-    } else {
-        topbar.classList.remove('scrolled');
-    }
-});
-
-// Handle topbar overflowing state
-const topbarResizeObserver = new ResizeObserver(() => {
-    topbar.classList.remove('overflowing');
-    if (topbar.scrollWidth > topbar.clientWidth) {
-        topbar.classList.add('overflowing');
-    } else {
-        topbar.classList.remove('open');
-        topbar.style.height = '';
-    }
-});
-topbarResizeObserver.observe(topbar);
-
-// Handle menu toggling
-btnToggleMenu.addEventListener('click', () => {
-    if (topbar.classList.contains('open')) {
-        topbar.classList.remove('open');
-        topbar.style.height = '';
-    } else {
-        topbar.classList.add('open');
-        topbar.style.height = 'auto';
-    }
-});
-
-// Show notice if not seen
-const devMsgVersion = 1;
-const seenVersion = parseInt(localStorage.getItem('devNoticeVersion') || '0');
-const devNoticePopup = document.getElementById('devNoticePopup');
-const devNoticeClose = document.getElementById('devNoticeClose');
-if (seenVersion < devMsgVersion) {
-    devNoticePopup.showModal();
-}
-
-// Close notice
-devNoticeClose.addEventListener('click', () => {
-    devNoticePopup.close();
-    localStorage.setItem('devNoticeVersion', devMsgVersion.toString());
 });

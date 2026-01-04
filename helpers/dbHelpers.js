@@ -383,7 +383,7 @@ const getBeatmap = (mapId, includeMapset, mode) => {
     return getBulkBeatmaps([mapId], includeMapset, mode)?.[0] || null;
 };
 
-const getUserRecentPasses = (userId, categoryId, limit = 100, offset = 0) => {
+const getUserRecentPasses = (userId, categoryId, limit = 100, offset = 0, after = 0) => {
     // Get user entry
     const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
     if (!user) return [];
@@ -400,7 +400,7 @@ const getUserRecentPasses = (userId, categoryId, limit = 100, offset = 0) => {
         AND ${where} AND up.time_passed > ?
         ORDER BY up.time_passed DESC
         LIMIT ? OFFSET ?
-    `).all(userId, ...params, user.last_import_time || Date.now(), limit, offset);
+    `).all(userId, ...params, Math.max(after, user.last_import_time) || Date.now(), limit, offset);
 
     // Get full map data
     const beatmapIdsToMaps = {};
