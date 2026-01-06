@@ -1149,7 +1149,7 @@ img {
     object-fit: cover;
 }
 
-.beatmapCard .left .playPause {
+.beatmapCard .left .controls {
     position: absolute;
     left: 0px;
     top: 0px;
@@ -1163,12 +1163,12 @@ img {
     --fgHover: var(--accent);
 }
 
-.beatmapCard .left .playPause .icon {
+.beatmapCard .left .controls .icon {
     font-size: 36px;
 }
 
 @media (pointer: fine) {
-    .beatmapCard .left:not(:hover) .playPause:not([data-playing="true"]) {
+    .beatmapCard .left:not(:hover) .controls:not([data-playing="true"]) {
         opacity: 0;
     }
 }

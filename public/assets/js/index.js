@@ -34,6 +34,8 @@ const showPopup = (title, body, actions, closedby = 'none') => {
     for (const action of actions) {
         const btn = document.createElement(action.href ? 'a' : 'button');
         btn.classList = `btn medium ${action.class}`;
+        if (action.class == 'primary')
+            btn.autofocus = true;
         btn.innerText = action.label;
         if (action.href) {
             btn.href = action.href;
@@ -99,9 +101,22 @@ const audioButtonClick = (event, audioUrl) => {
     // Update previous button variable
     lastAudioButtonElement = elBtn;
     // Play audio
-    audioPlayer.volume = 0.5;
+    audioPlayer.volume = parseFloat(localStorage.getItem('mapPreview')) || 0.5;
     audioPlayer.src = audioUrl;
     audioPlayer.play();
+};
+const audioVolumeSet = volume => {
+    volume = Math.min(1, Math.max(0, volume));
+    localStorage.setItem('mapPreview', volume.toString());
+    audioPlayer.volume = volume;
+};
+const audioVolumeDown = () => {
+    let volume = parseFloat(localStorage.getItem('mapPreview')) || 0.5;
+    audioVolumeSet(volume - 0.1);
+};
+const audioVolumeUp = () => {
+    let volume = parseFloat(localStorage.getItem('mapPreview')) || 0.5;
+    audioVolumeSet(volume + 0.1);
 };
 
 // Handle image load states

@@ -108,23 +108,6 @@
             </div>
         </div>
     </div>
-    <dialog id="devNoticePopup" class="popup" closedby="none" style="--width: 600px">
-        <div class="title">osu!complete is under active development</div>
-        <div class="body">
-            <p>Hi! Thanks for checking out osu!complete.</p>
-            <p>This project was only recently released to the public and it's still under heavy active development. Bugs
-                are being discovered and fixed daily, but with this comes the high possibility of instability, data
-                loss, and other issues. While a best effort is being made to mitigate interruptions and keep stats
-                persistent, no promises can be made.</p>
-            <p>Please take a look around and enjoy while keeping this in mind, and feel free to join the
-                Discord server to report issues, give feedback, and stay up to date with development.</p>
-            <p>Here's to creating the best completionist tracker out there!</p>
-        </div>
-        <div class="actions">
-            <a href="https://discord.gg/fNSnMG7S3C" class="btn medium" target="_blank">Join Discord server</a>
-            <button class="btn primary medium" id="devNoticeClose" autofocus>Got it!</button>
-        </div>
-    </dialog>
     <div id="main">
         <%- include('pages/' + page) %>
         <div id="footer">
@@ -180,16 +163,15 @@
         const devMsgVersion = 2;
         const seenVersion = parseInt(localStorage.getItem('devNoticeVersion') || '0');
         if (seenVersion < devMsgVersion) {
-            const dialog = showPopup('Welcome to the osu!complete beta!', `<%- includeMarkdown('views/markdown/notice.md') %>`, [
+            const devNoticeText = `<%- includeMarkdown('views/markdown/notice.md') %>`;
+            const dialog = showPopup('Welcome to the osu!complete beta!', devNoticeText, [
                 {
                     label: 'Join the Discord server',
                     href: 'https://discord.gg/fNSnMG7S3C',
                     newTab: true,
                     noClose: true
                 },
-                {
-                    label: 'Got it!', class: 'primary'
-                }
+                { label: 'Got it!', class: 'primary' }
             ]);
             dialog.addEventListener('close', () => {
                 localStorage.setItem('devNoticeVersion', devMsgVersion.toString());
