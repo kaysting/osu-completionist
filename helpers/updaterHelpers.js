@@ -60,7 +60,7 @@ const saveMapset = async (mapsetId, index = true) => {
 /**
  * Fetch and store new beatmaps(ets) from osu! API
  */
-const updateMapData = async () => {
+const fetchNewMapData = async () => {
     try {
         utils.log(`Checking for new beatmaps...`);
         // Loop to get unsaved recent beatmapsets
@@ -97,6 +97,68 @@ const updateMapData = async () => {
         utils.log('Beatmap database is up to date');
     } catch (error) {
         utils.logError('Error while updating stored beatmap data:', error);
+    }
+};
+
+/**
+ * Re-fetch all stored maps and update their data if their status has changed
+ */
+const updateMapStatuses = async () => {
+    try {
+        const countTotalMaps = db.prepare(`SELECT COUNT(*) AS count FROM beatmapsets`).get().count;
+        let countProcessedMaps = 0;
+        let lastMapsetId = 0;
+        let lastLog = 0;
+        while (true) {
+            if ((Date.now() - lastLog) > 1000 * 15) {
+                const percentage = ((countProcessedMaps / countTotalMaps) * 100).toFixed(2);
+                utils.log(`Checking all saved maps for status updates (${percentage}%)...`);
+                lastLog = Date.now();
+            }
+            // Get list of maps, one map per mapset
+            const rows = db.prepare(
+                `SELECT
+                    map.mapset_id AS mapset_id,
+                    map.id AS map_id,
+                    mapset.status AS status
+                FROM beatmaps map
+                JOIN beatmapsets mapset ON map.mapset_id = mapset.id
+                WHERE map.mapset_id > ?
+                GROUP BY map.mapset_id
+                ORDER BY mapset_id ASC
+                LIMIT 50`
+            ).all(lastMapsetId);
+            if (rows.length === 0) break;
+            lastMapsetId = rows[rows.length - 1].mapset_id;
+            // Map mapset ids to statuses
+            const savedMapsetStatuses = {};
+            for (const mapset of rows) {
+                savedMapsetStatuses[mapset.mapset_id] = mapset.status;
+            }
+            // Fetch maps from osu
+            const ids = rows.map(row => row.map_id);
+            const res = await osu.getBeatmaps({ ids });
+            // Log maps that we tried to fetch but didn't receive
+            const fetchedMapsetIds = new Set(res.beatmaps.map(map => map.beatmapset.id));
+            for (const row of rows) {
+                if (!fetchedMapsetIds.has(row.mapset_id)) {
+                    utils.log(`Warning: Couldn't fetch mapset ID ${row.mapset_id} from osu! API`);
+                }
+            }
+            // Loop through maps and save mapsets if their statuses changed
+            for (const map of res.beatmaps) {
+                countProcessedMaps++;
+                // Check for status change
+                const mapset = map.beatmapset;
+                const oldStatus = savedMapsetStatuses[mapset.id];
+                const newStatus = mapset.status;
+                if (oldStatus === newStatus) continue;
+                // Save updated mapset
+                await saveMapset(mapset.id, false);
+            }
+        }
+    } catch (error) {
+        utils.logError('Error while updating map statuses:', error);
     }
 };
 
@@ -278,6 +340,18 @@ const updateUserCategoryStats = (userId) => {
         utils.log(`Updated stats in ${statCategories.definitions.length} categories for ${user.name}`);
     } catch (error) {
         utils.logError(`Error while updating category stats for ${user.name}:`, error);
+    }
+};
+
+/**
+ * Update category stats for all users
+ */
+const updateAllUserCategoryStats = () => {
+    const userIds = db.prepare(`SELECT id FROM users`).all().map(row => row.id);
+    userIds.push(0);
+    console.log(`Updating category stats for ${userIds.length} users...`);
+    for (const id of userIds) {
+        updateUserCategoryStats(id);
     }
 };
 
@@ -689,7 +763,9 @@ module.exports = {
     backupDatabase,
     startQueuedImports,
     queueUserForImport,
-    updateMapData,
+    fetchNewMapData,
     updateUserCategoryStats,
     snapshotCategoryStats,
+    updateAllUserCategoryStats,
+    updateMapStatuses
 };

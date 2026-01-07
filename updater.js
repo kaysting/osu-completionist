@@ -28,9 +28,14 @@ const runImportQueue = async () => {
     setTimeout(runImportQueue, 5000);
 };
 
-const runUpdateMapData = async () => {
-    await updaterHelpers.updateMapData();
-    setTimeout(runUpdateMapData, 1000 * 60 * 60);
+const runFetchNewMaps = async () => {
+    await updaterHelpers.fetchNewMapData();
+    setTimeout(runFetchNewMaps, 1000 * 60 * 60);
+};
+
+const runUpdateMapStatuses = async () => {
+    await updaterHelpers.updateMapStatuses();
+    setTimeout(runUpdateMapStatuses, 1000 * 60 * 60 * 24);
 };
 
 async function main() {
@@ -46,8 +51,9 @@ async function main() {
     runGlobalRecentsUpdate();
     runBackupDatabase();
     runImportQueue();
-    runUpdateMapData();
+    runFetchNewMaps();
     runSaveHistory();
+    setTimeout(runUpdateMapStatuses, 1000 * 60 * 60);
 
 }
 main();

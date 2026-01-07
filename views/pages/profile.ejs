@@ -41,13 +41,13 @@
                 <script>
                     document.getElementById('reimport').addEventListener('click', async () => {
                         const canReimport = '<%= user.updateStatus.canReimport %>';
-                        if (canReimport) {
+                        if (canReimport === 'true') {
                             showPopup(
                                 'Request re-import',
                                 `
                                     <p>Are you sure you want to re-import your completion data from osu!?</p>
-                                    <p>Note that this is likely unnecessary as we update profiles from their recent scores minutely. Re-importing is only necessary if you suspect that your stats are inaccurate.</p>
-                                    <p>Should you choose to continue, the import will take some time depending on how many maps you've passed and how many people are queued ahead of you. The import can't be canceled once started.</p>
+                                    <p>Note that this is likely unnecessary as we update profiles from their recent scores minutely. You should only re-import if you suspect that your stats are inaccurate.</p>
+                                    <p>If you continue, you'll be queued for import, which will take from 15 minutes to several hours, depending on the number of people ahead of you and how many unique maps you've passed.</p>
                                 `,
                                 [
                                     {
@@ -64,8 +64,8 @@
                             showPopup(
                                 'Too soon to re-import',
                                 `
-                                    <p>Your profile was imported recently and can't be imported again for another <strong><%= user.updateStatus.timeUntilNextImport %></strong>.</p>
-                                    <p>Note that re-importing is likely unnecessary as we update profiles from their recent scores minutely. It's only necessary if you suspect that your stats are inaccurate.</p>
+                                    <p>Your profile was imported recently and can't be imported again for <strong><%= user.updateStatus.timeUntilNextImport %></strong>.</p>
+                                    <p>Note that re-importing is likely unnecessary as we update profiles from their recent scores minutely. You should only re-import if you suspect that your stats are inaccurate.</p>
                                 `,
                                 [
                                     {
