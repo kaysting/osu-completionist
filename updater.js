@@ -35,6 +35,7 @@ const runFetchNewMaps = async () => {
 
 const runUpdateMapStatuses = async () => {
     await updaterHelpers.updateMapStatuses();
+    updaterHelpers.updateAllUserCategoryStats();
     setTimeout(runUpdateMapStatuses, 1000 * 60 * 60 * 24);
 };
 

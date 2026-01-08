@@ -2,7 +2,7 @@
     <div class="section mode">
         <div class="btnGroup">
             <a href="<%= category_navigation.global %>"
-                class="btn <%= category.includes('global-') ? 'primary' : '' %>">Global</a>
+                class="btn <%= category.includes('global-') ? 'primary' : '' %>">All</a>
             <a href="<%= category_navigation.osu %>"
                 class="btn <%= category.includes('osu-') ? 'primary' : '' %>">osu</a>
             <a href="<%= category_navigation.taiko %>"
@@ -16,18 +16,17 @@
     <% if (category.includes('mania-')) { %>
     <div class="section">
         <div class="btnGroup">
-            <a href="<%= category_navigation.mania %>" class="btn <%= !category.match(/\dk$/) ? 'primary' : '' %>">
+            <a href="<%= category_navigation.mania %>"
+                class="btn <%= !category.match(/-(\dk|otherkeys)$/) ? 'primary' : '' %>">
                 <span class="icon filled">piano</span>
                 <span class="label">All</span>
             </a>
             <a href="<%= category_navigation.mania4k %>"
                 class="btn <%= category.includes('-4k') ? 'primary' : '' %>">4K</a>
-            <a href="<%= category_navigation.mania5k %>"
-                class="btn <%= category.includes('-5k') ? 'primary' : '' %>">5K</a>
-            <a href="<%= category_navigation.mania6k %>"
-                class="btn <%= category.includes('-6k') ? 'primary' : '' %>">6K</a>
             <a href="<%= category_navigation.mania7k %>"
                 class="btn <%= category.includes('-7k') ? 'primary' : '' %>">7K</a>
+            <a href="<%= category_navigation.maniaOther %>"
+                class="btn <%= category.includes('-otherkeys') ? 'primary' : '' %>">Other</a>
         </div>
     </div>
     <% } %>

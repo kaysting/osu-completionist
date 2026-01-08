@@ -243,6 +243,9 @@ const matchesCatDefFilters = (row, catDef) => {
         if (filter.in !== undefined) {
             if (!filter.in.includes(rowValue)) return false;
         }
+        if (filter.notIn !== undefined) {
+            if (filter.notIn.includes(rowValue)) return false;
+        }
         if (filter.range !== undefined) {
             if (rowValue < filter.range[0] || rowValue > filter.range[1]) return false;
         }
