@@ -31,8 +31,10 @@ router.get('/:id/update', async (req, res) => {
 });
 
 router.get('/:id/:category', ensureUserExists, (req, res) => {
+
     const user = req.user;
     const category = req.params.category.toLowerCase();
+
     // Check category
     if (!statCategories.definitions.find(cat => cat.id === category)) {
         return res.redirect(`/u/${req.user.id}/osu-ranked`);
@@ -41,12 +43,14 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     const mode = category.split('-')[0];
     const modeKey = utils.rulesetNameToKey(mode);
     const modeName = mode == 'global' ? 'Global' : utils.rulesetKeyToName(modeKey, true);
+
     // Get data
     const stats = dbHelpers.getUserCompletionStats(req.user.id, category);
     const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
     const timeRecentsAfter = Date.now() - (1000 * 60 * 60 * 24);
     const recentPasses = dbHelpers.getUserRecentPasses(req.user.id, category, 100, 0, timeRecentsAfter);
     const updateStatus = dbHelpers.getUserUpdateStatus(req.user.id);
+
     // Format update status
     if (updateStatus.updating) {
         updateStatus.details.time_remaining = utils.getRelativeTimestamp(
@@ -63,52 +67,84 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     updateStatus.timeUntilNextImport = utils.getRelativeTimestamp(
         Date.now() + msUntilNextImport, undefined, false
     );
+
     // If viewing our own profile, get user trends and recommended maps
     let recommended = null;
     let recommendedQuery = '';
+    let recommendedLimit = 6;
     if (req.user.id === req.me?.id) {
-        // Determine min and max recent star rating and ranked time
-        let minStars, maxStars, minTime, maxTime = null;
-        let passesToCheck = 20;
+
+        // Collect star ratings and ranked times from recent passes
+        let passesToCheck = 25;
         let passesChecked = 0;
-        let limit = 6;
+        const collectedStarRatings = [];
+        const collectedRankTimes = [];
         for (const pass of recentPasses) {
             if (passesChecked >= passesToCheck) break;
-            const stars = pass.beatmap.stars;
-            const timeRanked = pass.beatmap.beatmapset.time_ranked;
-            minStars = minStars === undefined || stars < minStars ? stars : minStars;
-            maxStars = maxStars === undefined || stars > maxStars ? stars : maxStars;
-            minTime = minTime === undefined || timeRanked < minTime ? timeRanked : minTime;
-            maxTime = maxTime === undefined || timeRanked > maxTime ? timeRanked : maxTime;
+            collectedStarRatings.push(pass.beatmap.stars);
+            collectedRankTimes.push(pass.beatmap.beatmapset.time_ranked);
             passesChecked++;
         }
-        // Put together a query to get recommended beatmaps if we got
-        // recommended filters from recent passes
+
+        // Calculate limits and put together a recommended query if we have recent passes
         if (passesChecked) {
-            recommendedQuery = `stars > ${(minStars - 0.5).toFixed(1)} stars < ${(maxStars + 0.5).toFixed(1)} year >= ${new Date(minTime).getUTCFullYear()} year <= ${new Date(maxTime).getUTCFullYear()}`;
+
+            // Sort collected star ratings and ranked times
+            collectedStarRatings.sort((a, b) => a - b);
+            collectedRankTimes.sort((a, b) => a - b);
+
+            // Discard top and bottom 20% to avoid outliers
+            const discardCount = Math.floor(passesChecked * 0.2);
+            const usableStars = collectedStarRatings.slice(discardCount, collectedStarRatings.length - discardCount);
+            const usableTimes = collectedRankTimes.slice(discardCount, collectedRankTimes.length - discardCount);
+
+            // Determine min and max recent star rating and ranked time
+            let minStars = usableStars[0] || 0;
+            let maxStars = usableStars[usableStars.length - 1] || 0;
+            let minTime = usableTimes[0] || Date.now();
+            let maxTime = usableTimes[usableTimes.length - 1] || Date.now();
+
+            // Expand star rating range slightly
+            const starPadding = 0.5;
+            minStars = (Math.max(0, minStars - starPadding)).toFixed(1);
+            maxStars = (maxStars + starPadding).toFixed(1);
+
+            // Get years from ranked times
+            const minYear = new Date(minTime).getUTCFullYear();
+            const maxYear = new Date(maxTime).getUTCFullYear();
+
+            // Build query
+            recommendedQuery = `stars > ${minStars} stars < ${maxStars} year >= ${minYear} year <= ${maxYear}`;
+
         }
-        recommended = [];
+
         // Get as many maps as we can using the recommended query
+        recommended = [];
         recommended.push(
-            ...dbHelpers.searchBeatmaps(recommendedQuery, category, 'random', req.user.id, limit).beatmaps
+            ...dbHelpers.searchBeatmaps(recommendedQuery, category, 'random', req.user.id, recommendedLimit).beatmaps
         );
+
         // If we don't have enough, clear the recommended query and get remainder
-        if (recommended.length < limit) {
+        if (recommended.length < recommendedLimit) {
             recommendedQuery = '';
             recommended.push(
-                ...dbHelpers.searchBeatmaps('', category, 'random', req.user.id, limit - recommended.length).beatmaps
+                ...dbHelpers.searchBeatmaps('', category, 'random', req.user.id, recommendedLimit - recommended.length).beatmaps
             );
         }
+
     }
+
     // Get completion colors for each year
     for (const yearData of yearly) {
         yearData.color = utils.percentageToColor(yearData.percentage_completed / 100);
     }
+
     // Get relative timestamps for recent passes
     for (const pass of recentPasses) {
         pass.timeSincePass = utils.getRelativeTimestamp(pass.time_passed);
     }
-    // Generate copyable text
+
+    // Build copyable text
     const categoryName = statCategories.getCategoryName(category);
     const statsText = [
         `${user.name}'s ${modeName.toLowerCase()} ${categoryName.toLowerCase()} completion stats:\n`
@@ -118,6 +154,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         statsText.push(`${checkbox} ${year.year}: ${year.count_completed.toLocaleString()} / ${year.count_total.toLocaleString()} (${year.percentage_completed.toFixed(2)}%)`);
     }
     statsText.push(`\nTotal: ${stats.count_completed.toLocaleString()} / ${stats.count_total.toLocaleString()} (${stats.percentage_completed.toFixed(2)}%)`);
+
     // Render
     res.renderPage('profile', {
         title: req.user.name,
@@ -133,6 +170,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         category,
         category_navigation: statCategories.getCategoryNavPaths(`/u/${req.user.id}`, category),
     });
+
 });
 
 imageRenderer.warmup();
