@@ -71,4 +71,24 @@ router.get('/:category', (req, res) => {
     });
 });
 
+router.get('/:category/surprise', async (req, res) => {
+    const query = req.query.q?.trim() || '';
+    const category = req.params.category.toLowerCase();
+    const dest = utils.ensureOneOf(req.query.dest, ['direct', 'osu', 'download'], 'osu');
+    const map = searchBeatmaps(
+        query, category, 'random', req.me?.id, 1
+    ).beatmaps[0];
+    if (!map) {
+        res.redirect(`/recommended/${category}?q=${encodeURIComponent(query)}`);
+    }
+    switch (dest) {
+        case 'direct':
+            return res.redirect(`osu://b/${map.id}`);
+        case 'osu':
+            return res.redirect(`https://osu.ppy.sh/beatmapsets/${map.mapset_id}#osu/${map.id}`);
+        case 'download':
+            return res.redirect(`https://beatconnect.io/b/${map.id}`);
+    }
+});
+
 module.exports = router;

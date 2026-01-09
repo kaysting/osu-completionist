@@ -173,12 +173,25 @@
                 <%- include('../partials/beatmapCard', { beatmap }) %>
                 <% } %>
             </div>
-            <div class="flex row gap-8 justify-center">
-                <div class="flex">
+            <div class="flex col gap-8">
+                <div class="flex justify-center">
                     <a href="/recommended/<%= category %>?q=<%- encodeURIComponent(user.recommendedQuery) %>"
                         class="btn primary">
                         <span class="icon filled">cards_star</span>
                         <span class="label">More like this in play next...</span>
+                    </a>
+                </div>
+                <div class="flex gap-8 justify-center flex-wrap">
+                    <a href="/recommended/<%= category %>/surprise?dest=direct&q=<%- encodeURIComponent(user.recommendedQuery) %>"
+                        class="btn text accent small">
+                        <span class="icon filled">casino</span>
+                        <span class="label">Pick for me (osu!direct)</span>
+                    </a>
+                    <a target="_blank"
+                        href="/recommended/<%= category %>/surprise?dest=osu&q=<%- encodeURIComponent(user.recommendedQuery) %>"
+                        class="btn text small">
+                        <span class="icon filled">casino</span>
+                        <span class="label">Pick for me (osu!web)</span>
                     </a>
                 </div>
             </div>

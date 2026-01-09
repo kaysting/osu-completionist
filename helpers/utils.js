@@ -349,6 +349,24 @@ const utils = {
 
     generateSecretKey: (length = 32) => {
         return crypto.randomBytes(length).toString('hex').substring(0, length);
+    },
+
+    /**
+     * Ensure a value is within a set of valid options.
+     * @param {*} value The value
+     * @param {*} options A set of valid options
+     * @param {*} fallback A value to fall back to if the input value isn't in the valid set
+     * @returns A valid value or `null` if fallback isn't defined
+     */
+    ensureOneOf: (value, options, fallback = null) => {
+        if (options.includes(value)) {
+            return value;
+        }
+        return fallback;
+    },
+
+    clamp: (num, min, max) => {
+        return Math.min(Math.max(num, min), max);
     }
 
 };
