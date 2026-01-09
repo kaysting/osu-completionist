@@ -722,6 +722,27 @@ const queueUserForImport = async (userId) => {
     }
 };
 
+const unqueueUser = async (userId) => {
+    try {
+        const user = await db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
+        if (!user) {
+            utils.logError(`User with ID ${userId} not found in database`);
+            return false;
+        }
+        const existingTask = db.prepare(`SELECT 1 FROM user_import_queue WHERE user_id = ? LIMIT 1`).get(userId);
+        if (!existingTask) {
+            utils.log(`${user.name} isn't in the import queue`);
+            return false;
+        }
+        db.prepare(`DELETE FROM user_import_queue WHERE user_id = ?`).run(userId);
+        utils.log(`Removed ${user.name} from the import queue`);
+        return true;
+    } catch (error) {
+        utils.logError(`Error while unqueueing user ${userId} from import queue:`, error);
+        return null;
+    }
+};
+
 // Function to backup the database periodically
 const backupDatabase = async () => {
     try {
@@ -770,5 +791,6 @@ module.exports = {
     updateUserCategoryStats,
     snapshotCategoryStats,
     updateAllUserCategoryStats,
-    updateMapStatuses
+    updateMapStatuses,
+    unqueueUser
 };
