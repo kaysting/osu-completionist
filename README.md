@@ -17,6 +17,7 @@ Currently available at https://osucomplete.org
 Note that the intent of these instructions is NOT to teach you how to run your own public instance of osu!complete. They are intended to help you set up a functional development environment and make contribution easier.
 
 **Required steps:**
+
 1. Install [Node.js](https://nodejs.org/en/download) and [SQLite](https://sqlite.org/download.html)
 2. Clone the repo and open it in your terminal
 3. Run `npm install`
@@ -34,8 +35,9 @@ Note that the intent of these instructions is NOT to teach you how to run your o
 Consider using a process manager like [PM2](https://pm2.io/) if you need to keep the server and updater running in the background.
 
 **If you need user authentication working:**
-2. Add `http://localhost:8080` (or your webserver address) as a redirect URI in your osu! application's settings
-3. Set env `JWT_SECRET` to a secure, random value
+
+1. Add `http://localhost:8080` (or your webserver address) as a redirect URI in your osu! application's settings
+2. Set env `JWT_SECRET` to a secure, random value
     * Run `npm run maintain -- getsecret` to generate a suitable value
 
 These instructions aren't fully tested so please [join the Discord server](https://discord.gg/fNSnMG7S3C) if you need any help.
