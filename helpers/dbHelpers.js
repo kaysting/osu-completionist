@@ -3,6 +3,8 @@ const db = require('./db');
 const utils = require('./utils');
 const statCategories = require('./statCategories');
 
+const secsToXp = (secs) => Math.round(secs / 10);
+
 const formatUserEntry = (entry) => ({
     id: entry.id,
     name: entry.name,
@@ -18,6 +20,7 @@ const formatUserEntry = (entry) => ({
         name: entry.team_name,
         flag_url: entry.team_flag_url
     },
+    last_pass_time: entry.last_pass_time,
     last_login_time: entry.last_login_time,
     last_import_time: entry.last_import_time
 });
@@ -27,7 +30,7 @@ const getBulkUserProfiles = (userIds) => {
 
     // Fetch required data for users
     const rows = db.prepare(
-        `SELECT u.id, u.name, u.avatar_url, u.banner_url, u.country_code, u.team_id, u.team_name, u.team_flag_url, c.name AS country_name, u.last_login_time, u.last_import_time
+        `SELECT u.id, u.name, u.avatar_url, u.banner_url, u.country_code, u.team_id, u.team_name, u.team_flag_url, c.name AS country_name, u.last_login_time, u.last_import_time, u.last_pass_time
          FROM users u
          LEFT JOIN country_names c ON u.country_code = c.code
          WHERE u.id IN (${userIds.map(() => '?').join(',')})`
@@ -85,18 +88,17 @@ const getBulkUserCompletionStats = (userIds, categoryId) => {
         count_completed: 0,
         count_total: totals.count,
         percentage_completed: 0,
-        time_spent_secs: 0,
-        time_remaining_secs: totals.seconds,
-        time_total_secs: totals.seconds,
+        xp: 0,
+        xp_remaining: secsToXp(totals.seconds),
+        xp_total: secsToXp(totals.seconds),
         rank: -1
     };
     for (const row of rows) {
         const stats = { ...defaultStats };
         stats.count_completed = row.count;
         stats.count_total = totals.count;
-        stats.time_spent_secs = row.seconds;
-        stats.time_remaining_secs = totals.seconds - row.seconds;
-        stats.time_total_secs = totals.seconds;
+        stats.xp = secsToXp(row.seconds);
+        stats.xp_remaining = secsToXp(totals.seconds - row.seconds);
         stats.percentage_completed = row.seconds > 0 ? ((row.seconds / totals.seconds) * 100) : 0;
         if (row.last_import_time > 0)
             stats.rank = row.rank;
@@ -125,7 +127,7 @@ const getUserHistoricalCompletionStats = (userId, categoryId, aggregate = 'day')
         return rows.reverse().slice(0, 90).map(row => ({
             date: row.date,
             count_completed: row.count,
-            time_spent_secs: row.seconds,
+            xp: secsToXp(row.seconds),
             percentage_completed: row.percent,
             rank: row.rank,
             time_saved: row.time
@@ -153,20 +155,20 @@ const getUserHistoricalCompletionStats = (userId, categoryId, aggregate = 'day')
                     count_completed: first.count,
                     percentage_completed: first.percent,
                     rank: first.rank,
-                    time_spent_secs: first.seconds
+                    xp: Math.round(first.seconds / 10)
                 },
                 end: {
                     time_saved: last.time,
                     count_completed: last.count,
                     percentage_completed: last.percent,
                     rank: last.rank,
-                    time_spent_secs: last.seconds
+                    xp: Math.round(last.seconds / 10)
                 },
                 delta: {
                     count_completed: last.count - first.count,
                     percentage_completed: last.percent - first.percent,
-                    time_spent_secs: last.seconds - first.seconds,
-                    rank: first.rank - last.rank
+                    rank: first.rank - last.rank,
+                    xp: Math.round((last.seconds - first.seconds) / 10)
                 }
             });
         }

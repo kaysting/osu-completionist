@@ -24,17 +24,17 @@
                     <div class="value">#<%= stats.rank == -1 ? '-' : stats.rank %></div>
                 </div>
                 <div class="stat primary">
-                    <div class="name">% completed</div>
-                    <div class="value"><%= stats.percentage_completed.toFixed(2) %>%</div>
+                    <div class="name">completion xp</div>
+                    <div class="value"><%= stats.xp.toLocaleString() %></div>
                 </div>
             </div>
             <div class="flex gap-24">
                 <div class="stat">
-                    <div class="name">time spent completing</div>
-                    <div class="value"><%= timeSpent %></div>
+                    <div class="name">% completed</div>
+                    <div class="value"><%= stats.percentage_completed.toFixed(2) %>%</div>
                 </div>
                 <div class="stat">
-                    <div class="name">maps passed</div>
+                    <div class="name">maps completed</div>
                     <div class="value"><%= stats.count_completed.toLocaleString() %></div>
                 </div>
                 <div class="stat">

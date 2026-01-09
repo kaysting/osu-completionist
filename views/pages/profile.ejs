@@ -103,12 +103,12 @@
                     <div class="value">#<%= user.stats.rank == -1 ? '-' : user.stats.rank %></div>
                 </div>
                 <div class="stat big">
-                    <div class="key">% completed</div>
-                    <div class="value"><%= user.stats.percentage_completed.toFixed(2) %>%</div>
+                    <div class="key">completion xp</div>
+                    <div class="value"><%= user.stats.xp.toLocaleString() %></div>
                 </div>
                 <div class="stat big">
-                    <div class="key">maps completed</div>
-                    <div class="value"><%= user.stats.count_completed.toLocaleString() %></div>
+                    <div class="key">% completed</div>
+                    <div class="value"><%= user.stats.percentage_completed.toFixed(2) %>%</div>
                 </div>
             </div>
         </div>
@@ -118,25 +118,30 @@
             </div>
             <div class="stats">
                 <div class="stat">
+                    <div class="key">maps completed</div>
+                    <div class="value"><%= user.stats.count_completed.toLocaleString() %></div>
+                </div>
+                <div class="stat">
                     <div class="key">maps to complete</div>
                     <div class="value"><%= (user.stats.count_total - user.stats.count_completed).toLocaleString() %>
                     </div>
                 </div>
                 <div class="stat">
-                    <div class="key">playtime to completion</div>
-                    <div class="value"><%= user.stats.timeToCompletion %></div>
-                </div>
-                <div class="stat">
-                    <div class="key">playtime spent completing</div>
-                    <div class="value"><%= user.stats.timeSpentCompleting %></div>
-                </div>
-                <div class="stat">
                     <div class="key">total maps</div>
                     <div class="value"><%= user.stats.count_total.toLocaleString() %></div>
                 </div>
+                <div class="stat">
+                    <div class="key">cxp to completion</div>
+                    <div class="value"><%= user.stats.xp_remaining.toLocaleString() %>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="key">total cxp</div>
+                    <div class="value"><%= user.stats.xp_total.toLocaleString() %></div>
+                </div>
             </div>
             <div>
-                <span class="header">completion by year</span>
+                <span class="header">map completion by year</span>
             </div>
             <div class="yearly">
                 <% for (const yearData of user.yearly) { %>

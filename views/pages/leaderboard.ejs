@@ -31,12 +31,12 @@
                     <div class="statsCont flex col flex-no-shrink">
                         <div class="stats flex row flex-wrap">
                             <div class="stat">
-                                <div class="name">% completed</div>
-                                <div class="value primary"><%= entry.stats.percentage_completed.toFixed(2) %>%</div>
+                                <div class="name">completion xp</div>
+                                <div class="value primary"><%= entry.stats.xp.toLocaleString() %></div>
                             </div>
                             <div class="stat">
-                                <div class="name">time spent completing</div>
-                                <div class="value"><%= entry.stats.time_spent.toLocaleString() %> hours</div>
+                                <div class="name">% completed</div>
+                                <div class="value"><%= entry.stats.percentage_completed.toFixed(2) %>%</div>
                             </div>
                             <div class="stat">
                                 <div class="name">maps completed</div>

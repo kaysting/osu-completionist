@@ -100,9 +100,6 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
             );
         }
     }
-    // Format times
-    stats.timeToCompletion = utils.secsToDuration(stats?.time_remaining_secs || 0);
-    stats.timeSpentCompleting = utils.secsToDuration(stats?.time_spent_secs || 0);
     // Get completion colors for each year
     for (const yearData of yearly) {
         yearData.color = utils.percentageToColor(yearData.percentage_completed / 100);
@@ -127,7 +124,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         meta: {
             title: `${req.user.name}'s ${modeName.toLowerCase()} completionist profile`,
             description: `${req.user.name} has passed ${stats.percentage_completed.toFixed(2)}% of all ${categoryName.toLowerCase()} beatmaps! Click to view more of their completionist stats.`,
-            image: `/u/${user.id}/${category}/renders/main`
+            image: `/u/${user.id}/${category}/renders/main?t=${user.last_pass_time}`
         },
         user: {
             ...user, stats, yearly, recentPasses, updateStatus, recommended, recommendedQuery

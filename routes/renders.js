@@ -18,7 +18,6 @@ router.get('/html/:template', (req, res) => {
             data.user = dbHelpers.getUserProfile(userId);
             data.categoryName = statsCategories.getCategoryName(category);
             data.percentageColor = utils.percentageToColor(data.stats.percentage_completed / 100);
-            data.timeSpent = utils.secsToDuration(data.stats.time_spent_secs);
             break;
         default:
             return res.status(404).end();
