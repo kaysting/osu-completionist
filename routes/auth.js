@@ -52,13 +52,22 @@ router.get('/callback', async (req, res) => {
             // Queue user if they're new
             await updaterHelpers.queueUserForImport(user.data.id);
             const userCount = db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
-            utils.logToDiscord(`${user.data.username} registered as our ${utils.ordinalSuffix(userCount)} user!`);
+            utils.log(`${user.data.username} registered as a new user!`);
+            utils.postToActivityFeed({
+                author: {
+                    name: userEntry.name,
+                    icon_url: userEntry.avatar_url,
+                    url: `https://${process.env.HOST}/u/${userEntry.id}`
+                },
+                title: `Registered as our ${utils.ordinalSuffix(userCount)} user!`,
+                color: 0xA3F5A3
+            });
         } else if (!userEntry?.last_import_time && !existingQueueEntry) {
             // Queue user if they haven't been imported and they aren't queued
             // This can happen in some edge cases
             await updaterHelpers.queueUserForImport(user.data.id);
         } else {
-            utils.logToDiscord(`${user.data.username} logged in on a new device`);
+            utils.log(`${user.data.username} logged in on a new device`);
         }
         // Set JWT cookie
         const jwt = utils.generateJWT({ id: user.data.id });

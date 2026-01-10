@@ -7,6 +7,7 @@ const path = require('path');
 const cp = require('child_process');
 const dayjs = require('dayjs');
 const statCategories = require('./statCategories');
+const dbHelpers = require('./dbHelpers');
 
 const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'storage.db');
 
@@ -55,6 +56,32 @@ const saveMapset = async (mapsetId, index = true) => {
     // Fetch full mapset including converts and save it
     let mapsetFull = await osu.getBeatmapset(mapsetId);
     saveMapsetTransaction(mapsetFull, index);
+    // Get formatted map data
+    const mapset = dbHelpers.getBeatmapset(mapsetId, true);
+    // Log to Discord
+    setImmediate(() => {
+        utils.postToActivityFeed({
+            title: `Saved new mapset`,
+            fields: [
+                {
+                    name: 'Mapset',
+                    value: `[${mapset.artist} - ${mapset.title}](https://osu.ppy.sh/beatmapsets/${mapset.id})`
+                },
+                {
+                    name: `${mapset.beatmaps.length} difficult${mapset.beatmaps.length !== 1 ? 'ies' : 'y'}`,
+                    value: mapset.beatmaps.map(map => {
+                        return `* **${utils.rulesetKeyToName(map.mode)} ${map.stars.toFixed(2)} :star:**  [${map.name}](https://osu.ppy.sh/beatmapsets/${mapset.id}#${map.mode}/${map.id})`;
+                    }).join('\n')
+                }
+            ],
+            thumbnail: {
+                url: `https://assets.ppy.sh/beatmaps/${mapset.id}/covers/list.jpg`
+            },
+            color: 0xBEA3F5
+        });
+    });
+    // Return new entry
+    return mapset;
 };
 
 /**
@@ -66,6 +93,7 @@ const fetchNewMapData = async () => {
         // Loop to get unsaved recent beatmapsets
         let countNewlySaved = 0;
         let cursor = null;
+        const savedMapsets = [];
         while (true) {
             // Fetch mapsets
             const data = await osu.searchBeatmapsets({
@@ -83,7 +111,8 @@ const fetchNewMapData = async () => {
                 const existingMapset = db.prepare(`SELECT 1 FROM beatmapsets WHERE id = ? LIMIT 1`).get(mapset.id);
                 if (existingMapset) continue;
                 // Fetch full mapset and save
-                await saveMapset(mapset.id, true);
+                const res = await saveMapset(mapset.id, true);
+                savedMapsets.push(res);
                 savedNewMapset = true;
                 countNewlySaved++;
             }
@@ -95,6 +124,12 @@ const fetchNewMapData = async () => {
         // Update beatmap status
         if (countNewlySaved > 0) updateUserCategoryStats(0);
         utils.log('Beatmap database is up to date');
+        // Log to Discord if we saved any new mapsets
+        if (savedMapsets.length === 0) return;
+        utils.log(savedMapsets);
+        const description = savedMapsets.map(mapset => {
+            return `* [${mapset.artist} - ${mapset.title}](https://osu.ppy.sh/beatmapsets/${mapset.id}) containing **${mapset.beatmaps.length} map${mapset.beatmaps.length !== 1 ? 's' : ''}**`;
+        }).join('\n');
     } catch (error) {
         utils.logError('Error while updating stored beatmap data:', error);
     }
@@ -554,7 +589,17 @@ const importUser = async (userId) => {
         const scoresPerMinute = Math.round(
             (mostPlayedOffset / (Date.now() - timeStarted)) * 1000 * 60
         );
-        utils.logToDiscord(`Completed import of ${passCount} passes for ${user.name} in ${utils.secsToDuration(Math.round(importDurationMs / 1000))} (${scoresPerMinute} scores/min)`);
+        utils.log(`Completed import of ${passCount} passes for ${user.name} in ${utils.secsToDuration(Math.round(importDurationMs / 1000))} (${scoresPerMinute} scores/min)`);
+        utils.postToActivityFeed({
+            author: {
+                name: user.name,
+                icon_url: user.avatar_url,
+                url: `https://${process.env.HOST}/u/${user.id}`
+            },
+            title: `Completed import of ${passCount.toLocaleString()} passes`,
+            description: `Took ${utils.secsToDuration(Math.round(importDurationMs / 1000))}`,
+            color: 0xA3F5F5
+        });
     } catch (error) {
         utils.logError(`Error while importing user ${user.name}:`, error);
     }
@@ -627,6 +672,7 @@ const savePassesFromGlobalRecents = async () => {
         }
         // Process scores
         utils.log(`Processing and saving passes from global recents...`);
+        const savedPasses = [];
         for (const userId in scoresByUser) {
             await updateUserProfile(userId);
             const user = await db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
@@ -658,6 +704,12 @@ const savePassesFromGlobalRecents = async () => {
                     db.prepare(`INSERT INTO user_passes (user_id, map_id, mapset_id, mode, status, is_convert, time_passed) VALUES (?, ?, ?, ?, ?, ?, ?)`).run(
                         userId, mapId, mapsetId, mode, status, isConvert ? 1 : 0, time
                     );
+                    savedPasses.push({
+                        userId, userName: user.name,
+                        mapsetId, mapId, mode,
+                        mapName: `${map.beatmapset.artist} - ${map.beatmapset.title} [${map.version}]`,
+                        xp: dbHelpers.secsToXp(map.total_length)
+                    });
                     newCount++;
                 }
                 // Update user's last pass time
@@ -674,6 +726,14 @@ const savePassesFromGlobalRecents = async () => {
         for (const mode of modes) {
             const newCursor = newCursors[mode];
             db.prepare(`INSERT OR REPLACE INTO global_recents_cursors (mode, cursor) VALUES (?, ?)`).run(mode, newCursor);
+        }
+        // Log passes to Discord
+        if (savedPasses.length > 0) {
+            const description = savedPasses.map(pass => {
+                return `* [${pass.userName}](<https://${process.env.HOST}/u/${pass.userId}>) gained **${pass.xp.toLocaleString()} cxp** from **${utils.rulesetKeyToName(pass.mode, true)}** [${pass.mapName}](<https://osu.ppy.sh/beatmapsets/${pass.mapsetId}#${pass.mode}/${pass.mapId}>)`;
+            }).join('\n');
+            utils.postToPassFeed(description);
+            utils.log(`Completed processing global recents, saved ${savedPasses.length} new passes`);
         }
     } catch (error) {
         utils.logError(`Error while processing global recents:`, error);

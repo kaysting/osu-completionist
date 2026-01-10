@@ -29,14 +29,20 @@ const utils = {
         console.log(`[${timestamp}]`, ...args);
     },
 
-    logToDiscord: (...args) => {
-        utils.log(...args);
-        const url = process.env.INFO_LOGS_DISCORD_WEBHOOK_URL;
-        if (url) {
-            utils.postDiscordWebhook(url, {
-                content: utils.parseArgsToDiscordContent(args)
-            });
-        }
+    postToPassFeed: async content => {
+        await utils.postDiscordWebhook(process.env.PASS_FEED_DISCORD_WEBHOOK_URL, {
+            content,
+            username: 'osu!complete Pass Feed',
+            avatar_url: `https://${process.env.HOST}/assets/images/icon.png`
+        });
+    },
+
+    postToActivityFeed: async (embed) => {
+        await utils.postDiscordWebhook(process.env.ACTIVITY_FEED_DISCORD_WEBHOOK_URL, {
+            embeds: [embed],
+            username: 'osu!complete Activity',
+            avatar_url: `https://${process.env.HOST}/assets/images/icon.png`
+        });
     },
 
     logError: (...args) => {

@@ -68,6 +68,11 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         Date.now() + msUntilNextImport, undefined, false
     );
 
+    // Format durations
+    stats.timeSpent = utils.secsToDuration(stats.secs_spent);
+    stats.timeRemaining = utils.secsToDuration(stats.secs_remaining);
+    stats.timeTotal = utils.secsToDuration(stats.secs_total);
+
     // If viewing our own profile, get user trends and recommended maps
     let recommended = null;
     let recommendedQuery = '';

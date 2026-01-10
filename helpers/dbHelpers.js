@@ -91,6 +91,9 @@ const getBulkUserCompletionStats = (userIds, categoryId) => {
         xp: 0,
         xp_remaining: secsToXp(totals.seconds),
         xp_total: secsToXp(totals.seconds),
+        secs_spent: 0,
+        secs_remaining: totals.seconds,
+        secs_total: totals.seconds,
         rank: -1
     };
     for (const row of rows) {
@@ -99,6 +102,8 @@ const getBulkUserCompletionStats = (userIds, categoryId) => {
         stats.count_total = totals.count;
         stats.xp = secsToXp(row.seconds);
         stats.xp_remaining = secsToXp(totals.seconds - row.seconds);
+        stats.secs_spent = row.seconds;
+        stats.secs_remaining = totals.seconds - row.seconds;
         stats.percentage_completed = row.seconds > 0 ? ((row.seconds / totals.seconds) * 100) : 0;
         if (row.last_import_time > 0)
             stats.rank = row.rank;
@@ -694,6 +699,7 @@ const getQueuedUsers = () => {
 };
 
 module.exports = {
+    secsToXp,
     getBulkUserCompletionStats,
     getUserProfile,
     getLeaderboard,

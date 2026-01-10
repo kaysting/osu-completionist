@@ -113,31 +113,50 @@
             </div>
         </div>
         <div class="card lighter progress">
-            <div class="top">
-                <span class="header">completion progress</span>
-            </div>
-            <div class="stats">
-                <div class="stat">
-                    <div class="key">maps completed</div>
-                    <div class="value"><%= user.stats.count_completed.toLocaleString() %></div>
-                </div>
-                <div class="stat">
-                    <div class="key">maps to complete</div>
-                    <div class="value"><%= (user.stats.count_total - user.stats.count_completed).toLocaleString() %>
+            <div class="flex flex-wrap" style="gap: 16px 64px">
+                <div class="flex col gap-16">
+                    <div class="top">
+                        <span class="header">completion progress</span>
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="key">maps completed</div>
+                            <div class="value"><%= user.stats.count_completed.toLocaleString() %></div>
+                        </div>
+                        <div class="stat">
+                            <div class="key">maps remaining</div>
+                            <div class="value">
+                                <%= (user.stats.count_total - user.stats.count_completed).toLocaleString() %>
+                            </div>
+                        </div>
+                        <div class="stat">
+                            <div class="key">cxp remaining</div>
+                            <div class="value"><%= user.stats.xp_remaining.toLocaleString() %></div>
+                        </div>
+                        <div class="stat">
+                            <div class="key">nomod playtime remaining</div>
+                            <div class="value"><%= user.stats.timeRemaining %></div>
+                        </div>
                     </div>
                 </div>
-                <div class="stat">
-                    <div class="key">total maps</div>
-                    <div class="value"><%= user.stats.count_total.toLocaleString() %></div>
-                </div>
-                <div class="stat">
-                    <div class="key">cxp to completion</div>
-                    <div class="value"><%= user.stats.xp_remaining.toLocaleString() %>
+                <div class="flex col gap-16">
+                    <div>
+                        <span class="header">category totals</span>
                     </div>
-                </div>
-                <div class="stat">
-                    <div class="key">total cxp</div>
-                    <div class="value"><%= user.stats.xp_total.toLocaleString() %></div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="key">total maps</div>
+                            <div class="value"><%= user.stats.count_total.toLocaleString() %></div>
+                        </div>
+                        <div class="stat">
+                            <div class="key">total obtainable cxp</div>
+                            <div class="value"><%= user.stats.xp_total.toLocaleString() %></div>
+                        </div>
+                        <div class="stat">
+                            <div class="key">total nomod duration</div>
+                            <div class="value"><%= user.stats.timeTotal %></div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div>
@@ -145,21 +164,7 @@
             </div>
             <div class="yearly">
                 <% for (const yearData of user.yearly) { %>
-                <div class="entry">
-                    <div class="year"><%= yearData.year %></div>
-                    <div class="content">
-                        <div class="values">
-                            <div class="percent"><%= yearData.percentage_completed.toFixed(2) %>%</div>
-                            <div class="count"><%= yearData.count_completed.toLocaleString() %> /
-                                <%= yearData.count_total.toLocaleString() %></div>
-                        </div>
-                        <div class="bar">
-                            <div class="filling"
-                                style="width: <%= yearData.percentage_completed %>%; background: <%= yearData.color %>">
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <%- include('../partials/yearlyStatsEntry', yearData) %>
                 <% } %>
             </div>
         </div>

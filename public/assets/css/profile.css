@@ -144,7 +144,7 @@
     gap: 2px;
 }
 
-#profile .yearly .entry {
+.yearlyStatsEntry {
     display: flex;
     gap: 8px;
     padding: 8px;
@@ -153,40 +153,40 @@
     align-items: center;
 }
 
-#profile .yearly .entry .year {
+.yearlyStatsEntry .year {
     font-size: 14px;
     width: 40px;
     flex-shrink: 0;
     text-align: center;
 }
 
-#profile .yearly .entry .content {
+.yearlyStatsEntry .content {
     display: flex;
     flex-direction: column;
     gap: 4px;
     flex-grow: 1;
 }
 
-#profile .yearly .entry .content .values {
+.yearlyStatsEntry .content .values {
     display: flex;
     gap: 0px 4px;
     flex-wrap: wrap;
     align-items: flex-end;
 }
 
-#profile .yearly .entry .content .values .percent {
+.yearlyStatsEntry .content .values .percent {
     font-size: 16px;
     font-weight: 600;
     color: white;
     flex-grow: 1;
 }
 
-#profile .yearly .entry .content .values .count {
+.yearlyStatsEntry .content .values .count {
     font-size: 14px;
     color: var(--textDim);
 }
 
-#profile .yearly .entry .content .bar {
+.yearlyStatsEntry .content .bar {
     width: 100%;
     height: 4px;
     background: hsl(220, 20%, 15%);
@@ -195,7 +195,7 @@
     position: relative;
 }
 
-#profile .yearly .entry .content .bar .filling {
+.yearlyStatsEntry .content .bar .filling {
     position: absolute;
     top: 0px;
     left: 0px;
