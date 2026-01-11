@@ -113,12 +113,85 @@
             </div>
         </div>
         <div class="card lighter progress">
-            <div class="flex flex-wrap" style="gap: 16px 64px">
-                <div class="flex col gap-16">
-                    <div class="top">
-                        <span class="header">completion progress</span>
-                    </div>
-                    <div class="stats">
+            <div class="flex col gap-16 flex-grow">
+                <div class="top">
+                    <span class="header">completion progress</span>
+                </div>
+                <div style="height: 100px">
+                    <canvas id="progressGraph"></canvas>
+                    <script>
+                        window.addEventListener('load', () => {
+                            const data = JSON.parse('<%- JSON.stringify(user.historyDaily) %>');
+                            data.push({
+                                date: 'now',
+                                percentage_completed: '<%= user.stats.percentage_completed %>'
+                            });
+                            const ctx = document.getElementById('progressGraph').getContext('2d');
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 100);
+                            gradient.addColorStop(0, 'hsla(150, 90%, 60%, 20%)');
+                            gradient.addColorStop(1, 'hsla(150, 90%, 60%, 0%)');
+                            const chart = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: data.map(entry => entry.date),
+                                    datasets: [{
+                                        data: data.map(entry => entry.percentage_completed),
+                                        backgroundColor: gradient,
+                                        borderColor: 'hsl(150, 90%, 60%)',
+                                        borderWidth: 2,
+                                        pointRadius: 0,
+                                        pointHoverRadius: 4,
+                                        fill: true,
+                                        tension: 0.5
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        },
+                                        tooltip: {
+                                            mode: 'index',
+                                            intersect: false,
+                                            displayColors: false,
+                                            cornerRadius: 8,
+                                            padding: 8,
+                                            titleMarginBottom: 2,
+                                            backgroundColor: 'hsl(220, 20%, 10%)',
+                                            titleFont: {
+                                                size: 12,
+                                                weight: 600,
+                                                family: 'Torus'
+                                            },
+                                            bodyFont: {
+                                                size: 16,
+                                                weight: 'normal',
+                                                family: 'Torus'
+                                            },
+                                            titleColor: `hsl(220, 20%, 65%)`,
+                                            bodyColor: `hsl(220, 20%, 90%)`,
+                                            callbacks: {
+                                                label: context => `${context.parsed.y.toFixed(4)}% completed`,
+                                                title: context => `${context[0].label}`
+                                            }
+                                        }
+                                    },
+                                    scales: {
+                                        x: { display: false },
+                                        y: { display: false }
+                                    },
+                                    layout: {
+                                        padding: 0
+                                    }
+                                }
+                            });
+                        });
+                    </script>
+                </div>
+                <div class="flex flex-wrap" style="gap: 16px 64px">
+                    <div class="stats flex-grow">
                         <div class="stat">
                             <div class="key">maps completed</div>
                             <div class="value"><%= user.stats.count_completed.toLocaleString() %></div>
@@ -137,11 +210,6 @@
                             <div class="key">nomod playtime remaining</div>
                             <div class="value"><%= user.stats.timeRemaining %></div>
                         </div>
-                    </div>
-                </div>
-                <div class="flex col gap-16">
-                    <div>
-                        <span class="header">category totals</span>
                     </div>
                     <div class="stats">
                         <div class="stat">

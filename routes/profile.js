@@ -49,6 +49,8 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     const timeRecentsAfter = Date.now() - (1000 * 60 * 60 * 24);
     const recentPasses = dbHelpers.getUserRecentPasses(req.user.id, category, 100, 0, timeRecentsAfter);
     const updateStatus = dbHelpers.getUserUpdateStatus(req.user.id);
+    const historyDaily = dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'day');
+    const historyMonthly = dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'month');
 
     // Format update status
     if (updateStatus.updating) {
@@ -170,7 +172,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
             image: `/u/${user.id}/${category}/renders/main?t=${user.last_pass_time}`
         },
         user: {
-            ...user, stats, yearly, recentPasses, updateStatus, recommended, recommendedQuery, yearlyType
+            ...user, stats, yearly, recentPasses, updateStatus, recommended, recommendedQuery, yearlyType, historyDaily, historyMonthly
         },
         copyable: statsText.join('\n'),
         category,
