@@ -34,15 +34,14 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
 
     const user = req.user;
     const category = req.params.category.toLowerCase();
+    const yearlyType = utils.ensureOneOf(req.query.yearly_type || req.session.yearlyType, ['maps', 'xp'], 'maps');
+    req.session.yearlyType = yearlyType;
 
     // Check category
     if (!statCategories.definitions.find(cat => cat.id === category)) {
         return res.redirect(`/u/${req.user.id}/osu-ranked`);
     }
     req.session.category = category;
-    const mode = category.split('-')[0];
-    const modeKey = utils.rulesetNameToKey(mode);
-    const modeName = mode == 'global' ? 'Global' : utils.rulesetKeyToName(modeKey, true);
 
     // Get data
     const stats = dbHelpers.getUserCompletionStats(req.user.id, category);
@@ -141,7 +140,9 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
 
     // Get completion colors for each year
     for (const yearData of yearly) {
-        yearData.color = utils.percentageToColor(yearData.percentage_completed / 100);
+        const completed = yearlyType == 'xp' ? yearData.xp : yearData.count_completed;
+        const total = yearlyType == 'xp' ? yearData.xp_total : yearData.count_total;
+        yearData.color = utils.percentageToColor(completed / total);
     }
 
     // Get relative timestamps for recent passes
@@ -152,11 +153,11 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     // Build copyable text
     const categoryName = statCategories.getCategoryName(category);
     const statsText = [
-        `${user.name}'s ${modeName.toLowerCase()} ${categoryName.toLowerCase()} completion stats:\n`
+        `${user.name}'s ${categoryName.toLowerCase()} completion stats:\n`
     ];
     for (const year of yearly) {
         const checkbox = year.count_completed === year.count_total ? '☑' : '☐';
-        statsText.push(`${checkbox} ${year.year}: ${year.count_completed.toLocaleString()} / ${year.count_total.toLocaleString()} (${year.percentage_completed.toFixed(2)}%)`);
+        statsText.push(`${checkbox} ${year.year}: ${year.count_completed.toLocaleString()} / ${year.count_total.toLocaleString()} (${year.map_percentage_completed.toFixed(2)}%)`);
     }
     statsText.push(`\nTotal: ${stats.count_completed.toLocaleString()} / ${stats.count_total.toLocaleString()} (${stats.percentage_completed.toFixed(2)}%)`);
 
@@ -164,12 +165,12 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     res.renderPage('profile', {
         title: req.user.name,
         meta: {
-            title: `${req.user.name}'s ${modeName.toLowerCase()} completionist profile`,
-            description: `${req.user.name} has passed ${stats.percentage_completed.toFixed(2)}% of all ${categoryName.toLowerCase()} beatmaps! Click to view more of their completionist stats.`,
+            title: `${req.user.name}'s ${categoryName.toLowerCase()} completionist profile`,
+            description: `${req.user.name} has passed ${stats.percentage_completed.toFixed(2)}% of beatmaps in this category. Click to view more of their completionist stats!`,
             image: `/u/${user.id}/${category}/renders/main?t=${user.last_pass_time}`
         },
         user: {
-            ...user, stats, yearly, recentPasses, updateStatus, recommended, recommendedQuery
+            ...user, stats, yearly, recentPasses, updateStatus, recommended, recommendedQuery, yearlyType
         },
         copyable: statsText.join('\n'),
         category,

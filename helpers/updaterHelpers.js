@@ -61,16 +61,26 @@ const saveMapset = async (mapsetId, index = true) => {
     // Log to Discord
     setImmediate(() => {
         utils.postToActivityFeed({
-            title: `Saved new mapset`,
+            author: {
+                name: `${index ? `Saved new beatmapset` : 'Updated saved beatmapset'}`,
+            },
+            title: `${mapset.artist} - ${mapset.title}`,
+            url: `https://osu.ppy.sh/beatmapsets/${mapset.id}`,
             fields: [
                 {
-                    name: 'Mapset',
-                    value: `[${mapset.artist} - ${mapset.title}](https://osu.ppy.sh/beatmapsets/${mapset.id})`
+                    name: 'Status',
+                    value: mapset.status,
+                    inline: true
                 },
                 {
-                    name: `${mapset.beatmaps.length} difficult${mapset.beatmaps.length !== 1 ? 'ies' : 'y'}`,
+                    name: 'Mapper',
+                    value: mapset.mapper,
+                    inline: true
+                },
+                {
+                    name: `Difficulties (${mapset.beatmaps.length})`,
                     value: mapset.beatmaps.map(map => {
-                        return `* **${utils.rulesetKeyToName(map.mode)} ${map.stars.toFixed(2)} :star:**  [${map.name}](https://osu.ppy.sh/beatmapsets/${mapset.id}#${map.mode}/${map.id})`;
+                        return `* **${utils.rulesetKeyToName(map.mode)} ${map.stars.toFixed(2)} ★** - [${map.name}](https://osu.ppy.sh/beatmapsets/${mapset.id}#${map.mode}/${map.id})`;
                     }).join('\n')
                 }
             ],
@@ -124,12 +134,6 @@ const fetchNewMapData = async () => {
         // Update beatmap status
         if (countNewlySaved > 0) updateUserCategoryStats(0);
         utils.log('Beatmap database is up to date');
-        // Log to Discord if we saved any new mapsets
-        if (savedMapsets.length === 0) return;
-        utils.log(savedMapsets);
-        const description = savedMapsets.map(mapset => {
-            return `* [${mapset.artist} - ${mapset.title}](https://osu.ppy.sh/beatmapsets/${mapset.id}) containing **${mapset.beatmaps.length} map${mapset.beatmaps.length !== 1 ? 's' : ''}**`;
-        }).join('\n');
     } catch (error) {
         utils.logError('Error while updating stored beatmap data:', error);
     }
@@ -519,7 +523,7 @@ const importUser = async (userId) => {
                 if (!validStatuses.includes(map.status)) continue;
                 // Save mapset data if not already saved
                 const existingMapset = db.prepare(`SELECT * FROM beatmapsets WHERE id = ? LIMIT 1`).get(map.beatmapset_id);
-                if (!existingMapset || existingMapset.status !== map.status) {
+                if (!existingMapset) {
                     await saveMapset(map.beatmapset_id, !existingMapset);
                     savedNewMapsets = true;
                 }
@@ -661,7 +665,7 @@ const savePassesFromGlobalRecents = async () => {
             // Save mapset data if not already saved
             const mapsetId = map.beatmapset.id;
             const existingMapset = db.prepare(`SELECT * FROM beatmapsets WHERE id = ? LIMIT 1`).get(mapsetId);
-            if (!existingMapset || existingMapset.status !== map.beatmapset.status) {
+            if (!existingMapset) {
                 await saveMapset(mapsetId, !existingMapset);
                 savedNewMapsets = true;
             }
@@ -730,7 +734,7 @@ const savePassesFromGlobalRecents = async () => {
         // Log passes to Discord
         if (savedPasses.length > 0) {
             const description = savedPasses.map(pass => {
-                return `* [${pass.userName}](<https://${process.env.HOST}/u/${pass.userId}>) gained **${pass.xp.toLocaleString()} cxp** from **${utils.rulesetKeyToName(pass.mode, true)}** [${pass.mapName}](<https://osu.ppy.sh/beatmapsets/${pass.mapsetId}#${pass.mode}/${pass.mapId}>)`;
+                return `-# * **[${pass.userName}](<https://${process.env.HOST}/u/${pass.userId}>)** gained **${pass.xp.toLocaleString()} cxp** from **${utils.rulesetKeyToName(pass.mode, true)}** [${pass.mapName}](<https://osu.ppy.sh/beatmapsets/${pass.mapsetId}#${pass.mode}/${pass.mapId}>)`;
             }).join('\n');
             utils.postToPassFeed(description);
             utils.log(`Completed processing global recents, saved ${savedPasses.length} new passes`);

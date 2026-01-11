@@ -2,12 +2,19 @@
     <div class="year"><%= year %></div>
     <div class="content">
         <div class="values">
-            <div class="percent"><%= percentage_completed.toFixed(2) %>%</div>
-            <div class="count"><%= count_completed.toLocaleString() %> /
-                <%= count_total.toLocaleString() %></div>
+            <div class="percent">
+                <%= (yearlyType == 'xp' ? time_percentage_completed : map_percentage_completed).toFixed(2) %>%</div>
+            <div class="count">
+                <% if (yearlyType == 'xp') { %>
+                <%= xp.toLocaleString() %> / <%= xp_total.toLocaleString() %> cxp
+                <% } else { %>
+                <%= count_completed.toLocaleString() %> / <%= count_total.toLocaleString() %> maps
+                <% } %>
+            </div>
         </div>
         <div class="bar">
-            <div class="filling" style="width: <%= percentage_completed %>%; background: <%= color %>">
+            <div class="filling"
+                style="width: <%= (yearlyType == 'xp' ? time_percentage_completed : map_percentage_completed) %>%; background: <%= color %>">
             </div>
         </div>
     </div>

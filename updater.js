@@ -30,7 +30,7 @@ const runImportQueue = async () => {
 
 const runFetchNewMaps = async () => {
     await updaterHelpers.fetchNewMapData();
-    setTimeout(runFetchNewMaps, 1000 * 60 * 60);
+    setTimeout(runFetchNewMaps, 1000 * 60 * 5);
 };
 
 const runUpdateMapStatuses = async () => {

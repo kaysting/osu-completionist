@@ -235,16 +235,19 @@ const getBulkUserYearlyCompletionStats = (userIds, categoryId) => {
     }
     // Get totals for category and map counts to year
     const totalsRows = db.prepare(
-        `SELECT year, count FROM user_category_stats_yearly
+        `SELECT year, count, seconds FROM user_category_stats_yearly
          WHERE user_id = 0 AND category = ?`
     ).all(categoryId);
-    const yearToTotalCount = {};
+    const yearToTotals = {};
     for (const row of totalsRows) {
-        yearToTotalCount[row.year] = row.count;
+        yearToTotals[row.year] = {
+            count: row.count,
+            seconds: row.seconds
+        };
     }
     // Get user stats
     const completedRows = db.prepare(
-        `SELECT user_id, year, count FROM user_category_stats_yearly
+        `SELECT user_id, year, count, seconds FROM user_category_stats_yearly
          WHERE user_id IN (${userIds.map(() => '?').join(',')})
          AND category = ?`
     ).all(...userIds, categoryId);
@@ -254,22 +257,38 @@ const getBulkUserYearlyCompletionStats = (userIds, categoryId) => {
         if (!userIdToYearlyCompletions[row.user_id]) {
             userIdToYearlyCompletions[row.user_id] = {};
         }
-        userIdToYearlyCompletions[row.user_id][row.year] = row.count;
+        userIdToYearlyCompletions[row.user_id][row.year] = {
+            count: row.count,
+            seconds: row.seconds
+        };
     }
     // Build entries
     const entries = [];
     for (const userId of userIds) {
         const entry = [];
-        for (const year in yearToTotalCount) {
-            const count_total = yearToTotalCount[year];
+        for (const year in yearToTotals) {
+            // Get totals and skip if no maps in this year
+            const totals = yearToTotals[year];
+            const count_total = totals.count;
+            const secs_total = totals.seconds;
+            const xp_total = secsToXp(secs_total);
             if (!count_total) continue;
-            const count_completed = userIdToYearlyCompletions[userId]?.[year] || 0;
-            const percentage_completed = count_total > 0 ? ((count_completed / count_total) * 100) : 0;
+            // Get and calculate completion stats
+            const completed = userIdToYearlyCompletions[userId]?.[year] || {};
+            const xp = secsToXp(completed?.seconds || 0);
+            const count_completed = completed?.count || 0;
+            const map_percentage_completed = count_total > 0 ? ((count_completed / count_total) * 100) : 0;
+            const time_percentage_completed = secs_total > 0 ? ((completed?.seconds || 0) / secs_total) * 100 : 0;
+            // Build object
             entry.push({
                 year: parseInt(year),
                 count_completed,
                 count_total,
-                percentage_completed
+                xp,
+                xp_total,
+                secs_total,
+                map_percentage_completed,
+                time_percentage_completed
             });
         }
         entries.push(entry);

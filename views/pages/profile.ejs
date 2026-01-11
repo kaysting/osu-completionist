@@ -160,12 +160,24 @@
                 </div>
             </div>
             <div>
-                <span class="header">map completion by year</span>
+                <span class="header">completion by year</span>
             </div>
-            <div class="yearly">
-                <% for (const yearData of user.yearly) { %>
-                <%- include('../partials/yearlyStatsEntry', yearData) %>
-                <% } %>
+            <div class="flex col gap-8">
+                <div class="btnGroup">
+                    <a href="/u/<%= user.id %>/<%= category %>?yearly_type=maps"
+                        class="btn <%= user.yearlyType == 'maps' ? 'primary' : '' %> small">
+                        <span class="label">map count</span>
+                    </a>
+                    <a href="/u/<%= user.id %>/<%= category %>?yearly_type=xp"
+                        class="btn <%= user.yearlyType == 'xp' ? 'primary' : '' %> small">
+                        <span class="label">cxp</span>
+                    </a>
+                </div>
+                <div class="yearly">
+                    <% for (const yearData of user.yearly) { %>
+                    <%- include('../partials/yearlyStatsEntry', { ...yearData, yearlyType: user.yearlyType }) %>
+                    <% } %>
+                </div>
             </div>
         </div>
         <% if (user.recommended) { %>
