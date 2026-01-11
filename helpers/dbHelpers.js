@@ -136,7 +136,7 @@ const getUserHistoricalCompletionStats = (userId, categoryId, aggregate = 'day')
             percentage_completed: row.percent,
             rank: row.rank,
             time_saved: row.time
-        }));
+        })).reverse();
     } else if (aggregate === 'month') {
         // Group by month
         const monthly = {};
