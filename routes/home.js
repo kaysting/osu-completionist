@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../helpers/db');
+const dbHelpers = require('../helpers/dbHelpers');
 
 const router = express.Router();
 
@@ -13,8 +14,15 @@ const getStats = () => {
     }
     stats.users = db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
     stats.beatmaps = db.prepare('SELECT COUNT(*) AS count FROM beatmaps').get().count;
-    stats.passes = db.prepare('SELECT COUNT(*) AS count FROM user_passes').get().count;
-    const secs = db.prepare(`SELECT SUM(duration_secs) AS secs FROM beatmaps `);
+    const totalStats = db.prepare(
+        `SELECT
+            SUM(seconds) AS secs,
+            SUM(count) AS passes
+        FROM user_category_stats
+        WHERE category = 'global-ranked-loved-converts' AND user_id > 0`
+    ).get();
+    stats.xp = dbHelpers.secsToXp(totalStats.secs);
+    stats.passes = totalStats.passes;
     lastStatRefresh = now;
     return stats;
 };
@@ -26,7 +34,8 @@ router.get('/', (req, res) => {
         stats: {
             users: stats.users.toLocaleString(),
             beatmaps: stats.beatmaps.toLocaleString(),
-            passes: stats.passes.toLocaleString()
+            passes: stats.passes.toLocaleString(),
+            xp: stats.xp.toLocaleString()
         },
         me: req.me
     });
