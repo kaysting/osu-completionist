@@ -72,6 +72,7 @@ CREATE TABLE
 		last_profile_update_time integer not null default 0,
 		last_login_time integer not null default 0,
 		api_key text,
+		osu_join_date integer default 0,
 		PRIMARY KEY ("id")
 	);
 
@@ -230,7 +231,8 @@ CREATE TABLE
 		"time_started" INTEGER DEFAULT 0,
 		"percent_complete" REAL DEFAULT 0,
 		"count_passes_imported" INTEGER DEFAULT 0,
-		playcounts_count integer default 0
+		playcounts_count integer default 0,
+		is_full integer default 0
 	);
 
 CREATE INDEX idx_users_last_pass ON users (last_pass_time);

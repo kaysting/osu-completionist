@@ -8,6 +8,7 @@ const cp = require('child_process');
 const dayjs = require('dayjs');
 const statCategories = require('./statCategories');
 const dbHelpers = require('./dbHelpers');
+const { log } = require('console');
 
 const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'storage.db');
 
@@ -204,20 +205,20 @@ const updateMapStatuses = async () => {
 /**
  * Fetch and store up to date profile data for a user from the osu! API
  * @param {number} userId The user ID whose data to update
- * @param {Object} userObj A user object previously returned from the osu! API, so we don't have to fetch it again
+ * @param {boolean} force Whether to force update the profile data even if it's been updated recently
  * @returns A row from the users table
  */
-const updateUserProfile = async (userId, userObj) => {
+const updateUserProfile = async (userId, force = false) => {
     try {
         // Check if a user entry already exists
         const existingUser = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
         // Stop now if it's been too soon since last profile update
         const msSinceLastUpdate = Date.now() - (existingUser?.last_profile_update_time || 0);
-        if (existingUser && msSinceLastUpdate < (1000 * 60 * 15)) {
+        if (existingUser && msSinceLastUpdate < (1000 * 60 * 15) && !force) {
             return existingUser;
         }
         // Fetch user from osu
-        const user = userObj || (await osu.getUsers({ ids: [userId] })).users[0];
+        const user = (await osu.getUsers({ ids: [userId] })).users[0];
         // Make sure we got a user
         if (!user?.username) {
             throw new Error(`User with ID ${userId} not found on osu! API`);
@@ -249,16 +250,17 @@ const updateUserProfile = async (userId, userObj) => {
                     team_name = ?,
                     team_name_short = ?,
                     team_flag_url = ?,
-                    last_profile_update_time = ?
+                    last_profile_update_time = ?,
+                    osu_join_date = ?
                 WHERE id = ?`
-            ).run(user.username, user.avatar_url, user.cover.url, user.country.code, user.team?.id, user.team?.name, user.team?.short_name, user.team?.flag_url, Date.now(), user.id);
+            ).run(user.username, user.avatar_url, user.cover.url, user.country.code, user.team?.id, user.team?.name, user.team?.short_name, user.team?.flag_url, Date.now(), new Date(user.join_date).getTime(), user.id);
             utils.log(`Updated stored user data for ${user.username}`);
         } else {
             // Create new user entry
             db.prepare(
-                `INSERT INTO users (id, name, avatar_url, banner_url, country_code, team_id, team_name, team_name_short, team_flag_url, time_created, last_profile_update_time, api_key)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-            ).run(user.id, user.username, user.avatar_url, user.cover.url, user.country.code, user.team?.id, user.team?.name, user.team?.short_name, user.team?.flag_url, Date.now(), Date.now(), utils.generateSecretKey(32));
+                `INSERT INTO users (id, name, avatar_url, banner_url, country_code, team_id, team_name, team_name_short, team_flag_url, time_created, last_profile_update_time, api_key, osu_join_date)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            ).run(user.id, user.username, user.avatar_url, user.cover.url, user.country.code, user.team?.id, user.team?.name, user.team?.short_name, user.team?.flag_url, Date.now(), Date.now(), utils.generateSecretKey(32), new Date(user.join_date).getTime());
             utils.log(`Stored user data for ${user.username}`);
         }
         return db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
@@ -456,19 +458,25 @@ const snapshotCategoryStats = () => {
 };
 
 // Function to import a user's passes from their most played beatmaps
+// or by checking all maps for passes if a full import is requested
 let isImportRunning = false;
-const importUser = async (userId) => {
+const importUser = async (userId, doFullImport = false) => {
     const user = await db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
     try {
         isImportRunning = true;
         utils.log(`Deleting existing passes for ${user.name}...`);
         db.prepare(`DELETE FROM user_passes WHERE user_id = ?`).run(userId);
-        utils.log(`Starting import of ${user.name}'s passes...`);
-        const osuUser = await osu.getUser(userId);
-        const playcountsCount = osuUser.beatmap_playcounts_count;
+        utils.log(`Starting ${doFullImport ? `FULL ` : ''}import of ${user.name}'s passes...`);
         const uniqueMapsetIds = new Set();
         const uniqueStdMapsetIds = new Set();
         const pendingMapsetIds = [];
+        // If full import, count total beatmaps
+        let beatmapsCount = 0;
+        if (doFullImport)
+            beatmapsCount = db.prepare(`SELECT COUNT(*) AS count FROM beatmaps`).get().count;
+        // Get playcounts count or use length of pendingMapsetIds if full import
+        const osuUser = !doFullImport ? await osu.getUser(userId) : null;
+        const playcountsCount = beatmapsCount || osuUser.beatmap_playcounts_count;
         // Update queue entry
         const timeStarted = Date.now();
         db.prepare(
@@ -478,30 +486,61 @@ const importUser = async (userId) => {
             WHERE user_id = ?`
         ).run(timeStarted, playcountsCount, userId);
         // Outer loop to fetch and process passes
-        let mostPlayedOffset = 0;
+        let beatmapsOffset = 0;
         let passCount = 0;
         while (true) {
             // Inner loop to fetch unique mapset IDs from most played
+            // Skip this if doing a full import, where we've already gotten all mapset IDs
             while (true) {
                 if (pendingMapsetIds.length >= 50) break;
-                // Fetch most played maps
-                const res = await osu.getUserBeatmaps(userId, 'most_played', {
-                    limit: 100, offset: mostPlayedOffset
-                });
-                if (res.length == 0) break;
-                // Collect unique mapset IDs
-                for (const entry of res) {
-                    const mapsetId = entry.beatmapset.id;
-                    const status = entry.beatmapset.status;
-                    const validStatuses = ['ranked', 'approved', 'loved'];
-                    if (!uniqueMapsetIds.has(mapsetId) && validStatuses.includes(status)) {
+                // Collect beatmap entries depending on import type
+                const entries = [];
+                if (doFullImport) {
+                    // Fetch chunk of maps from db
+                    const rows = db.prepare(
+                        `SELECT mapset.id AS mapset_id, map.mode AS mode, mapset.status AS status
+                        FROM beatmaps map
+                        JOIN beatmapsets mapset ON map.mapset_id = mapset.id
+                        ORDER BY map.id ASC
+                        LIMIT 100 OFFSET ?`
+                    ).all(beatmapsOffset);
+                    // Add entries
+                    for (const row of rows) {
+                        const mapsetId = row.mapset_id;
+                        const status = row.status;
+                        const mode = row.mode;
+                        entries.push({ mapsetId, status, mode });
+                    }
+                } else {
+                    // Fetch most played maps
+                    const res = await osu.getUserBeatmaps(userId, 'most_played', {
+                        limit: 100, offset: beatmapsOffset
+                    });
+                    if (res.length == 0) break;
+                    // Add entries
+                    for (const entry of res) {
+                        const mapsetId = entry.beatmapset.id;
+                        const status = entry.beatmapset.status;
+                        const mode = entry.beatmap.mode;
+                        entries.push({ mapsetId, status, mode });
+                    }
+                }
+                // Break if no more entries
+                if (entries.length === 0) break;
+                // Loop through entries and add unique valid mapset IDs to pending list
+                for (const entry of entries) {
+                    const { mapsetId, status, mode } = entry;
+                    const isValidStatus = ['ranked', 'approved', 'loved'].includes(status);
+                    const isUnseenMapset = !uniqueMapsetIds.has(mapsetId);
+                    const isUnseenStdMapset = mode === 'osu' && !uniqueStdMapsetIds.has(mapsetId);
+                    if (isUnseenMapset && isValidStatus) {
                         uniqueMapsetIds.add(mapsetId);
                         pendingMapsetIds.push(mapsetId);
-                        if (entry.beatmap.mode === 'osu') {
-                            uniqueStdMapsetIds.add(mapsetId);
-                        }
                     }
-                    mostPlayedOffset++;
+                    if (isUnseenStdMapset && isValidStatus) {
+                        uniqueStdMapsetIds.add(mapsetId);
+                    }
+                    beatmapsOffset++;
                 }
             }
             // Break if no more mapsets to process
@@ -521,9 +560,16 @@ const importUser = async (userId) => {
                 // Skip if no leaderboard
                 const validStatuses = ['ranked', 'loved', 'approved'];
                 if (!validStatuses.includes(map.status)) continue;
-                // Save mapset data if not already saved
+                // Save mapset data if not already saved or if status has changed
+                // We get the existing single beatmap entry to check status since sometimes
+                // a beatmap can be WIP or graveyard while the mapset is ranked
+                // It wouldn't hurt to re-save if the single beatmap status didn't match the mapset,
+                // but it's unnecessary
                 const existingMapset = db.prepare(`SELECT * FROM beatmapsets WHERE id = ? LIMIT 1`).get(map.beatmapset_id);
-                if (!existingMapset) {
+                const existingMap = db.prepare(`SELECT * FROM beatmaps WHERE id = ? AND mode = ? LIMIT 1`).get(map.id, map.mode);
+                const oldStatus = existingMap?.status;
+                const newStatus = map.status;
+                if (!existingMapset || oldStatus !== newStatus) {
                     await saveMapset(map.beatmapset_id, !existingMapset);
                     savedNewMapsets = true;
                 }
@@ -566,7 +612,7 @@ const importUser = async (userId) => {
             });
             transaction();
             // Update queue entry progress
-            const percentComplete = (mostPlayedOffset / playcountsCount * 100).toFixed(2);
+            const percentComplete = (beatmapsOffset / playcountsCount * 100).toFixed(2);
             db.prepare(
                 `UPDATE user_import_queue
                 SET percent_complete = ?, count_passes_imported = ?
@@ -578,7 +624,7 @@ const importUser = async (userId) => {
             ).run(Date.now(), userId);
             // Log
             const scoresPerMinute = Math.round(
-                (mostPlayedOffset / (Date.now() - timeStarted)) * 1000 * 60
+                (beatmapsOffset / (Date.now() - timeStarted)) * 1000 * 60
             );
             utils.log(`[Importing ${percentComplete}%] Saved ${passes.length} new passes for ${user.name} (${scoresPerMinute} scores/min)`);
         }
@@ -591,7 +637,7 @@ const importUser = async (userId) => {
         // Log import completion and speed
         const importDurationMs = (Date.now() - timeStarted);
         const scoresPerMinute = Math.round(
-            (mostPlayedOffset / (Date.now() - timeStarted)) * 1000 * 60
+            (beatmapsOffset / (Date.now() - timeStarted)) * 1000 * 60
         );
         utils.log(`Completed import of ${passCount} passes for ${user.name} in ${utils.secsToDuration(Math.round(importDurationMs / 1000))} (${scoresPerMinute} scores/min)`);
         utils.postToActivityFeed({
@@ -600,7 +646,7 @@ const importUser = async (userId) => {
                 icon_url: user.avatar_url,
                 url: `https://${process.env.HOST}/u/${user.id}`
             },
-            title: `Completed import of ${passCount.toLocaleString()} passes`,
+            title: `Completed ${doFullImport ? 'full ' : ''}import of ${passCount.toLocaleString()} passes`,
             description: `Took ${utils.secsToDuration(Math.round(importDurationMs / 1000))}`,
             color: 0xA3F5F5
         });
@@ -662,10 +708,12 @@ const savePassesFromGlobalRecents = async () => {
             // Skip if map doesn't have a leaderboard
             const validStatuses = ['ranked', 'loved', 'approved'];
             if (!validStatuses.includes(map.status)) continue;
-            // Save mapset data if not already saved
+            // Save mapset data if not already saved or if status has changed
             const mapsetId = map.beatmapset.id;
             const existingMapset = db.prepare(`SELECT * FROM beatmapsets WHERE id = ? LIMIT 1`).get(mapsetId);
-            if (!existingMapset) {
+            const oldStatus = existingMapset?.status;
+            const newStatus = map.beatmapset.status;
+            if (!existingMapset || oldStatus !== newStatus) {
                 await saveMapset(mapsetId, !existingMapset);
                 savedNewMapsets = true;
             }
@@ -757,17 +805,19 @@ const startQueuedImports = async () => {
         utils.logError(`User with ID ${userId} not found in database, removed from import queue`);
         return;
     }
-    importUser(userId);
+    importUser(userId, nextEntry.is_full === 1);
 };
 
 // Function to queue a user for import
-const queueUserForImport = async (userId) => {
+const queueUserForImport = async (userId, full = false) => {
     try {
         const existingTask = db.prepare(`SELECT 1 FROM user_import_queue WHERE user_id = ? LIMIT 1`).get(userId);
         if (existingTask) return false;
         // Fetch playcounts count
         const user = await osu.getUser(userId);
-        const playcountsCount = user?.beatmap_playcounts_count || 0;
+        const playcountsCount = full
+            ? db.prepare(`SELECT COUNT(*) AS count FROM beatmaps`).get().count
+            : user?.beatmap_playcounts_count || 0;
         if (!user || playcountsCount === 0) {
             utils.log(`User ${user?.username} has no playcounts, not queueing for import`);
             return false;
@@ -775,10 +825,10 @@ const queueUserForImport = async (userId) => {
         // Add to queue
         db.prepare(
             `INSERT OR IGNORE INTO user_import_queue
-            (user_id, time_queued, playcounts_count)
-            VALUES (?, ?, ?)`
-        ).run(userId, Date.now(), playcountsCount);
-        utils.log(`Queued ${user.username} for import`);
+            (user_id, time_queued, playcounts_count, is_full)
+            VALUES (?, ?, ?, ?)`
+        ).run(userId, Date.now(), playcountsCount, full ? 1 : 0);
+        utils.log(`Queued ${user.username} for ${full ? 'full ' : ''}import`);
         return true;
     } catch (error) {
         utils.logError(`Error while queueing user ${userId} for import:`, error);
@@ -828,9 +878,9 @@ const backupDatabase = async () => {
         const lastBackupTime = files.length > 0 ? files[0].mtime : 0;
         const needsBackup = Date.now() - lastBackupTime > (backupIntervalHours * 60 * 60 * 1000);
         if (needsBackup) {
-            const backupFile = path.join(backupsDir, `${dayjs().format('YYYYMMDD-HHmmss')}.sql`);
+            const backupFile = path.join(backupsDir, `${dayjs().format('YYYYMMDD-HHmmss')}.db`);
             utils.log(`Backing up database to ${backupFile}...`);
-            cp.execSync(`sqlite3 "${dbPath}" .dump > "${backupFile}"`);
+            await db.backup(backupFile);
             utils.log(`Backup complete`);
             const filesToDelete = files.slice(keepBackupsCount - 1);
             for (const file of filesToDelete) {

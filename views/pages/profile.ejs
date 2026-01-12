@@ -121,11 +121,17 @@
                     <canvas id="progressGraph"></canvas>
                     <script>
                         window.addEventListener('load', () => {
+                            // Prepare data
                             const data = JSON.parse('<%- JSON.stringify(user.historyDaily) %>');
-                            data.push({
+                            const datapointNow = {
                                 date: 'now',
                                 percentage_completed: '<%= user.stats.percentage_completed %>'
-                            });
+                            };
+                            data.push(datapointNow);
+                            if (data.length < 2) {
+                                data.push(datapointNow);
+                            }
+                            // Get context and create chart
                             const ctx = document.getElementById('progressGraph').getContext('2d');
                             const gradient = ctx.createLinearGradient(0, 0, 0, 100);
                             gradient.addColorStop(0, 'hsla(150, 90%, 60%, 20%)');
@@ -140,9 +146,8 @@
                                         borderColor: 'hsl(150, 90%, 60%)',
                                         borderWidth: 2,
                                         pointRadius: 0,
-                                        pointHoverRadius: 4,
                                         fill: true,
-                                        tension: 0.5
+                                        tension: 0.3
                                     }]
                                 },
                                 options: {

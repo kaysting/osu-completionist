@@ -203,11 +203,15 @@ const options = [
         description: `Generate a cryptographically securely random secret key for use in configuration.`
     },
     {
-        f: updateHelpers.queueUserForImport,
+        f: async (userId, full = false) => {
+            await updateHelpers.updateUserProfile(userId);
+            await updateHelpers.queueUserForImport(userId, full);
+        },
         name: `queueuser`,
         description: `Add a user to the import queue.`,
         args: [
-            { name: 'user_id', required: true }
+            { name: 'user_id', required: true },
+            { name: 'full', required: false }
         ]
     },
     {

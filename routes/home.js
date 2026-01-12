@@ -14,6 +14,7 @@ const getStats = () => {
     stats.users = db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
     stats.beatmaps = db.prepare('SELECT COUNT(*) AS count FROM beatmaps').get().count;
     stats.passes = db.prepare('SELECT COUNT(*) AS count FROM user_passes').get().count;
+    const secs = db.prepare(`SELECT SUM(duration_secs) AS secs FROM beatmaps `);
     lastStatRefresh = now;
     return stats;
 };
