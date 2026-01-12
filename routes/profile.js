@@ -26,7 +26,7 @@ router.get('/:id/update', async (req, res) => {
     if (msSinceLastImport < minMsSinceLastImport) {
         return res.redirect(`/u/${req.params.id}`);
     }
-    await updater.queueUserForImport(req.params.id);
+    await updater.queueUserForImport(req.params.id, true);
     res.redirect(`/u/${req.params.id}`);
 });
 

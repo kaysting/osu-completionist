@@ -53,7 +53,7 @@ router.get('/callback', async (req, res) => {
             await updaterHelpers.queueUserForImport(user.data.id);
             const userCount = db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
             utils.log(`${user.data.username} registered as a new user!`);
-            utils.postToActivityFeed({
+            utils.postToUserFeed({
                 author: {
                     name: userEntry.name,
                     icon_url: userEntry.avatar_url,

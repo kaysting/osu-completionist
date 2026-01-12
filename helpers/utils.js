@@ -37,8 +37,16 @@ const utils = {
         });
     },
 
-    postToActivityFeed: async (embed) => {
-        await utils.postDiscordWebhook(process.env.ACTIVITY_FEED_DISCORD_WEBHOOK_URL, {
+    postToUserFeed: async (embed) => {
+        await utils.postDiscordWebhook(process.env.USER_FEED_DISCORD_WEBHOOK_URL, {
+            embeds: [embed],
+            username: 'osu!complete Activity',
+            avatar_url: `https://${process.env.HOST}/assets/images/icon.png`
+        });
+    },
+
+    postToMapFeed: async (embed) => {
+        await utils.postDiscordWebhook(process.env.MAP_FEED_DISCORD_WEBHOOK_URL, {
             embeds: [embed],
             username: 'osu!complete Activity',
             avatar_url: `https://${process.env.HOST}/assets/images/icon.png`

@@ -61,7 +61,7 @@ const saveMapset = async (mapsetId, index = true) => {
     const mapset = dbHelpers.getBeatmapset(mapsetId, true);
     // Log to Discord
     setImmediate(() => {
-        utils.postToActivityFeed({
+        utils.postToMapFeed({
             author: {
                 name: `${index ? `Saved new beatmapset` : 'Updated saved beatmapset'}`,
             },
@@ -640,7 +640,7 @@ const importUser = async (userId, doFullImport = false) => {
             (beatmapsOffset / (Date.now() - timeStarted)) * 1000 * 60
         );
         utils.log(`Completed import of ${passCount} passes for ${user.name} in ${utils.secsToDuration(Math.round(importDurationMs / 1000))} (${scoresPerMinute} scores/min)`);
-        utils.postToActivityFeed({
+        utils.postToUserFeed({
             author: {
                 name: user.name,
                 icon_url: user.avatar_url,
