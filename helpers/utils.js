@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 const crypto = require('crypto');
+const env = require('./env');
 
 const utils = {
 
@@ -30,33 +31,33 @@ const utils = {
     },
 
     postToPassFeed: async content => {
-        await utils.postDiscordWebhook(process.env.PASS_FEED_DISCORD_WEBHOOK_URL, {
+        await utils.postDiscordWebhook(env.PASS_FEED_DISCORD_WEBHOOK_URL, {
             content,
             username: 'osu!complete Pass Feed',
-            avatar_url: `https://${process.env.HOST}/assets/images/icon.png`
+            avatar_url: `https://${env.HOST}/assets/images/icon.png`
         });
     },
 
     postToUserFeed: async (embed) => {
-        await utils.postDiscordWebhook(process.env.USER_FEED_DISCORD_WEBHOOK_URL, {
+        await utils.postDiscordWebhook(env.USER_FEED_DISCORD_WEBHOOK_URL, {
             embeds: [embed],
             username: 'osu!complete Activity',
-            avatar_url: `https://${process.env.HOST}/assets/images/icon.png`
+            avatar_url: `https://${env.HOST}/assets/images/icon.png`
         });
     },
 
     postToMapFeed: async (embed) => {
-        await utils.postDiscordWebhook(process.env.MAP_FEED_DISCORD_WEBHOOK_URL, {
+        await utils.postDiscordWebhook(env.MAP_FEED_DISCORD_WEBHOOK_URL, {
             embeds: [embed],
             username: 'osu!complete Activity',
-            avatar_url: `https://${process.env.HOST}/assets/images/icon.png`
+            avatar_url: `https://${env.HOST}/assets/images/icon.png`
         });
     },
 
     logError: (...args) => {
         const timestamp = new Date().toISOString();
         console.error(`[${timestamp}]`, ...args);
-        utils.postDiscordWebhook(process.env.ERROR_LOGS_DISCORD_WEBHOOK_URL, {
+        utils.postDiscordWebhook(env.ERROR_LOGS_DISCORD_WEBHOOK_URL, {
             content: utils.parseArgsToDiscordContent(args)
         });
     },
@@ -306,12 +307,12 @@ const utils = {
     },
 
     generateJWT: (payload, expiresIn = '30d') => {
-        return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
+        return jwt.sign(payload, env.JWT_SECRET, { expiresIn });
     },
 
     verifyJWT: (token) => {
         try {
-            return jwt.verify(token, process.env.JWT_SECRET);
+            return jwt.verify(token, env.JWT_SECRET);
         } catch (err) {
             return null;
         }

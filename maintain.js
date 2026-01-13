@@ -1,7 +1,6 @@
 const fs = require('fs');
 const cp = require('child_process');
 const path = require('path');
-const readline = require('readline');
 const clc = require('cli-color');
 const dayjs = require('dayjs');
 const axios = require('axios');
@@ -11,6 +10,7 @@ const SqlDumpParser = require('./helpers/SqlDumpParser');
 const db = require('./helpers/db');
 const updateHelpers = require('./helpers/updaterHelpers');
 const utils = require('./helpers/utils');
+const env = require('./helpers/env');
 
 const importBeatmapsets = async (dumpFolder) => {
 
@@ -108,15 +108,14 @@ const importBeatmapsets = async (dumpFolder) => {
 
 };
 
-const dbPath = path.resolve(process.env.DB_PATH || './storage.db');
 const schemaPath = path.resolve(__dirname, './schema.sql');
 
 const readSchema = () => {
-    cp.execSync(`sqlite3 "${dbPath}" .read "${schemaPath}"`);
+    cp.execSync(`sqlite3 "${env.DB_PATH}" .read "${schemaPath}"`);
 };
 
 const dumpSchema = () => {
-    cp.execSync(`sqlite3 "${dbPath}" .schema > "${schemaPath}"`);
+    cp.execSync(`sqlite3 "${env.DB_PATH}" .schema > "${schemaPath}"`);
 };
 
 const downloadDump = async () => {

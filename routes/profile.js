@@ -5,7 +5,7 @@ const { ensureUserExists } = require('../helpers/middleware.js');
 const utils = require('../helpers/utils.js');
 const updater = require('../helpers/updaterHelpers.js');
 const dbHelpers = require('../helpers/dbHelpers.js');
-const ejs = require('ejs');
+const env = require('../helpers/env.js');
 const imageRenderer = require('../helpers/imageRenderer.js');
 
 const router = express.Router();
@@ -200,7 +200,7 @@ router.get('/:id/:category/renders/:type', ensureUserExists, async (req, res) =>
             return res.status(404).end();
     }
     // Render image
-    const url = `http://localhost:${process.env.WEBSERVER_PORT}/renders/html/${template}?user_id=${userId}&category=${category}`;
+    const url = `http://localhost:${env.WEBSERVER_PORT}/renders/html/${template}?user_id=${userId}&category=${category}`;
     const startTime = Date.now();
     const buffer = await imageRenderer.urlToPng(url, undefined, undefined, 1);
     utils.log(`Rendered social image ${type} for ${user.name} in category ${category} in ${Date.now() - startTime}ms`);

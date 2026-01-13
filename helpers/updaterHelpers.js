@@ -1,16 +1,12 @@
-require('dotenv').config({ path: '../.env' });
+const env = require('./env');
 const db = require('./db');
 const utils = require('./utils');
 const osu = require('./osu');
 const fs = require('fs');
 const path = require('path');
-const cp = require('child_process');
 const dayjs = require('dayjs');
 const statCategories = require('./statCategories');
 const dbHelpers = require('./dbHelpers');
-const { log } = require('console');
-
-const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'storage.db');
 
 // Prepare mapset data saving statements and transaction
 const stmtInsertMapset = db.prepare(
@@ -644,7 +640,7 @@ const importUser = async (userId, doFullImport = false) => {
             author: {
                 name: user.name,
                 icon_url: user.avatar_url,
-                url: `https://${process.env.HOST}/u/${user.id}`
+                url: `https://${env.HOST}/u/${user.id}`
             },
             title: `Completed ${doFullImport ? 'full ' : ''}import of ${passCount.toLocaleString()} passes`,
             description: `Took ${utils.secsToDuration(Math.round(importDurationMs / 1000))}`,
@@ -782,7 +778,7 @@ const savePassesFromGlobalRecents = async () => {
         // Log passes to Discord
         if (savedPasses.length > 0) {
             const description = savedPasses.map(pass => {
-                return `-# * **[${pass.userName}](<https://${process.env.HOST}/u/${pass.userId}>)** gained **${pass.xp.toLocaleString()} cxp** from **${utils.rulesetKeyToName(pass.mode, true)}** [${pass.mapName}](<https://osu.ppy.sh/beatmapsets/${pass.mapsetId}#${pass.mode}/${pass.mapId}>)`;
+                return `-# * **[${pass.userName}](<https://${env.HOST}/u/${pass.userId}>)** gained **${pass.xp.toLocaleString()} cxp** from **${utils.rulesetKeyToName(pass.mode, true)}** [${pass.mapName}](<https://osu.ppy.sh/beatmapsets/${pass.mapsetId}#${pass.mode}/${pass.mapId}>)`;
             }).join('\n');
             utils.postToPassFeed(description);
             utils.log(`Completed processing global recents, saved ${savedPasses.length} new passes`);
@@ -860,9 +856,9 @@ const unqueueUser = async (userId) => {
 // Function to backup the database periodically
 const backupDatabase = async () => {
     try {
-        const backupsDir = process.env.DB_BACKUPS_DIR || path.join(__dirname, '../backups');
-        const backupIntervalHours = process.env.DB_BACKUP_INTERVAL_HOURS || 6;
-        const keepBackupsCount = process.env.DB_KEEP_BACKUPS_COUNT || 12;
+        const backupsDir = env.DB_BACKUPS_DIR;
+        const backupIntervalHours = env.DB_BACKUP_INTERVAL_HOURS;
+        const keepBackupsCount = env.DB_KEEP_BACKUPS_COUNT;
         if (!fs.existsSync(backupsDir)) {
             fs.mkdirSync(backupsDir);
         }

@@ -1,4 +1,4 @@
-require('dotenv').config();
+const env = require('./helpers/env');
 const fs = require('fs');
 const express = require('express');
 const session = require('express-session');
@@ -54,7 +54,7 @@ app.use(express.static('public', { dotfiles: 'allow' }));
 // Register webapp middleware
 app.use(cookieParser());
 app.use(session({
-    secret: process.env.SESSION_SECRET,
+    secret: env.SESSION_SECRET,
     name: 'osucomplete.sid',
     resave: false,
     saveUninitialized: false
@@ -66,8 +66,8 @@ app.use(updateLastUrl);
 // Register client rate limiter
 app.set('trust proxy', 1);
 app.use(rateLimit({
-    windowMs: (process.env.CLIENT_RATE_LIMIT_WINDOW_SECS || 300) * 1000,
-    limit: process.env.CLIENT_RATE_LIMIT_LIMIT || 50,
+    windowMs: (env.CLIENT_RATE_LIMIT_WINDOW_SECS) * 1000,
+    limit: env.CLIENT_RATE_LIMIT_LIMIT,
     ipv6Subnet: 60,
     handler: (req, res) => {
         res.renderError(429, '429 rate limit exceeded', `You're going too fast! Slow down, play more.`);
@@ -114,9 +114,8 @@ app.use((err, req, res, next) => {
     res.renderError(500, '500 internal server error', `An internal server error occurred. Please try again later.`);
 });
 
-const port = process.env.WEBSERVER_PORT || 8080;
-app.listen(port, () => {
-    log(`Server is running on port ${port}`);
+app.listen(env.WEBSERVER_PORT, () => {
+    log(`Server is running on port ${env.WEBSERVER_PORT}`);
 });
 
 let shuttingDown = false;

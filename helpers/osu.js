@@ -9,7 +9,7 @@ osu! API Documentation: https://osu.ppy.sh/docs
 
 */
 
-require('dotenv').config();
+const env = require('./env');
 const axios = require('axios');
 
 let baseUrl = 'https://osu.ppy.sh/api/v2';
@@ -46,8 +46,8 @@ async function getToken() {
     tokenPromise = (async () => {
         try {
             const formData = new URLSearchParams();
-            formData.append('client_id', process.env.OSU_CLIENT_ID);
-            formData.append('client_secret', process.env.OSU_CLIENT_SECRET);
+            formData.append('client_id', env.OSU_CLIENT_ID);
+            formData.append('client_secret', env.OSU_CLIENT_SECRET);
             formData.append('grant_type', 'client_credentials');
             formData.append('scope', 'public');
 

@@ -1,4 +1,4 @@
-require('dotenv').config();
+const env = require('../helpers/env');
 const express = require('express');
 const axios = require('axios');
 const utils = require('../helpers/utils');
@@ -9,7 +9,7 @@ const db = require('../helpers/db');
 const router = express.Router();
 
 router.get('/login', (req, res) => {
-    res.redirect(`https://osu.ppy.sh/oauth/authorize?client_id=${process.env.OSU_CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.OSU_AUTH_REDIRECT_URI)}&response_type=code&scope=identify`);
+    res.redirect(`https://osu.ppy.sh/oauth/authorize?client_id=${env.OSU_CLIENT_ID}&redirect_uri=${encodeURIComponent(env.OSU_AUTH_REDIRECT_URI)}&response_type=code&scope=identify`);
 });
 
 router.get('/callback', async (req, res) => {
@@ -21,11 +21,11 @@ router.get('/callback', async (req, res) => {
         }
         // Build form data
         const formData = new URLSearchParams();
-        formData.append('client_id', process.env.OSU_CLIENT_ID);
-        formData.append('client_secret', process.env.OSU_CLIENT_SECRET);
+        formData.append('client_id', env.OSU_CLIENT_ID);
+        formData.append('client_secret', env.OSU_CLIENT_SECRET);
         formData.append('code', code);
         formData.append('grant_type', 'authorization_code');
-        formData.append('redirect_uri', process.env.OSU_AUTH_REDIRECT_URI);
+        formData.append('redirect_uri', env.OSU_AUTH_REDIRECT_URI);
         // Get user auth token
         const tokenRes = await axios.post('https://osu.ppy.sh/oauth/token', formData);
         const token = tokenRes.data.access_token;
@@ -57,7 +57,7 @@ router.get('/callback', async (req, res) => {
                 author: {
                     name: userEntry.name,
                     icon_url: userEntry.avatar_url,
-                    url: `https://${process.env.HOST}/u/${userEntry.id}`
+                    url: `https://${env.HOST}/u/${userEntry.id}`
                 },
                 title: `Registered as our ${utils.ordinalSuffix(userCount)} user!`,
                 color: 0xA3F5A3
