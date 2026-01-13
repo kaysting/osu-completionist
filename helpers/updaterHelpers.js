@@ -295,8 +295,9 @@ const matchesCatDefFilters = (row, catDef) => {
 /**
  * Update a user's category stats based on their passes
  * @param {number} userId The user whose category stats to update, or 0 for beatmap totals
+ * @param {boolean} force Whether to force update even if the user is currently importing
  */
-const updateUserCategoryStats = (userId) => {
+const updateUserCategoryStats = (userId, force = false) => {
     const IS_GLOBAL = userId === 0;
     let user;
     try {
@@ -307,6 +308,14 @@ const updateUserCategoryStats = (userId) => {
         } : db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
         if (!user) {
             throw new Error(`User with ID ${userId} not found in database`);
+        }
+        // Check if user is importing
+        if (!force && !IS_GLOBAL) {
+            const queueEntry = db.prepare(`SELECT * FROM user_import_queue WHERE user_id = ?`).get(userId);
+            if (queueEntry) {
+                utils.log(`${user.name} is currently being imported, skipping stats update`);
+                return;
+            }
         }
         // Load unfiltered data into memory
         const cols = [
@@ -485,6 +494,7 @@ const importUser = async (userId, doFullImport = false) => {
         // Outer loop to fetch and process passes
         let beatmapsOffset = 0;
         let passCount = 0;
+        let lastStatUpdateTime = Date.now();
         while (true) {
             // Inner loop to fetch unique mapset IDs from most played
             // Skip this if doing a full import, where we've already gotten all mapset IDs
@@ -624,13 +634,20 @@ const importUser = async (userId, doFullImport = false) => {
                 (beatmapsOffset / (Date.now() - timeStarted)) * 1000 * 60
             );
             utils.log(`[Importing ${percentComplete}%] Saved ${passes.length} new passes for ${user.name} (${scoresPerMinute} scores/min)`);
+            // Update stats every so often so they can see their progress
+            // Only do this if they don't already have saved stats
+            const statUpdateInterval = 1000 * 60 * 2;
+            if ((Date.now() - lastStatUpdateTime) > statUpdateInterval && !user.last_import_time) {
+                updateUserCategoryStats(userId, true);
+                lastStatUpdateTime = Date.now();
+            }
         }
         // Remove from import queue
         db.prepare(`DELETE FROM user_import_queue WHERE user_id = ?`).run(userId);
         // Save last import time
         db.prepare(`UPDATE users SET last_import_time = ? WHERE id = ?`).run(Date.now(), userId);
         // Update user stats
-        updateUserCategoryStats(userId);
+        updateUserCategoryStats(userId, true);
         // Log import completion and speed
         const importDurationMs = (Date.now() - timeStarted);
         const scoresPerMinute = Math.round(

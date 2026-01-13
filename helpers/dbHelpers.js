@@ -61,11 +61,10 @@ const getBulkUserCompletionStats = (userIds, categoryId) => {
 
     // Get user stats and rank, excluding users who have never imported
     const rows = db.prepare(`
-        SELECT s1.*, u.*, q.time_queued,
+        SELECT s1.*, u.*,
                (SELECT COUNT(*) + 1 
                 FROM user_category_stats s2
                 JOIN users u2 ON s2.user_id = u2.id
-                LEFT JOIN user_import_queue q2 ON s2.user_id = q2.user_id
                 WHERE s2.category = s1.category 
                 AND (
                     s2.seconds > s1.seconds
@@ -75,12 +74,9 @@ const getBulkUserCompletionStats = (userIds, categoryId) => {
                     )
                 )
                 AND s2.user_id != 0
-                AND u2.last_import_time != 0
-                AND q2.time_queued IS NULL
                ) AS rank
         FROM user_category_stats s1
         JOIN users u ON s1.user_id = u.id
-        LEFT JOIN user_import_queue q ON s1.user_id = q.user_id
         WHERE s1.user_id IN (${userIds.map(() => '?').join(',')})
         AND s1.category = ?
     `).all(...userIds, categoryId);
@@ -108,8 +104,7 @@ const getBulkUserCompletionStats = (userIds, categoryId) => {
         stats.secs_spent = row.seconds;
         stats.secs_remaining = totals.seconds - row.seconds;
         stats.percentage_completed = row.seconds > 0 ? ((row.seconds / totals.seconds) * 100) : 0;
-        if (row.last_import_time > 0 && row.time_queued === null)
-            stats.rank = row.rank;
+        stats.rank = row.rank;
         statsByUserId[row.user_id] = stats;
     }
 
@@ -194,10 +189,7 @@ const getLeaderboard = (categoryId, limit = 100, offset = 0) => {
         `SELECT COUNT(*) AS count
          FROM user_category_stats s
          JOIN users u ON s.user_id = u.id
-         LEFT JOIN user_import_queue q ON s.user_id = q.user_id
-         WHERE s.category = ?
-         AND u.last_import_time != 0
-         AND q.time_queued IS NULL`
+         WHERE s.category = ?`
     ).get(categoryId);
     const totalPlayers = totalRows.count;
 
@@ -207,8 +199,7 @@ const getLeaderboard = (categoryId, limit = 100, offset = 0) => {
         `SELECT u.id
          FROM users u
          JOIN user_category_stats us ON u.id = us.user_id
-         LEFT JOIN user_import_queue q ON u.id = q.user_id
-         WHERE us.category = ? AND u.last_import_time != 0 AND q.time_queued IS NULL
+         WHERE us.category = ?
          ORDER BY us.seconds DESC, u.last_pass_time ASC
          LIMIT ? OFFSET ?`
     ).all(categoryId, limit, offset);
@@ -420,6 +411,12 @@ const getUserRecentPasses = (userId, categoryId, limit = 100, offset = 0, after 
     // Get user entry
     const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
     if (!user) return [];
+
+    // Return an empty list if the user is currently being imported
+    const queueEntry = db.prepare(`SELECT * FROM user_import_queue WHERE user_id = ?`).get(userId);
+    if (queueEntry) {
+        return [];
+    }
 
     // Convert category filters to SQL
     const { where, params, def } = statCategories.categoryToSql(categoryId, 'b');
