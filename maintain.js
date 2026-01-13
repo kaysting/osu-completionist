@@ -174,7 +174,7 @@ const options = [
         description: `Create/update the database using schema.sql.`
     },
     {
-        f: updateHelpers.backupDatabaseClean,
+        f: updateHelpers.backupDatabase,
         name: `backupdb`,
         description: `Create a backup of the current database. Consider stopping the updater first.`
     },
