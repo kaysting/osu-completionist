@@ -114,7 +114,7 @@
         </div>
         <div class="card lighter progress">
             <div class="flex col gap-16 flex-grow">
-                <div class="top">
+                <div>
                     <span class="header">completion progress</span>
                 </div>
                 <div style="height: 100px">
@@ -195,7 +195,7 @@
                         });
                     </script>
                 </div>
-                <div class="flex flex-wrap" style="gap: 16px 64px">
+                <div id="progressStatsRow" class="flex gap-16">
                     <div class="stats flex-grow">
                         <div class="stat">
                             <div class="key">maps completed</div>
@@ -215,6 +215,9 @@
                             <div class="key">nomod playtime remaining</div>
                             <div class="value"><%= user.stats.timeRemaining %></div>
                         </div>
+                    </div>
+                    <div id="categoryStatsHeader">
+                        <span class="header">category totals</span>
                     </div>
                     <div class="stats">
                         <div class="stat">
