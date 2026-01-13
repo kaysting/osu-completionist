@@ -156,5 +156,3 @@ process.on('SIGTERM', () => {
     log('Received SIGTERM');
     shutDown();
 });
-
-utils.postToPassFeed(`it works :3`);
