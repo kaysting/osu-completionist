@@ -10,6 +10,7 @@ const dayjs = require('dayjs');
 const { log, logError } = require('./helpers/utils');
 const db = require('./helpers/db');
 const { getAuthenticatedUser, updateLastUrl } = require('./helpers/middleware');
+const path = require('path');
 
 const app = express();
 
@@ -42,6 +43,16 @@ app.use((req, res, next) => {
 // Add functions for use within EJS
 app.locals.dayjs = dayjs;
 app.locals.includeMarkdown = (filePath) => marked.parse(fs.readFileSync(filePath, 'utf-8'));
+app.locals.asset = (pathRel) => {
+    const fullPath = path.join(__dirname, 'public', pathRel);
+    try {
+        const stats = fs.statSync(fullPath);
+        const mtime = stats.mtime.getTime();
+        return `${pathRel}?v=${mtime}`;
+    } catch (error) {
+        return pathRel;
+    }
+};
 
 // Register JSON middleware and API route
 app.use(express.json());
