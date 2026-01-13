@@ -416,7 +416,8 @@ const snapshotCategoryStats = () => {
                 s.seconds AS seconds
             FROM user_category_stats s
             JOIN users u ON s.user_id = u.id
-            WHERE s.user_id != 0 AND u.last_import_time != 0
+            LEFT JOIN user_import_queue q ON s.user_id = q.user_id
+            WHERE s.user_id != 0 AND u.last_import_time != 0 AND q.time_queued IS NULL
             ORDER BY s.category, s.seconds DESC
         `).all();
         if (allUserStats.length === 0) return;
