@@ -24,38 +24,6 @@ CREATE TABLE
 	);
 
 CREATE TABLE
-	IF NOT EXISTS "user_stats_yearly" (
-		"user_id" INTEGER NOT NULL,
-		"year" INTEGER NOT NULL,
-		"mode" TEXT NOT NULL,
-		"includes_loved" INTEGER NOT NULL,
-		"includes_converts" INTEGER NOT NULL,
-		"count" INTEGER NOT NULL,
-		PRIMARY KEY (
-			"user_id",
-			"year",
-			"mode",
-			"includes_loved",
-			"includes_converts"
-		)
-	);
-
-CREATE TABLE
-	IF NOT EXISTS "beatmap_stats_yearly" (
-		"year" INTEGER NOT NULL,
-		"mode" TEXT NOT NULL,
-		"includes_loved" INTEGER NOT NULL,
-		"includes_converts" INTEGER NOT NULL,
-		"count" INTEGER NOT NULL,
-		PRIMARY KEY (
-			"year",
-			"mode",
-			"includes_loved",
-			"includes_converts"
-		)
-	);
-
-CREATE TABLE
 	IF NOT EXISTS "users" (
 		"id" INTEGER,
 		"name" TEXT NOT NULL,
@@ -79,58 +47,6 @@ CREATE TABLE
 CREATE INDEX idx_users_name ON users (name);
 
 CREATE TABLE
-	IF NOT EXISTS "user_stats_history" (
-		"user_id" INTEGER NOT NULL,
-		"time" INTEGER NOT NULL,
-		"mode" TEXT NOT NULL,
-		"includes_loved" INTEGER NOT NULL,
-		"includes_converts" INTEGER NOT NULL,
-		"percent" REAL NOT NULL DEFAULT 0,
-		"count" INTEGER NOT NULL DEFAULT 0,
-		"time_spent_secs" INTEGER NOT NULL DEFAULT 0,
-		PRIMARY KEY (
-			"user_id",
-			"time",
-			"mode",
-			"includes_loved",
-			"includes_converts"
-		)
-	);
-
-CREATE TABLE
-	IF NOT EXISTS "user_stats" (
-		"user_id" INTEGER NOT NULL,
-		"mode" TEXT NOT NULL,
-		"includes_loved" INTEGER NOT NULL,
-		"includes_converts" INTEGER NOT NULL,
-		"count" INTEGER NOT NULL,
-		"time_spent_secs" INTEGER NOT NULL DEFAULT 0,
-		PRIMARY KEY (
-			"user_id",
-			"mode",
-			"includes_loved",
-			"includes_converts"
-		)
-	);
-
-CREATE INDEX idx_user_stats_leaderboard ON user_stats (
-	mode,
-	includes_loved,
-	includes_converts,
-	count DESC
-);
-
-CREATE TABLE
-	IF NOT EXISTS "beatmap_stats" (
-		"mode" TEXT NOT NULL,
-		"includes_loved" INTEGER NOT NULL,
-		"includes_converts" INTEGER NOT NULL,
-		"count" INTEGER NOT NULL,
-		"time_total_secs" INTEGER NOT NULL DEFAULT 0,
-		PRIMARY KEY ("mode", "includes_loved", "includes_converts")
-	);
-
-CREATE TABLE
 	IF NOT EXISTS "beatmapsets" (
 		"id" INTEGER NOT NULL,
 		"status" TEXT NOT NULL,
@@ -142,14 +58,6 @@ CREATE TABLE
 	);
 
 CREATE INDEX idx_beatmapsets_time_ranked ON beatmapsets (time_ranked);
-
-CREATE INDEX "idx_user_stats_history" ON "user_stats_history" (
-	"user_id",
-	"time",
-	"mode",
-	"includes_loved",
-	"includes_converts"
-);
 
 CREATE VIRTUAL TABLE beatmaps_search USING fts5 (
 	title,
