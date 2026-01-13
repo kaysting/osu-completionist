@@ -5,8 +5,8 @@ const fs = require('fs');
 const env = {
 
     // Database
-    DB_PATH: process.env.DB_PATH || path.resolve(__dirname, '../storage.db'),
-    DB_BACKUPS_DIR: process.env.DB_BACKUPS_DIR || path.resolve(__dirname, '../backups'),
+    DB_PATH: path.resolve(process.env.DB_PATH || path.resolve(__dirname, '../storage.db')),
+    DB_BACKUPS_DIR: path.resolve(process.env.DB_BACKUPS_DIR || path.resolve(__dirname, '../backups')),
     DB_BACKUP_INTERVAL_HOURS: Number(process.env.DB_BACKUP_INTERVAL_HOURS || 6),
     DB_KEEP_BACKUPS_COUNT: Number(process.env.DB_KEEP_BACKUPS_COUNT || 12),
 
