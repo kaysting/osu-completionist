@@ -37,14 +37,24 @@ const env = {
 
 };
 
-// Validate
+// Check db existence
 if (!fs.existsSync(env.DB_PATH)) {
     throw new Error(`Database file not found at path: ${env.DB_PATH}`);
 }
+
+// Validate required env vars
 const requiredVars = ['OSU_CLIENT_ID', 'OSU_CLIENT_SECRET', 'OSU_AUTH_REDIRECT_URI', 'JWT_SECRET', 'SESSION_SECRET'];
 for (const v of requiredVars) {
     if (!env[v]) {
         throw new Error(`Missing required environment variable: ${v}`);
+    }
+}
+
+// Validate positive integer vars
+const mustBePositiveInts = ['WEBSERVER_PORT', 'CLIENT_RATE_LIMIT_LIMIT', 'CLIENT_RATE_LIMIT_WINDOW_SECS', 'API_RATE_LIMIT_LIMIT', 'API_RATE_LIMIT_WINDOW_SECS', 'DB_BACKUP_INTERVAL_HOURS', 'DB_KEEP_BACKUPS_COUNT'];
+for (const v of mustBePositiveInts) {
+    if (isNaN(env[v]) || env[v] <= 0 || !Number.isInteger(env[v])) {
+        throw new Error(`Environment variable ${v} must be a positive integer.`);
     }
 }
 

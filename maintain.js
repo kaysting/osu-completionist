@@ -1,3 +1,4 @@
+const env = require('./helpers/env'); 
 const fs = require('fs');
 const cp = require('child_process');
 const path = require('path');
@@ -10,7 +11,6 @@ const SqlDumpParser = require('./helpers/SqlDumpParser');
 const db = require('./helpers/db');
 const updateHelpers = require('./helpers/updaterHelpers');
 const utils = require('./helpers/utils');
-const env = require('./helpers/env');
 
 const importBeatmapsets = async (dumpFolder) => {
 

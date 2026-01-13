@@ -1,11 +1,10 @@
+const env = require('../helpers/env');
 const express = require('express');
-
 const statCategories = require('../helpers/statCategories.js');
 const { ensureUserExists } = require('../helpers/middleware.js');
 const utils = require('../helpers/utils.js');
 const updater = require('../helpers/updaterHelpers.js');
 const dbHelpers = require('../helpers/dbHelpers.js');
-const env = require('../helpers/env.js');
 const imageRenderer = require('../helpers/imageRenderer.js');
 
 const router = express.Router();
