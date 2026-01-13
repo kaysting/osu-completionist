@@ -5,11 +5,16 @@ const env = require('./env');
 
 const utils = {
 
-    postDiscordWebhook: async (webhookUrl, message) => {
+    sendDiscordMessage: async (channelId, message) => {
         try {
-            await axios.post(webhookUrl, message);
+            await axios.post(`https://discord.com/api/v10/channels/${channelId}/messages`, message, {
+                headers: {
+                    Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`,
+                    'Content-Type': 'application/json'
+                }
+            });
         } catch (error) {
-            console.error(`Failed POSTing to Discord webhook: ${error}`);
+            console.error(`Failed sending Discord message: ${error}`);
         }
     },
 
@@ -31,33 +36,27 @@ const utils = {
     },
 
     postToPassFeed: async content => {
-        await utils.postDiscordWebhook(env.PASS_FEED_DISCORD_WEBHOOK_URL, {
-            content,
-            username: 'osu!complete Pass Feed',
-            avatar_url: `https://${env.HOST}/assets/images/icon.png`
+        await utils.sendDiscordMessage(env.PASS_FEED_DISCORD_CHANNEL_ID, {
+            content
         });
     },
 
     postToUserFeed: async (embed) => {
-        await utils.postDiscordWebhook(env.USER_FEED_DISCORD_WEBHOOK_URL, {
-            embeds: [embed],
-            username: 'osu!complete Activity',
-            avatar_url: `https://${env.HOST}/assets/images/icon.png`
+        await utils.sendDiscordMessage(env.USER_FEED_DISCORD_CHANNEL_ID, {
+            embeds: [embed]
         });
     },
 
     postToMapFeed: async (embed) => {
-        await utils.postDiscordWebhook(env.MAP_FEED_DISCORD_WEBHOOK_URL, {
-            embeds: [embed],
-            username: 'osu!complete Activity',
-            avatar_url: `https://${env.HOST}/assets/images/icon.png`
+        await utils.sendDiscordMessage(env.MAP_FEED_DISCORD_CHANNEL_ID, {
+            embeds: [embed]
         });
     },
 
     logError: (...args) => {
         const timestamp = new Date().toISOString();
         console.error(`[${timestamp}]`, ...args);
-        utils.postDiscordWebhook(env.ERROR_LOGS_DISCORD_WEBHOOK_URL, {
+        utils.sendDiscordMessage(env.ERROR_LOGS_DISCORD_CHANNEL_ID, {
             content: utils.parseArgsToDiscordContent(args)
         });
     },

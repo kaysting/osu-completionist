@@ -11,6 +11,7 @@ const { log, logError } = require('./helpers/utils');
 const db = require('./helpers/db');
 const { getAuthenticatedUser, updateLastUrl } = require('./helpers/middleware');
 const path = require('path');
+const utils = require('./helpers/utils');
 
 const app = express();
 
@@ -155,3 +156,5 @@ process.on('SIGTERM', () => {
     log('Received SIGTERM');
     shutDown();
 });
+
+utils.postToPassFeed(`it works :3`);
