@@ -11,9 +11,9 @@
     <meta property="og:description"
         content="<%= locals?.meta?.description || 'Track your osu! completionist progress across all game modes, ranked, loved, and convert maps, and compare your progress with others!' %>">
     <meta property="og:image"
-        content="<%= locals?.meta?.image || locals?.meta?.thumbnail || '/assets/images/promo.png' %>">
+        content="<%= locals?.meta?.image || locals?.meta?.thumbnail || asset('/assets/images/promo.png') %>">
     <meta name="twitter:image"
-        content="<%= locals?.meta?.image || locals?.meta?.thumbnail || '/assets/images/promo.png' %>">
+        content="<%= locals?.meta?.image || locals?.meta?.thumbnail || asset('/assets/images/promo.png') %>">
     <% if (!locals?.meta?.thumbnail) { %>
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="628" />
