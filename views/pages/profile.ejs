@@ -1,8 +1,8 @@
 <link rel="stylesheet" href="/assets/css/profile.css">
-<div id="profile">
+<div id="profile" class="flex col gap-16">
     <%- include('../partials/statSettings') %>
     <% if (user.updateStatus.updating) { %>
-    <div class="card warning">
+    <div class="card warning flex align-center gap-8">
         <div class="icon"><%= user.updateStatus.details.time_started ? 'update' : 'hourglass' %></div>
         <div class="text">
             <% if (user.updateStatus.details.time_started) { %>
@@ -22,9 +22,9 @@
         </div>
     </div>
     <% } %>
-    <div class="card">
-        <div class="banner" style="background-image: url('<%= user.banner_url %>')">
-            <div class="buttons">
+    <div class="card flex col gap-8">
+        <div class="banner relative rounded-8 w-full" style="background-image: url('<%= user.banner_url %>')">
+            <div class="buttons absolute flex gap-8 flex-wrap">
                 <a class="btn translucent square" href="https://osu.ppy.sh/users/<%= user.id %>" target="_blank"
                     title="View profile on osu! website">
                     <span class="icon">open_in_new</span>
@@ -80,39 +80,39 @@
                 <% } %>
             </div>
         </div>
-        <div class="basics">
-            <img src="<%= user.avatar_url %>" class="avatar">
-            <div class="text">
-                <div class="name"><%= user.name %></div>
-                <div class="flags">
-                    <div class="country">
-                        <img src="<%= user.country.flag_url %>" class="flag">
+        <div class="basics overflow-hidden flex gap-16 align-center">
+            <img src="<%= user.avatar_url %>" class="avatar rounded-24">
+            <div class="text overflow-hidden text-ellipsis nowrap flex col gap-4 flex-grow">
+                <div class="name overflow-hidden text-ellipsis nowrap"><%= user.name %></div>
+                <div class="flags flex flex-wrap align-center">
+                    <div class="country flex gap-4 align-center">
+                        <img src="<%= user.country.flag_url %>" class="flag rounded-4">
                         <span class="label"><%= user.country.name %></span>
                     </div>
                     <% if (user.team.id) { %>
-                    <div class="team">
-                        <img src="<%= user.team.flag_url %>" class="flag">
+                    <div class="team flex gap-4 align-center">
+                        <img src="<%= user.team.flag_url %>" class="flag rounded-4">
                         <span class="label"><%= user.team.name %></span>
                     </div>
                     <% } %>
                 </div>
             </div>
-            <div class="stats">
-                <div class="stat big">
+            <div class="stats flex flex-wrap">
+                <div class="stat big flex col">
                     <div class="key">global rank</div>
                     <div class="value">#<%= user.stats.rank == -1 ? '-' : user.stats.rank %></div>
                 </div>
-                <div class="stat big">
+                <div class="stat big flex col">
                     <div class="key">completion xp</div>
                     <div class="value"><%= user.stats.xp.toLocaleString() %></div>
                 </div>
-                <div class="stat big">
+                <div class="stat big flex col">
                     <div class="key">% completed</div>
                     <div class="value"><%= user.stats.percentage_completed.toFixed(2) %>%</div>
                 </div>
             </div>
         </div>
-        <div class="card lighter progress">
+        <div class="card lighter progress flex col gap-16">
             <div class="flex col gap-16 flex-grow">
                 <div>
                     <span class="header">completion progress</span>
@@ -196,22 +196,22 @@
                     </script>
                 </div>
                 <div id="progressStatsRow" class="flex gap-16">
-                    <div class="stats flex-grow">
-                        <div class="stat">
+                    <div class="stats flex-grow flex flex-wrap">
+                        <div class="stat flex col gap-2">
                             <div class="key">maps completed</div>
                             <div class="value"><%= user.stats.count_completed.toLocaleString() %></div>
                         </div>
-                        <div class="stat">
+                        <div class="stat flex col gap-2">
                             <div class="key">maps remaining</div>
                             <div class="value">
                                 <%= (user.stats.count_total - user.stats.count_completed).toLocaleString() %>
                             </div>
                         </div>
-                        <div class="stat">
+                        <div class="stat flex col gap-2">
                             <div class="key">cxp remaining</div>
                             <div class="value"><%= user.stats.xp_remaining.toLocaleString() %></div>
                         </div>
-                        <div class="stat">
+                        <div class="stat flex col gap-2">
                             <div class="key">nomod playtime remaining</div>
                             <div class="value"><%= user.stats.timeRemaining %></div>
                         </div>
@@ -219,16 +219,16 @@
                     <div id="categoryStatsHeader">
                         <span class="header">category totals</span>
                     </div>
-                    <div class="stats">
-                        <div class="stat">
+                    <div class="stats flex flex-wrap">
+                        <div class="stat flex col gap-2">
                             <div class="key">total maps</div>
                             <div class="value"><%= user.stats.count_total.toLocaleString() %></div>
                         </div>
-                        <div class="stat">
+                        <div class="stat flex col gap-2">
                             <div class="key">total obtainable cxp</div>
                             <div class="value"><%= user.stats.xp_total.toLocaleString() %></div>
                         </div>
-                        <div class="stat">
+                        <div class="stat flex col gap-2">
                             <div class="key">total nomod duration</div>
                             <div class="value"><%= user.stats.timeTotal %></div>
                         </div>
@@ -257,7 +257,7 @@
             </div>
         </div>
         <% if (user.recommended) { %>
-        <div class="card lighter recommended">
+        <div class="card lighter recommended flex col gap-16">
             <div>
                 <span class="header">what to play next</span>
             </div>
@@ -295,11 +295,11 @@
             </div>
         </div>
         <% } %>
-        <div class="card lighter passes">
+        <div class="card lighter passes flex col gap-16">
             <div>
                 <span class="header">recent passes (<%= user.recentPasses.length.toLocaleString() %>)</span>
             </div>
-            <div class="beatmapNarrowContainer">
+            <div class="beatmapNarrowContainer flex col gap-2">
                 <% if (user.recentPasses.length === 0) { %>
                 <div class="empty">
                     <p>No new passes in the past 24 hours (or since import)</p>

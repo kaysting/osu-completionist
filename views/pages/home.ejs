@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="/assets/css/home.css">
 <div id="home">
-    <div class="header">
+    <div class="header flex col gap-16 align-center">
         <div class="logo">
             <span class="white">osu!</span><span class="green">complete</span>
         </div>
@@ -10,8 +10,8 @@
         <div class="slogan">A full-featured osu! completionist tracker and leaderboard</div>
         <% } %>
     </div>
-    <div class="actions">
-        <div class="buttons">
+    <div class="actions relative flex col gap-12 align-center">
+        <div class="buttons flex gap-12 flex-wrap justify-center">
             <a href="/leaderboard" class="btn large">
                 <span class="icon filled">leaderboard</span>
                 leaderboard
@@ -29,8 +29,8 @@
             <% } %>
         </div>
         <span class="or">or</span>
-        <form class="search" action="/search" method="GET">
-            <div class="textbox medium hasIcon">
+        <form class="search flex gap-8 justify-center" action="/search" method="GET">
+            <div class="textbox medium hasIcon w-full">
                 <span class="icon">search</span>
                 <input type="text" class="input" name="q" placeholder="Search tracked players and maps...">
             </div>
@@ -39,20 +39,20 @@
             </button>
         </form>
     </div>
-    <div class="stats">
-        <div class="card">
+    <div class="stats flex flex-wrap justify-center align-center">
+        <div class="card flex col gap-8">
             <div class="value"><%= stats.users %></div>
             <div class="label">tracked players</div>
         </div>
-        <div class="card">
+        <div class="card flex col gap-8">
             <div class="value"><%= stats.beatmaps %></div>
             <div class="label">unique beatmaps</div>
         </div>
-        <div class="card">
+        <div class="card flex col gap-8">
             <div class="value"><%= stats.passes %></div>
             <div class="label">total beatmap passes</div>
         </div>
-        <div class="card">
+        <div class="card flex col gap-8">
             <div class="value"><%= stats.xp %></div>
             <div class="label">total completion xp earned</div>
         </div>

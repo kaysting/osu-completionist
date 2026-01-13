@@ -1,34 +1,42 @@
-<div class="beatmapCard flex">
-    <div class="left flex align-center justify-center">
-        <img class="listImage" src="https://assets.ppy.sh/beatmaps/<%= beatmap.beatmapset.id %>/covers/list.jpg"
+<div class="beatmapCard rounded-16 overflow-hidden flex">
+    <div class="left relative flex-no-shrink flex align-center justify-center">
+        <img class="listImage absolute w-full h-full object-cover"
+            src="https://assets.ppy.sh/beatmaps/<%= beatmap.beatmapset.id %>/covers/list.jpg"
             onError="this.onerror=null; this.src='/assets/images/beatmap-cover-fallback.png';" loading="lazy">
-        <button class="controls btn"
+        <button class="controls btn absolute w-full h-full"
             onClick="audioButtonClick(event, `https://b.ppy.sh/preview/<%= beatmap.beatmapset.id %>.mp3`)">
             <span class="icon filled">play_arrow</span>
         </button>
     </div>
     <div class="right flex-grow flex">
-        <div class="content flex col gap-8 flex-grow justify-center">
-            <img class="coverImage" src="https://assets.ppy.sh/beatmaps/<%= beatmap.beatmapset.id %>/covers/cover.jpg"
+        <div class="content relative rounded-16 overflow-hidden flex col gap-8 flex-grow justify-center">
+            <img class="coverImage absolute w-full h-full object-cover"
+                src="https://assets.ppy.sh/beatmaps/<%= beatmap.beatmapset.id %>/covers/cover.jpg"
                 onError="this.onerror=null; this.src='/assets/images/beatmap-cover-fallback.png';" loading="lazy">
-            <div class="coverDimming"></div>
-            <div class="text">
-                <div class="title" title="<%= beatmap.beatmapset.title %>"><%= beatmap.beatmapset.title %></div>
-                <div class="artist" title="<%= beatmap.beatmapset.artist %>"><%= beatmap.beatmapset.artist %></div>
-                <div class="mapper">Mapped by <%= beatmap.beatmapset.mapper %></div>
+            <div class="coverDimming absolute w-full h-full"></div>
+            <div class="text relative">
+                <div class="title overflow-hidden text-ellipsis nowrap" title="<%= beatmap.beatmapset.title %>">
+                    <%= beatmap.beatmapset.title %></div>
+                <div class="artist overflow-hidden text-ellipsis nowrap" title="<%= beatmap.beatmapset.artist %>">
+                    <%= beatmap.beatmapset.artist %></div>
+                <div class="mapper overflow-hidden text-ellipsis nowrap">Mapped by <%= beatmap.beatmapset.mapper %>
+                </div>
             </div>
             <div class="flex gap-4 align-center">
-                <div class="beatmapStatus <%= beatmap.status %>"><%= beatmap.status.toUpperCase() %></div>
-                <div class="diff flex-grow" style="background: <%= beatmap.difficulty_color %>">
-                    <div class="diffDimming"></div>
-                    <div class="content flex gap-4 align-center">
-                        <span class="beatmapStars"
+                <div class="beatmapStatus relative rounded-16 flex-no-shrink <%= beatmap.status %>">
+                    <%= beatmap.status.toUpperCase() %></div>
+                <div class="diff relative rounded-16 overflow-hidden flex-grow"
+                    style="background: <%= beatmap.difficulty_color %>">
+                    <div class="diffDimming absolute w-full h-full"></div>
+                    <div class="content relative flex gap-4 align-center">
+                        <span class="beatmapStars rounded-16 flex-no-shrink"
                             style="background: <%= beatmap.difficulty_color %>; color: <%= beatmap.stars < 6.8 ? 'black' : 'hsl(40, 100%, 70%)' %>">
                             <span class="icon">star</span>
                             <span class="value"><%= beatmap.stars.toFixed(2) %></span>
                         </span>
-                        <img src="/assets/ruleset-icons/<%= beatmap.mode %>.svg" class="ruleset">
-                        <span class="name" title="<%= beatmap.name %>"><%= beatmap.name %></span>
+                        <img src="/assets/ruleset-icons/<%= beatmap.mode %>.svg" class="ruleset flex-no-shrink">
+                        <span class="name overflow-hidden text-ellipsis nowrap"
+                            title="<%= beatmap.name %>"><%= beatmap.name %></span>
                     </div>
                 </div>
             </div>

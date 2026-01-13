@@ -1,28 +1,33 @@
-<link rel="stylesheet" href="/assets/css/leaderboard.css?v=2">
-<div id="leaderboard">
+<link rel="stylesheet" href="/assets/css/leaderboard.css">
+<div id="leaderboard" class="flex col gap-16">
     <%- include('../partials/statSettings') %>
-    <div class="card">
+    <div class="card flex col gap-12">
         <%- include('../partials/pagination') %>
-        <div class="entries">
+        <div class="entries flex col gap-4">
             <% for (const entry of leaderboard) { %>
-            <a class="entry flex row align-center" href="/u/<%= entry.user.id %>">
+            <a class="entry relative rounded-12 overflow-hidden flex row align-center" href="/u/<%= entry.user.id %>">
                 <div class="rank"><%= `#${entry.stats.rank}` %></div>
-                <div class="content flex align-center flex-grow">
-                    <div class="profile flex gap-16 align-center flex-grow">
-                        <img src="<%= entry.user.banner_url %>" class="banner" loading="lazy">
-                        <div class="dimming"></div>
-                        <img src="<%= entry.user.avatar_url %>" class="avatar" loading="lazy">
-                        <div class="text flex col gap-8 flex-grow">
-                            <div class="name"><%= entry.user.name %></div>
+                <div class="content relative rounded-12 overflow-hidden flex align-center flex-grow">
+                    <div class="profile relative rounded-12 overflow-hidden flex gap-16 align-center flex-grow">
+                        <img src="<%= entry.user.banner_url %>" class="banner absolute w-full h-full object-cover"
+                            loading="lazy">
+                        <div class="dimming absolute w-full h-full"></div>
+                        <img src="<%= entry.user.avatar_url %>"
+                            class="avatar relative rounded-12 object-cover flex-no-shrink" loading="lazy">
+                        <div class="text relative flex col gap-8 flex-grow">
+                            <div class="name text-shadow-sm overflow-hidden text-ellipsis"><%= entry.user.name %></div>
                             <div class="flags flex gap-16 align-center">
                                 <div class="country flex gap-4 align-center" title="<%= entry.user.country.name %>">
-                                    <img src="<%= entry.user.country.flag_url %>" class="flag" loading="lazy">
-                                    <span class="name"><%= entry.user.country.name %></span>
+                                    <img src="<%= entry.user.country.flag_url %>" class="flag rounded-4 flex-no-shrink"
+                                        loading="lazy">
+                                    <span
+                                        class="name overflow-hidden text-ellipsis"><%= entry.user.country.name %></span>
                                 </div>
                                 <% if (entry.user.team.name) { %>
                                 <div class="team flex gap-4 align-center" title="<%= entry.user.team.name %>">
-                                    <img src="<%= entry.user.team.flag_url %>" class="flag" loading="lazy">
-                                    <span class="name"><%= entry.user.team.name %></span>
+                                    <img src="<%= entry.user.team.flag_url %>" class="flag rounded-4 flex-no-shrink"
+                                        loading="lazy">
+                                    <span class="name overflow-hidden text-ellipsis"><%= entry.user.team.name %></span>
                                 </div>
                                 <% } %>
                             </div>
@@ -30,27 +35,27 @@
                     </div>
                     <div class="statsCont flex col flex-no-shrink">
                         <div class="stats flex row flex-wrap">
-                            <div class="stat">
+                            <div class="stat flex col gap-2">
                                 <div class="name">completion xp</div>
                                 <div class="value primary"><%= entry.stats.xp.toLocaleString() %></div>
                             </div>
-                            <div class="stat">
+                            <div class="stat flex col gap-2">
                                 <div class="name">% completed</div>
                                 <div class="value"><%= entry.stats.percentage_completed.toFixed(2) %>%</div>
                             </div>
-                            <div class="stat">
+                            <div class="stat flex col gap-2">
                                 <div class="name">maps completed</div>
                                 <div class="value"><%= entry.stats.count_completed.toLocaleString() %></div>
                             </div>
                         </div>
-                        <div class="bar">
-                            <div class="filling"
+                        <div class="bar relative w-full rounded-4">
+                            <div class="filling absolute h-full rounded-4"
                                 style="width: <%= entry.stats.percentage_completed %>%; background: <%= entry.color %>">
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="overlay"></div>
+                <div class="overlay absolute w-full h-full"></div>
             </a>
             <% } %>
         </div>

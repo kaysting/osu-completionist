@@ -1,17 +1,19 @@
-<a href="/u/<%= user.id %>" class="userCard flex gap-16 align-center">
-    <img class="banner <%= locals?.noFade || '' %>" src="<%= user.banner_url %>" loading="lazy">
-    <div class="bannerDimming"></div>
-    <img class="avatar <%= locals?.noFade || '' %>" src="<%= user.avatar_url %>" loading="lazy">
-    <div class="content flex-grow flex col justify-center gap-4">
-        <div class="name"><%= user.name %></div>
-        <div class="flags flex">
+<a href="/u/<%= user.id %>" class="userCard relative rounded-16 overflow-hidden flex gap-16 align-center">
+    <img class="banner absolute w-full h-full object-cover <%= locals?.noFade || '' %>" src="<%= user.banner_url %>"
+        loading="lazy">
+    <div class="bannerDimming absolute w-full h-full"></div>
+    <img class="avatar relative rounded-24 flex-no-shrink <%= locals?.noFade || '' %>" src="<%= user.avatar_url %>"
+        loading="lazy">
+    <div class="content relative text-shadow-sm flex-grow flex col justify-center gap-4">
+        <div class="name overflow-hidden text-ellipsis nowrap"><%= user.name %></div>
+        <div class="flags overflow-hidden flex">
             <div class="flag country flex gap-4 align-center flex-no-shrink">
-                <img class="flex-no-shrink <%= locals?.noFade || '' %>" src="<%= user.country.flag_url %>">
-                <span class="name"><%= user.country.name %></span>
+                <img class="flex-no-shrink rounded-4 <%= locals?.noFade || '' %>" src="<%= user.country.flag_url %>">
+                <span class="name overflow-hidden text-ellipsis nowrap"><%= user.country.name %></span>
             </div>
             <div class="flag team flex gap-4 align-center">
-                <img class="flex-no-shrink <%= locals?.noFade || '' %>" src="<%= user.team.flag_url %>">
-                <span class="name"><%= user.team.name %></span>
+                <img class="flex-no-shrink rounded-4 <%= locals?.noFade || '' %>" src="<%= user.team.flag_url %>">
+                <span class="name overflow-hidden text-ellipsis nowrap"><%= user.team.name %></span>
             </div>
         </div>
     </div>

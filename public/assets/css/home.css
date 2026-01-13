@@ -17,15 +17,11 @@
     align-items: center;
     gap: 48px;
     padding: calc(54px + 48px) 16px 24px 16px;
-    filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.2));
+    filter: drop-shadow(0px 2px 4px var(--shadow-sm));
 }
 
 #home .header {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
     text-align: center;
-    align-items: center;
 }
 
 #home .logo {
@@ -42,57 +38,32 @@
 }
 
 #home .slogan {
-    color: var(--textDim);
+    color: var(--text-dim);
     font-size: 20px;
     font-weight: 400;
     line-height: 1.2;
 }
 
-#home .actions {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    align-items: center;
-    position: relative;
-}
-
 #home .actions .buttons {
-    display: flex;
     gap: 12px 16px;
-    flex-wrap: wrap;
-    justify-content: center;
 }
 
 #home .actions .or {
     font-size: 18px;
-    color: var(--textDim);
+    color: var(--text-dim);
     line-height: 1.2;
 }
 
 #home .actions .search {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
     width: 400px;
 }
 
-#home .actions .search .textbox {
-    width: 100%;
-}
-
 #home .stats {
-    display: flex;
     gap: 16px 24px;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
 }
 
 #home .stats .card {
     padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
     box-shadow: none;
 }
 

@@ -1,38 +1,17 @@
-#leaderboard {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
 #leaderboard>.card {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
     padding: 12px 8px;
 }
 
-#leaderboard .entries {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
 #leaderboard .entry {
-    position: relative;
-    border-radius: 12px;
-    background: hsl(220, 20%, 10%);
-    overflow: hidden;
+    background: var(--bg);
     color: inherit;
     user-select: none;
-    text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3);
+    text-shadow: 0px 1px 2px var(--shadow-md);
 }
 
 #leaderboard .entry>.overlay {
-    position: absolute;
     top: 0px;
     left: 0px;
-    width: 100%;
-    height: 100%;
     z-index: 1;
     transition: 0.1s ease-in-out;
 }
@@ -58,51 +37,29 @@
 }
 
 #leaderboard .entry .content {
-    position: relative;
-    border-radius: 12px;
-    overflow: hidden;
-    background: hsl(220, 20%, 20%);
+    background: var(--bg-medium-dark);
 }
 
 #leaderboard .entry .profile {
-    position: relative;
-    border-radius: 12px;
-    overflow: hidden;
     padding: 4px;
 }
 
 #leaderboard .entry .banner {
-    position: absolute;
     top: 0px;
     left: 0px;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 0;
     z-index: 0;
 }
 
 #leaderboard .entry .dimming {
-    position: absolute;
     top: 0px;
     left: 0px;
-    width: 100%;
-    height: 100%;
     z-index: 0;
-    background: linear-gradient(to right, hsla(220, 20%, 12%, 60%), hsl(220, 20%, 12%));
-}
-
-#leaderboard .entry .profile .text,
-#leaderboard .entry .profile .avatar {
-    position: relative;
+    background: linear-gradient(to right, var(--shadow-dimming), var(--bg-darker));
 }
 
 #leaderboard .entry .profile .avatar {
     height: 48px;
-    border-radius: 12px;
-    background: hsl(220, 20%, 25%);
-    object-fit: cover;
-    flex-shrink: 0;
+    background: var(--bg-medium);
 }
 
 #leaderboard .entry .profile .name {
@@ -110,14 +67,10 @@
     font-weight: bold;
     margin-top: -1px;
     color: white;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
 }
 
 #leaderboard .entry .profile .flags>div .flag {
     height: 16px;
-    border-radius: 4px;
     flex-shrink: 0;
 }
 
@@ -125,9 +78,6 @@
     font-size: 14px;
     font-weight: 400;
     color: white;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
 }
 
 #leaderboard .entry .statsCont {
@@ -138,20 +88,14 @@
     gap: 4px 16px;
 }
 
-#leaderboard .entry .stat {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
 #leaderboard .entry .stat .name {
-    color: var(--textDim);
+    color: var(--text-dim);
     font-size: 14px;
     font-weight: 600
 }
 
 #leaderboard .entry .stat .value {
-    color: hsl(220, 20%, 80%);
+    color: var(--text-light);
     font-size: 20px;
     font-weight: 400;
 }
@@ -162,20 +106,15 @@
 }
 
 #leaderboard .entry .content .bar {
-    position: relative;
-    width: 100%;
     height: 2px;
-    background: hsl(220, 20%, 12%);
-    border-radius: 4px;
+    background: var(--bg-darker);
     margin-top: 6px;
 }
 
 #leaderboard .entry .content .bar .filling {
-    position: absolute;
     top: 0px;
     left: 0px;
     height: 100%;
-    border-radius: 4px;
 }
 
 @media (max-width: 800px) {
@@ -197,7 +136,7 @@
     }
 }
 
-@media (max-width: 550px) { 
+@media (max-width: 550px) {
     #leaderboard .entry {
         flex-direction: column;
         align-items: unset;
@@ -220,15 +159,7 @@
     }
 }
 
-#leaderboard .pages {
-    display: flex;
-    gap: 4px;
-    justify-content: center;
-}
-
 #leaderboard .pages .dots {
     height: 32px;
-    display: flex;
-    align-items: center;
-    color: var(--textDim);
+    color: var(--text-dim);
 }

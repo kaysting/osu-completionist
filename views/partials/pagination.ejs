@@ -1,7 +1,7 @@
-<div class="pages">
+<div class="pages flex gap-4 justify-center">
     <% for (const num of pagination.nav) { %>
     <% if (num === '...') { %>
-    <span class="dots">...</span>
+    <span class="dots flex align-center">...</span>
     <% } else { %>
     <a href="<%= pagination.basePath %>?p=<%= num %>"
         class="btn <%= num === pagination.current ? 'primary' : 'text' %>"><%= num %></a>

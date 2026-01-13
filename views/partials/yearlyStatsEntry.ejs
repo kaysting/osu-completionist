@@ -1,9 +1,10 @@
-<div class="yearlyStatsEntry">
-    <div class="year"><%= year %></div>
-    <div class="content">
-        <div class="values">
+<div class="yearlyStatsEntry rounded-4 flex gap-8 align-center">
+    <div class="year flex-no-shrink"><%= year %></div>
+    <div class="content flex col gap-4 flex-grow">
+        <div class="values flex flex-wrap">
             <div class="percent">
-                <%= (yearlyType == 'xp' ? time_percentage_completed : map_percentage_completed).toFixed(2) %>%</div>
+                <%= (yearlyType == 'xp' ? time_percentage_completed : map_percentage_completed).toFixed(2) %>%
+            </div>
             <div class="count">
                 <% if (yearlyType == 'xp') { %>
                 <%= xp.toLocaleString() %> / <%= xp_total.toLocaleString() %> cxp
@@ -12,8 +13,8 @@
                 <% } %>
             </div>
         </div>
-        <div class="bar">
-            <div class="filling"
+        <div class="bar w-full relative rounded-4 overflow-hidden">
+            <div class="filling absolute h-full rounded-4"
                 style="width: <%= (yearlyType == 'xp' ? time_percentage_completed : map_percentage_completed) %>%; background: <%= color %>">
             </div>
         </div>

@@ -1,91 +1,45 @@
-#profile {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-#profile>.card:not(.warning) {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
 #profile .banner {
-    width: 100%;
     min-height: 100px;
     aspect-ratio: 4 / 1;
-    border-radius: 8px;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    position: relative;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 #profile .banner .buttons {
-    position: absolute;
     bottom: 0px;
     right: 0px;
     padding: 8px;
     max-width: 100%;
     max-height: 100%;
-    display: flex;
-    flex-direction: row-reverse;
-    gap: 8px;
-    flex-wrap: wrap;
 }
 
 #profile .basics {
-    display: flex;
-    gap: 16px;
     padding: 8px 16px;
-    align-items: center;
-    overflow: hidden;
 }
 
 #profile .basics .avatar {
     width: 96px;
     height: 96px;
-    border-radius: 24px;
-    background: hsl(220, 20%, 25%);
+    background: var(--bg-medium);
 }
 
-#profile .basics .text {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex-grow: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
+#profile .basics .text {}
 
 #profile .basics .text .name {
     font-size: 28px;
     font-weight: bold;
     color: white;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     line-height: 1.2;
 }
 
 #profile .basics .flags {
-    display: flex;
     gap: 8px 16px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-#profile .basics .flags>* {
-    display: flex;
-    gap: 4px;
-    align-items: center;
 }
 
 #profile .basics .flags .flag {
     height: 24px;
-    border-radius: 4px;
 }
 
 #profile .basics .stats {
@@ -94,19 +48,11 @@
 }
 
 #profile .stats {
-    display: flex;
     gap: 8px 16px;
-    flex-wrap: wrap;
-}
-
-#profile .stats .stat {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
 }
 
 #profile .stats .stat .key {
-    color: var(--textDim);
+    color: var(--text-dim);
     font-size: 14px;
     font-weight: 600;
 }
@@ -132,9 +78,6 @@
 }
 
 #profile .card.lighter {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
     padding: 16px 12px 12px 12px;
 }
 
@@ -159,33 +102,18 @@
 }
 
 .yearlyStatsEntry {
-    display: flex;
-    gap: 8px;
     padding: 8px;
-    background: hsl(220, 20%, 22%);
-    border-radius: 4px;
-    align-items: center;
+    background: var(--beatmap-bg);
 }
 
 .yearlyStatsEntry .year {
     font-size: 14px;
     width: 40px;
-    flex-shrink: 0;
     text-align: center;
 }
 
-.yearlyStatsEntry .content {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex-grow: 1;
-}
-
 .yearlyStatsEntry .content .values {
-    display: flex;
     gap: 0px 4px;
-    flex-wrap: wrap;
-    align-items: flex-end;
 }
 
 .yearlyStatsEntry .content .values .percent {
@@ -197,32 +125,19 @@
 
 .yearlyStatsEntry .content .values .count {
     font-size: 14px;
-    color: var(--textDim);
+    color: var(--text-dim);
 }
 
 .yearlyStatsEntry .content .bar {
-    width: 100%;
     height: 4px;
-    background: hsl(220, 20%, 15%);
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
+    background: var(--bg-dark);
 }
 
 .yearlyStatsEntry .content .bar .filling {
-    position: absolute;
     top: 0px;
     left: 0px;
     height: 100%;
     background: var(--accent);
-    border-radius: 4px;
-}
-
-#profile .passes .entries,
-#profile .recommended .entries {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
 }
 
 @media (max-width: 700px) {
