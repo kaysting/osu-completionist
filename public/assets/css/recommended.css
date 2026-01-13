@@ -12,7 +12,7 @@
 
 #recommended .settings .hint .status {
     font-size: 14px;
-    color: var(--textDim);
+    color: var(--text-dim);
     line-height: 1.2;
 }
 
@@ -24,7 +24,7 @@
 
 #recommended .noResults {
     padding: 64px 16px;
-    color: var(--textDim);
+    color: var(--text-dim);
     text-align: center;
 }
 

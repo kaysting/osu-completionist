@@ -365,7 +365,7 @@ a:hover {
 small {
     display: block;
     font-size: 14px;
-    color: var(--textDim);
+    color: var(--text-dim);
     line-height: 1.2;
 }
 
@@ -814,7 +814,7 @@ img {
 }
 
 .beatmap .map .set .artist {
-    color: var(--textDim);
+    color: var(--text-dim);
     font-size: 12px;
     margin-left: 2px;
 }
