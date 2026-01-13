@@ -1,4 +1,4 @@
-const env = require('./helpers/env'); 
+const env = require('./helpers/env');
 const fs = require('fs');
 const cp = require('child_process');
 const path = require('path');
@@ -171,6 +171,11 @@ const options = [
     {
         f: readSchema,
         name: `makedb`,
+        description: `Create/update the database using schema.sql.`
+    },
+    {
+        f: updateHelpers.backupDatabaseClean,
+        name: `backupdb`,
         description: `Create/update the database using schema.sql.`
     },
     {

@@ -9,7 +9,7 @@ const runGlobalRecentsUpdate = async () => {
 };
 
 const runBackupDatabase = async () => {
-    await updaterHelpers.backupDatabase();
+    await updaterHelpers.backupDatabaseClean();
     setTimeout(runBackupDatabase, 1000 * 60);
 };
 

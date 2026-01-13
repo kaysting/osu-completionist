@@ -853,8 +853,16 @@ const unqueueUser = async (userId) => {
     }
 };
 
-// Function to backup the database periodically
 const backupDatabase = async () => {
+    const backupsDir = env.DB_BACKUPS_DIR;
+    const backupFile = path.join(backupsDir, `${dayjs().format('YYYYMMDD-HHmmss')}.db`);
+    utils.log(`Backing up database to ${backupFile}...`);
+    await db.backup(backupFile);
+    utils.log(`Backup complete`);
+};
+
+// Function to backup the database periodically
+const backupDatabaseClean = async () => {
     try {
         const backupsDir = env.DB_BACKUPS_DIR;
         const backupIntervalHours = env.DB_BACKUP_INTERVAL_HOURS;
@@ -874,10 +882,7 @@ const backupDatabase = async () => {
         const lastBackupTime = files.length > 0 ? files[0].mtime : 0;
         const needsBackup = Date.now() - lastBackupTime > (backupIntervalHours * 60 * 60 * 1000);
         if (needsBackup) {
-            const backupFile = path.join(backupsDir, `${dayjs().format('YYYYMMDD-HHmmss')}.db`);
-            utils.log(`Backing up database to ${backupFile}...`);
-            await db.backup(backupFile);
-            utils.log(`Backup complete`);
+            await backupDatabase();
             const filesToDelete = files.slice(keepBackupsCount - 1);
             for (const file of filesToDelete) {
                 fs.unlinkSync(file.path);
@@ -895,6 +900,7 @@ module.exports = {
     savePassesFromGlobalRecents,
     importUser,
     backupDatabase,
+    backupDatabaseClean,
     startQueuedImports,
     queueUserForImport,
     fetchNewMapData,
