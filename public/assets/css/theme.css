@@ -879,11 +879,8 @@ img {
 }
 
 .beatmapCard .left .controls {
-    left: 0px;
-    top: 0px;
     padding: 0px;
     padding-right: 16px;
-    border-radius: 0;
     --btnBg: hsla(220, 20%, 15%, 0.5);
     --btnBgHover: hsla(220, 20%, 15%, 0.75);
     --btnFg: white;

@@ -2,7 +2,7 @@
     <img class="banner absolute w-full h-full object-cover <%= locals?.noFade || '' %>" src="<%= user.banner_url %>"
         loading="lazy">
     <div class="bannerDimming absolute w-full h-full"></div>
-    <img class="avatar relative rounded-24 flex-no-shrink <%= locals?.noFade || '' %>" src="<%= user.avatar_url %>"
+    <img class="avatar relative rounded-16 flex-no-shrink <%= locals?.noFade || '' %>" src="<%= user.avatar_url %>"
         loading="lazy">
     <div class="content relative text-shadow-sm flex-grow flex col justify-center gap-4">
         <div class="name overflow-hidden text-ellipsis nowrap"><%= user.name %></div>
