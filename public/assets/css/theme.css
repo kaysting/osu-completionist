@@ -846,7 +846,7 @@ img {
 }
 
 .beatmap .buttons .btn {
-    --bgHover: var(--bg-light);
+    --btnBgHover: var(--bg-light);
 }
 
 @media (max-width: 600px) {
@@ -883,10 +883,11 @@ img {
     top: 0px;
     padding: 0px;
     padding-right: 16px;
-    --bg: hsla(220, 20%, 15%, 0.5);
-    --bgHover: hsla(220, 20%, 15%, 0.75);
-    --fg: white;
-    --fgHover: var(--accent);
+    border-radius: 0;
+    --btnBg: hsla(220, 20%, 15%, 0.5);
+    --btnBgHover: hsla(220, 20%, 15%, 0.75);
+    --btnFg: white;
+    --btnFgHover: var(--accent);
 }
 
 .beatmapCard .left .controls .icon {
