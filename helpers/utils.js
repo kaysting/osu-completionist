@@ -14,7 +14,7 @@ const utils = {
                 }
             });
         } catch (error) {
-            console.error(`Failed sending Discord message: ${error}`);
+            console.error(`Failed sending Discord message: ${error}`, JSON.stringify(error?.response?.data, null, 2));
         }
     },
 
