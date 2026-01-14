@@ -725,6 +725,20 @@ const getQueuedUsers = () => {
     };
 };
 
+const getAnalyticsData = (days = 30) => {
+    const cutoffDate = dayjs().subtract(days, 'days').format('YYYY-MM-DD');
+    const entries = db.prepare(`SELECT * FROM analytics WHERE date >= ? ORDER BY date ASC`).all(cutoffDate);
+    const dateMap = {};
+    for (const entry of entries) {
+        if (!dateMap[entry.date]) {
+            dateMap[entry.date] = {};
+            dateMap[entry.date].date = entry.date;
+        }
+        dateMap[entry.date][entry.metric] = entry.value;
+    }
+    return Object.values(dateMap);
+};
+
 module.exports = {
     secsToXp,
     getBulkUserCompletionStats,
@@ -742,5 +756,6 @@ module.exports = {
     getUserUpdateStatus,
     searchBeatmaps,
     searchUsers,
-    getQueuedUsers
+    getQueuedUsers,
+    getAnalyticsData
 };

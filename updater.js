@@ -39,6 +39,11 @@ const runUpdateMapStatuses = async () => {
     setTimeout(runUpdateMapStatuses, 1000 * 60 * 60 * 24);
 };
 
+const runAnalyticsSave = async () => {
+    await updaterHelpers.saveAnalytics();
+    setTimeout(runAnalyticsSave, 1000 * 60 * 15);
+};
+
 async function main() {
 
     // Get osu API token
@@ -54,6 +59,7 @@ async function main() {
     runImportQueue();
     runFetchNewMaps();
     runSaveHistory();
+    runAnalyticsSave();
     setTimeout(runUpdateMapStatuses, 1000 * 60 * 60);
 
 }

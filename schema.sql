@@ -194,3 +194,5 @@ CREATE TABLE
 		"value" INTEGER NOT NULL,
 		PRIMARY KEY ("date", "metric")
 	);
+
+CREATE INDEX idx_user_passes_time ON user_passes (time_passed);

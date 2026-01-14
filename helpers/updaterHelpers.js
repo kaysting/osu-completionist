@@ -912,6 +912,60 @@ const backupDatabaseClean = async () => {
     }
 };
 
+const saveAnalytics = async () => {
+    try {
+        const date = dayjs().format('YYYY-MM-DD');
+        const tsOneDayAgo = Date.now() - (1000 * 60 * 60 * 24);
+        const tsOneWeekAgo = Date.now() - (1000 * 60 * 60 * 24 * 7);
+        const tsOneMonthAgo = Date.now() - (1000 * 60 * 60 * 24 * 30);
+        const stmtRecentActiveUserCount = db.prepare(`SELECT COUNT(*) AS count FROM users WHERE last_login_time > ?`);
+        const stmtRecentNewUserCount = db.prepare(`SELECT COUNT(*) AS count FROM users WHERE time_created > ?`);
+        const stmtRecentPassesCount = db.prepare(`SELECT COUNT(*) AS count FROM user_passes WHERE time_passed > ?`);
+        const stmtRecentMapsCount = db.prepare(
+            `SELECT COUNT(*) AS count
+            FROM beatmaps map
+            JOIN beatmapsets mapset ON map.mapset_id = mapset.id
+            WHERE mapset.time_ranked > ?`
+        );
+        const stmtRecentMapsetsCount = db.prepare(
+            `SELECT COUNT(*) AS count
+            FROM beatmapsets
+            WHERE time_ranked > ?`
+        );
+        const stats = {
+            active_users_past_day: stmtRecentActiveUserCount.get(tsOneDayAgo).count,
+            active_users_past_week: stmtRecentActiveUserCount.get(tsOneWeekAgo).count,
+            active_users_past_month: stmtRecentActiveUserCount.get(tsOneMonthAgo).count,
+            new_users_past_day: stmtRecentNewUserCount.get(tsOneDayAgo).count,
+            new_users_past_week: stmtRecentNewUserCount.get(tsOneWeekAgo).count,
+            new_users_past_month: stmtRecentNewUserCount.get(tsOneMonthAgo).count,
+            passes_past_day: stmtRecentPassesCount.get(tsOneDayAgo).count,
+            passes_past_week: stmtRecentPassesCount.get(tsOneWeekAgo).count,
+            passes_past_month: stmtRecentPassesCount.get(tsOneMonthAgo).count,
+            maps_past_day: stmtRecentMapsCount.get(tsOneDayAgo).count,
+            maps_past_week: stmtRecentMapsCount.get(tsOneWeekAgo).count,
+            maps_past_month: stmtRecentMapsCount.get(tsOneMonthAgo).count,
+            mapsets_past_day: stmtRecentMapsetsCount.get(tsOneDayAgo).count,
+            mapsets_past_week: stmtRecentMapsetsCount.get(tsOneWeekAgo).count,
+            mapsets_past_month: stmtRecentMapsetsCount.get(tsOneMonthAgo).count,
+            total_users: db.prepare(`SELECT COUNT(*) AS count FROM users`).get().count,
+            total_maps: db.prepare(`SELECT COUNT(*) AS count FROM beatmaps`).get().count,
+            total_mapsets: db.prepare(`SELECT COUNT(*) AS count FROM beatmapsets`).get().count,
+            total_passes: db.prepare(`SELECT COUNT(*) AS count FROM user_passes`).get().count,
+        };
+        const stmtInsertAnalytics = db.prepare(`INSERT OR REPLACE INTO analytics (date, metric, value) VALUES (?, ?, ?)`);
+        const transaction = db.transaction(() => {
+            for (const [metric, value] of Object.entries(stats)) {
+                stmtInsertAnalytics.run(date, metric, value);
+            }
+        });
+        transaction();
+        utils.log(`Saved/updated ${Object.keys(stats).length} metrics of analytics data for ${date}`);
+    } catch (error) {
+        utils.logError('Error while saving analytics data:', error);
+    }
+};
+
 module.exports = {
     updateUserProfile,
     saveMapset,
@@ -926,5 +980,6 @@ module.exports = {
     snapshotCategoryStats,
     updateAllUserCategoryStats,
     updateMapStatuses,
-    unqueueUser
+    unqueueUser,
+    saveAnalytics
 };
