@@ -186,3 +186,11 @@ CREATE TABLE
 		"count" INTEGER NOT NULL,
 		PRIMARY KEY ("user_id")
 	);
+
+CREATE TABLE
+	IF NOT EXISTS "analytics" (
+		"date" TEXT NOT NULL,
+		"metric" TEXT NOT NULL,
+		"value" INTEGER NOT NULL,
+		PRIMARY KEY ("date", "metric")
+	);
