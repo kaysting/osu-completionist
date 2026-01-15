@@ -4,8 +4,6 @@ CREATE TABLE
 		"mapset_id" INTEGER NOT NULL,
 		"map_id" INTEGER NOT NULL,
 		"mode" TEXT NOT NULL,
-		"status" TEXT NOT NULL,
-		"is_convert" INTEGER NOT NULL,
 		"time_passed" INTEGER NOT NULL DEFAULT 1763938577564,
 		PRIMARY KEY ("user_id", "mapset_id", "map_id", "mode")
 	);
@@ -13,8 +11,6 @@ CREATE TABLE
 CREATE INDEX idx_user_passes_lookup ON user_passes (user_id, map_id, mode);
 
 CREATE INDEX idx_user_passes_recent ON user_passes (user_id, mode, time_passed DESC);
-
-CREATE INDEX idx_user_passes_stats ON user_passes (user_id, mode, status, is_convert);
 
 CREATE TABLE
 	IF NOT EXISTS "country_names" (
@@ -197,3 +193,5 @@ CREATE TABLE
 	);
 
 CREATE INDEX idx_user_passes_time ON user_passes (time_passed);
+
+CREATE INDEX idx_user_passes_map_id ON user_passes (map_id);
