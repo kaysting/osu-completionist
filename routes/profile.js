@@ -9,20 +9,17 @@ const imageRenderer = require('../helpers/imageRenderer.js');
 
 const router = express.Router();
 
-const minMsSinceLastImport = 1000 * 60 * 60 * 24 * 7;
-
 router.get('/:id', ensureUserExists, (req, res) => {
     const category = req?.session?.category || 'osu-ranked';
     res.redirect(`/u/${req.user.id}/${category}`);
 });
 
-router.get('/:id/update', async (req, res) => {
+router.get('/:id/reimport', async (req, res) => {
     if (!req.me || req.me.id != req.params.id) {
         return res.redirect(`/u/${req.params.id}`);
     }
-    const minMsSinceLastImport = 1000 * 60 * 60 * 24 * 7;
-    const msSinceLastImport = Date.now() - (req.me.last_import_time || 0);
-    if (msSinceLastImport < minMsSinceLastImport) {
+    const hasFullImport = req.user.has_full_import;
+    if (hasFullImport) {
         return res.redirect(`/u/${req.params.id}`);
     }
     await updater.queueUserForImport(req.params.id, true);
@@ -58,15 +55,6 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         );
         updateStatus.details.position_ordinal = utils.ordinalSuffix(updateStatus.details.position);
     }
-    updateStatus.canReimport = false;
-    const msSinceLastImport = Date.now() - (req.user.last_import_time || 0);
-    if (msSinceLastImport > minMsSinceLastImport) {
-        updateStatus.canReimport = true;
-    }
-    const msUntilNextImport = minMsSinceLastImport - msSinceLastImport;
-    updateStatus.timeUntilNextImport = utils.getRelativeTimestamp(
-        Date.now() + msUntilNextImport, undefined, false
-    );
 
     // Format durations
     stats.timeSpent = utils.secsToDuration(stats.secs_spent);
@@ -171,7 +159,9 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
             image: `/u/${user.id}/${category}/renders/main?t=${user.last_pass_time}`
         },
         user: {
-            ...user, stats, yearly, recentPasses, updateStatus, recommended, recommendedQuery, yearlyType, historyDaily, historyMonthly
+            ...user, stats, yearly, recentPasses, updateStatus,
+            recommended, recommendedQuery, yearlyType, historyDaily, historyMonthly,
+            isMe: req.me?.id === req.user.id
         },
         copyable: statsText.join('\n'),
         category,

@@ -2,40 +2,39 @@ require('dotenv').config({ quiet: true });
 const path = require('path');
 const fs = require('fs');
 
-const env = {
+const env = {};
 
-    // Database
-    DB_PATH: path.resolve(process.env.DB_PATH || path.resolve(__dirname, '../storage.db')),
-    DB_BACKUPS_DIR: path.resolve(process.env.DB_BACKUPS_DIR || path.resolve(__dirname, '../backups')),
-    DB_BACKUP_INTERVAL_HOURS: Number(process.env.DB_BACKUP_INTERVAL_HOURS || 6),
-    DB_KEEP_BACKUPS_COUNT: Number(process.env.DB_KEEP_BACKUPS_COUNT || 12),
+// Database
+env.DB_PATH = path.resolve(process.env.DB_PATH || path.resolve(__dirname, '../storage.db'));
+env.DB_BACKUPS_DIR = path.resolve(process.env.DB_BACKUPS_DIR || path.resolve(__dirname, '../backups'));
+env.DB_BACKUP_INTERVAL_HOURS = Number(process.env.DB_BACKUP_INTERVAL_HOURS || 6);
+env.DB_KEEP_BACKUPS_COUNT = Number(process.env.DB_KEEP_BACKUPS_COUNT || 12);
 
-    // Webserver
-    WEBSERVER_PORT: Number(process.env.WEBSERVER_PORT || 8080),
-    JWT_SECRET: process.env.JWT_SECRET,
-    SESSION_SECRET: process.env.SESSION_SECRET,
-    HOST: process.env.HOST || 'localhost:8080',
+// Webserver
+env.WEBSERVER_PORT = Number(process.env.WEBSERVER_PORT || 8080);
+env.JWT_SECRET = process.env.JWT_SECRET;
+env.SESSION_SECRET = process.env.SESSION_SECRET;
+env.HOST = process.env.HOST || `localhost:${env.WEBSERVER_PORT}`;
+env.HTTPS = process.env.HTTPS !== 'false';
 
-    // Webserver rate limits
-    CLIENT_RATE_LIMIT_LIMIT: Number(process.env.CLIENT_RATE_LIMIT_LIMIT || 100),
-    CLIENT_RATE_LIMIT_WINDOW_SECS: Number(process.env.CLIENT_RATE_LIMIT_WINDOW_SECS || 300),
-    API_RATE_LIMIT_LIMIT: Number(process.env.API_RATE_LIMIT_LIMIT || 60),
-    API_RATE_LIMIT_WINDOW_SECS: Number(process.env.API_RATE_LIMIT_WINDOW_SECS || 60),
+// Webserver rate limits
+env.CLIENT_RATE_LIMIT_LIMIT = Number(process.env.CLIENT_RATE_LIMIT_LIMIT || 100);
+env.CLIENT_RATE_LIMIT_WINDOW_SECS = Number(process.env.CLIENT_RATE_LIMIT_WINDOW_SECS || 300);
+env.API_RATE_LIMIT_LIMIT = Number(process.env.API_RATE_LIMIT_LIMIT || 60);
+env.API_RATE_LIMIT_WINDOW_SECS = Number(process.env.API_RATE_LIMIT_WINDOW_SECS || 60);
 
-    // osu
-    OSU_CLIENT_ID: process.env.OSU_CLIENT_ID,
-    OSU_CLIENT_SECRET: process.env.OSU_CLIENT_SECRET,
-    OSU_AUTH_REDIRECT_URI: process.env.OSU_AUTH_REDIRECT_URI || `https://${process.env.HOST}/auth/callback`,
+// osu
+env.OSU_CLIENT_ID = process.env.OSU_CLIENT_ID;
+env.OSU_CLIENT_SECRET = process.env.OSU_CLIENT_SECRET;
+env.OSU_AUTH_REDIRECT_URI = process.env.OSU_AUTH_REDIRECT_URI || `${env.HTTPS ? 'https' : 'http'}://${env.HOST}/auth/callback`;
 
-    // Discord
-    DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
-    DISCORD_BOT_CLIENT_ID: process.env.DISCORD_BOT_CLIENT_ID,
-    MAP_FEED_DISCORD_CHANNEL_ID: process.env.MAP_FEED_DISCORD_CHANNEL_ID,
-    USER_FEED_DISCORD_CHANNEL_ID: process.env.USER_FEED_DISCORD_CHANNEL_ID,
-    PASS_FEED_DISCORD_CHANNEL_ID: process.env.PASS_FEED_DISCORD_CHANNEL_ID,
-    ERROR_LOGS_DISCORD_CHANNEL_ID: process.env.ERROR_LOGS_DISCORD_CHANNEL_ID,
-
-};
+// Discord
+env.DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
+env.DISCORD_BOT_CLIENT_ID = process.env.DISCORD_BOT_CLIENT_ID;
+env.MAP_FEED_DISCORD_CHANNEL_ID = process.env.MAP_FEED_DISCORD_CHANNEL_ID;
+env.USER_FEED_DISCORD_CHANNEL_ID = process.env.USER_FEED_DISCORD_CHANNEL_ID;
+env.PASS_FEED_DISCORD_CHANNEL_ID = process.env.PASS_FEED_DISCORD_CHANNEL_ID;
+env.ERROR_LOGS_DISCORD_CHANNEL_ID = process.env.ERROR_LOGS_DISCORD_CHANNEL_ID;
 
 // Check db existence
 if (!fs.existsSync(env.DB_PATH)) {

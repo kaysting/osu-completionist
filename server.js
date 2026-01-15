@@ -116,6 +116,9 @@ app.use('/privacy', (req, res) => {
         }
     });
 });
+app.use('/discord', (req, res) => {
+    res.redirect('https://discord.gg/fNSnMG7S3C');
+});
 
 app.use((req, res) => {
     res.renderError(404, '404 not found', `The requested resource couldn't be found.`);

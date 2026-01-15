@@ -57,7 +57,7 @@ router.get('/callback', async (req, res) => {
                 author: {
                     name: userEntry.name,
                     icon_url: userEntry.avatar_url,
-                    url: `https://${env.HOST}/u/${userEntry.id}`
+                    url: `${env.HTTPS ? 'https' : 'http'}://${env.HOST}/u/${userEntry.id}`
                 },
                 title: `Registered as our ${utils.ordinalSuffix(userCount)} user!`,
                 color: 0xA3F5A3
@@ -73,7 +73,7 @@ router.get('/callback', async (req, res) => {
         const jwt = utils.generateJWT({ id: user.data.id });
         res.cookie('token', jwt, {
             httpOnly: true,
-            secure: true,
+            secure: env.HTTPS,
             expires: new Date(Date.now() + (1000 * 60 * 60 * 24 * 365))
         });
         // Redirect to saved path or user profile

@@ -644,8 +644,10 @@ const importUser = async (userId, doFullImport = false) => {
         }
         // Remove from import queue
         db.prepare(`DELETE FROM user_import_queue WHERE user_id = ?`).run(userId);
-        // Save last import time
-        db.prepare(`UPDATE users SET last_import_time = ? WHERE id = ?`).run(Date.now(), userId);
+        // Save last import time and import status
+        db.prepare(
+            `UPDATE users SET last_import_time = ?, has_full_import = ? WHERE id = ?`
+        ).run(Date.now(), doFullImport ? 1 : 0, userId);
         // Update user stats
         updateUserCategoryStats(userId, true);
         // Log import completion and speed
@@ -658,7 +660,7 @@ const importUser = async (userId, doFullImport = false) => {
             author: {
                 name: user.name,
                 icon_url: user.avatar_url,
-                url: `https://${env.HOST}/u/${user.id}`
+                url: `${env.HTTPS ? 'https' : 'http'}://${env.HOST}/u/${user.id}`
             },
             title: `Completed ${doFullImport ? 'full ' : ''}import of ${passCount.toLocaleString()} passes`,
             description: `Took ${utils.secsToDuration(Math.round(importDurationMs / 1000))} to check ${beatmapsOffset.toLocaleString()} beatmaps`,
@@ -796,7 +798,7 @@ const savePassesFromGlobalRecents = async () => {
         // Log passes to Discord
         if (savedPasses.length > 0) {
             const description = savedPasses.map(pass => {
-                return `-# * **[${pass.userName}](<https://${env.HOST}/u/${pass.userId}>)** gained **${pass.xp.toLocaleString()} cxp** from **${utils.rulesetKeyToName(pass.mode, true)}** [${pass.mapName}](<https://osu.ppy.sh/beatmapsets/${pass.mapsetId}#${pass.mode}/${pass.mapId}>)`;
+                return `-# * **[${pass.userName}](<${env.HTTPS ? 'https' : 'http'}://${env.HOST}/u/${pass.userId}>)** gained **${pass.xp.toLocaleString()} cxp** from **${utils.rulesetKeyToName(pass.mode, true)}** [${pass.mapName}](<https://osu.ppy.sh/beatmapsets/${pass.mapsetId}#${pass.mode}/${pass.mapId}>)`;
             }).join('\n');
             utils.postToPassFeed(description);
             utils.log(`Completed processing global recents, saved ${savedPasses.length} new passes`);

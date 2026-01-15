@@ -33,51 +33,6 @@
                     <span class="icon">content_copy</span>
                     <span>copy stats</span>
                 </button>
-                <% if (user.id == me?.id && !user.updateStatus.updating) { %>
-                <button id="reimport" class="btn translucent">
-                    <span class="icon">update</span>
-                    <span>request re-import</span>
-                </button>
-                <script>
-                    document.getElementById('reimport').addEventListener('click', async () => {
-                        const canReimport = '<%= user.updateStatus.canReimport %>';
-                        if (canReimport === 'true') {
-                            showPopup(
-                                'Request full re-import',
-                                `
-                                    <p>Are you sure you want to re-import your completion data from osu!?</p>
-                                    <p>Note that this is likely unnecessary as we update profiles from their recent scores minutely. You should only re-import if you suspect that your stats are inaccurate or incomplete.</p>
-                                    <p>If you continue, you'll be queued for a <b>full re-import</b>, where we'll check for your passes on every single map. This process will take several hours to complete.</p>
-                                `,
-                                [
-                                    {
-                                        label: 'Nevermind',
-                                        class: 'primary'
-                                    },
-                                    {
-                                        label: 'Continue',
-                                        href: '/u/<%= user.id %>/update',
-                                    }
-                                ]
-                            );
-                        } else {
-                            showPopup(
-                                'Too soon to re-import',
-                                `
-                                    <p>Your profile was imported recently and can't be imported again for <strong><%= user.updateStatus.timeUntilNextImport %></strong>.</p>
-                                    <p>Note that re-importing is likely unnecessary as we update profiles from their recent scores minutely. You should only re-import if you suspect that your stats are inaccurate or incomplete.</p>
-                                `,
-                                [
-                                    {
-                                        label: 'Got it!',
-                                        class: 'primary'
-                                    }
-                                ]
-                            );
-                        }
-                    });
-                </script>
-                <% } %>
             </div>
         </div>
         <div class="basics overflow-hidden flex gap-16 align-center">
@@ -255,6 +210,68 @@
                     <% } %>
                 </div>
             </div>
+            <% if (user.isMe) { %>
+            <div>
+                <button id="inaccurateStatsHelp" class="btn text accent small">
+                    <span class="label">help, my stats seem inaccurate...</span>
+                </button>
+                <script>
+                    document.getElementById('inaccurateStatsHelp').addEventListener('click', async () => {
+                        const hasFullImport = '<%= user.has_full_import %>';
+                        const isImporting = '<%= user.updateStatus.updating %>';
+                        if (hasFullImport === 'true') {
+                            return showPopup(
+                                'Hmm...',
+                                `
+                                    <p>We've already fully imported your completion stats, so importing again is unlikely to fix anything.</p>
+                                    <p>If you think you're still missing passes or your stats are inaccurate, please join the Discord server and let Kayla know so we can investigate further.</p>
+                                `,
+                                [
+                                    {
+                                        label: 'Join Discord server',
+                                        href: '/discord',
+                                        newTab: true
+                                    },
+                                    {
+                                        label: 'Okay', class: 'primary'
+                                    }
+                                ]
+                            );
+                        } else if (!isImporting) {
+                            showPopup(
+                                `Let's do a full import`,
+                                `
+                                    <p>When we initially imported your completion data, we used your <b>most played maps</b> to determine what maps we should check for passes. While this is accurate for the vast majority of casual completionists, you may find that you're missing some passes if you've been playing osu! for a long time or have passed lots of maps.</p>
+                                    <p>By continuing, a <b>full import</b> will be run for your account, where we'll check every single map to make sure we've saved all of your passes. This can help to catch those that might have been missed by checking your most played, but <b>it'll take a few hours and can only be done once</b>.</p>
+                                `,
+                                [
+                                    {
+                                        label: 'Nevermind'
+                                    },
+                                    {
+                                        label: `Start full import`,
+                                        class: 'primary',
+                                        href: '/u/<%= user.id %>/reimport',
+                                    }
+                                ]
+                            );
+                        } else {
+                            return showPopup(
+                                'Import in progress',
+                                `
+                                    <p>Your completion stats are currently being imported from osu!, so they might seem incomplete until the import is done. Check back when it's finished to see if everything looks right.</p>
+                                `,
+                                [
+                                    {
+                                        label: 'Okay', class: 'primary'
+                                    }
+                                ]
+                            );
+                        }
+                    });
+                </script>
+            </div>
+            <% } %>
         </div>
         <% if (user.recommended) { %>
         <div class="card lighter recommended flex col gap-16">
