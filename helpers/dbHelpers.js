@@ -415,7 +415,7 @@ const getUserRecentPasses = (userId, categoryId, limit = 100, offset = 0, after 
 
     // Return an empty list if the user is currently being imported
     const queueEntry = db.prepare(`SELECT * FROM user_import_queue WHERE user_id = ?`).get(userId);
-    if (queueEntry) {
+    if (queueEntry?.time_started > 0) {
         return [];
     }
 

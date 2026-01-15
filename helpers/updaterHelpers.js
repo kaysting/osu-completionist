@@ -318,7 +318,7 @@ const updateUserCategoryStats = (userId, force = false) => {
         // Check if user is importing
         if (!force && !IS_GLOBAL) {
             const queueEntry = db.prepare(`SELECT * FROM user_import_queue WHERE user_id = ?`).get(userId);
-            if (queueEntry) {
+            if (queueEntry?.time_started > 0) {
                 utils.log(`${user.name} is currently being imported, skipping stats update`);
                 return;
             }
@@ -432,7 +432,7 @@ const snapshotCategoryStats = () => {
             FROM user_category_stats s
             JOIN users u ON s.user_id = u.id
             LEFT JOIN user_import_queue q ON s.user_id = q.user_id
-            WHERE s.user_id != 0 AND u.last_import_time != 0 AND q.time_queued IS NULL
+            WHERE s.user_id != 0 AND u.last_import_time != 0 AND q.time_started > 0
             ORDER BY s.category, s.seconds DESC
         `).all();
         if (allUserStats.length === 0) return;
@@ -829,6 +829,7 @@ const startQueuedImports = async () => {
 };
 
 // Function to queue a user for import
+const beatmapCount = db.prepare(`SELECT COUNT(*) AS count FROM beatmaps`).get().count;
 const queueUserForImport = async (userId, full = false) => {
     try {
         const existingTask = db.prepare(`SELECT 1 FROM user_import_queue WHERE user_id = ? LIMIT 1`).get(userId);
@@ -836,7 +837,7 @@ const queueUserForImport = async (userId, full = false) => {
         // Fetch playcounts count
         const user = await osu.getUser(userId);
         const playcountsCount = full
-            ? db.prepare(`SELECT COUNT(*) AS count FROM beatmaps`).get().count
+            ? beatmapCount
             : user?.beatmap_playcounts_count || 0;
         if (!user || playcountsCount === 0) {
             utils.log(`User ${user?.username} has no playcounts, not queueing for import`);
