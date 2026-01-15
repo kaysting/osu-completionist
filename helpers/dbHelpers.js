@@ -430,7 +430,7 @@ const getUserRecentPasses = (userId, categoryId, limit = 100, offset = 0, after 
         AND ${where} AND up.time_passed > ?
         ORDER BY up.time_passed DESC
         LIMIT ? OFFSET ?
-    `).all(userId, ...params, after || Date.now(), limit, offset);
+    `).all(userId, ...params, Math.min(after || Date.now(), user.last_import_time), limit, offset);
 
     // Get full map data
     const beatmapIdsToMaps = {};
