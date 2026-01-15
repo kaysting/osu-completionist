@@ -6,8 +6,16 @@
     flex-direction: row;
 }
 
+.row-rev {
+    flex-direction: row-reverse;
+}
+
 .col {
     flex-direction: column;
+}
+
+.col-rev {
+    flex-direction: column-reverse;
 }
 
 .align-center {
