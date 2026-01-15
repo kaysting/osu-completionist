@@ -188,9 +188,15 @@ const updateMapStatuses = async () => {
                 const mapset = map.beatmapset;
                 const oldStatus = savedMapsetStatuses[mapset.id];
                 const newStatus = mapset.status;
+                const rankedStatuses = ['ranked', 'approved', 'loved'];
                 if (oldStatus === newStatus) continue;
                 // Save updated mapset
                 await saveMapset(mapset.id, false);
+                // Delete passes if the map got unranked
+                if (!rankedStatuses.includes(newStatus)) {
+                    db.prepare(`DELETE FROM user_passes WHERE mapset_id = ?`).run(mapset.id);
+                    utils.log(`Deleted all passes for now ${newStatus} mapset ${mapset.id}`);
+                }
             }
         }
     } catch (error) {
@@ -602,8 +608,7 @@ const importUser = async (userId, doFullImport = false) => {
                         const validStatuses = ['ranked', 'loved', 'approved'];
                         if (!validStatuses.includes(map.status)) continue;
                         // Push pass data
-                        const isConvert = map.mode !== modeName;
-                        passes.push({ mapId: map.id, mapsetId: map.beatmapset_id, mode: modeName, status: map.status, isConvert });
+                        passes.push({ mapId: map.id, mapsetId: map.beatmapset_id, mode: modeName });
                     }
                 }
             }
@@ -611,8 +616,8 @@ const importUser = async (userId, doFullImport = false) => {
             const transaction = db.transaction(() => {
                 for (const pass of passes) {
                     const time = Date.now();
-                    db.prepare(`INSERT OR IGNORE INTO user_passes (user_id, map_id, mapset_id, mode, status, is_convert, time_passed) VALUES (?, ?, ?, ?, ?, ?, ?)`).run(
-                        user.id, pass.mapId, pass.mapsetId, pass.mode, pass.status, pass.isConvert ? 1 : 0, time
+                    db.prepare(`INSERT OR IGNORE INTO user_passes (user_id, map_id, mapset_id, mode, time_passed) VALUES (?, ?, ?, ?, ?)`).run(
+                        user.id, pass.mapId, pass.mapsetId, pass.mode, time
                     );
                     passCount++;
                 }
@@ -760,7 +765,6 @@ const savePassesFromGlobalRecents = async () => {
                     if (time > latestTime) latestTime = time;
                     const mode = utils.rulesetNameToKey(score.ruleset_id);
                     const status = map.status;
-                    const isConvert = map.mode !== mode;
                     const mapsetId = map.beatmapset.id;
                     // Skip if map doesn't have a leaderboard
                     const validStatuses = ['ranked', 'loved', 'approved'];
@@ -769,8 +773,8 @@ const savePassesFromGlobalRecents = async () => {
                     const existingPass = db.prepare(`SELECT 1 FROM user_passes WHERE user_id = ? AND map_id = ? AND mode = ? LIMIT 1`).get(userId, mapId, mode);
                     if (existingPass) continue;
                     // Save pass
-                    db.prepare(`INSERT INTO user_passes (user_id, map_id, mapset_id, mode, status, is_convert, time_passed) VALUES (?, ?, ?, ?, ?, ?, ?)`).run(
-                        userId, mapId, mapsetId, mode, status, isConvert ? 1 : 0, time
+                    db.prepare(`INSERT INTO user_passes (user_id, map_id, mapset_id, mode, time_passed) VALUES (?, ?, ?, ?, ?)`).run(
+                        userId, mapId, mapsetId, mode, time
                     );
                     savedPasses.push({
                         userId, userName: user.name,
