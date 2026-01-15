@@ -661,7 +661,7 @@ const importUser = async (userId, doFullImport = false) => {
                 url: `https://${env.HOST}/u/${user.id}`
             },
             title: `Completed ${doFullImport ? 'full ' : ''}import of ${passCount.toLocaleString()} passes`,
-            description: `Took ${utils.secsToDuration(Math.round(importDurationMs / 1000))}`,
+            description: `Took ${utils.secsToDuration(Math.round(importDurationMs / 1000))} to check ${beatmapsOffset.toLocaleString()} beatmaps`,
             color: 0xA3F5F5
         });
     } catch (error) {
