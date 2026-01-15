@@ -1047,3 +1047,117 @@ img {
     font-weight: 400;
     line-height: 1.2;
 }
+
+.yearlyStatsContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2px;
+}
+
+.yearlyStatsEntry,
+.yearlyStatsEntryRound {
+    padding: 8px;
+    background: var(--beatmap-bg);
+}
+
+.yearlyStatsEntry .year {
+    font-size: 14px;
+    width: 40px;
+    text-align: center;
+}
+
+.yearlyStatsEntry .content .values {
+    gap: 2px 4px;
+}
+
+.yearlyStatsEntry .content .percent,
+.yearlyStatsEntry .content .year.top {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    flex-grow: 1;
+}
+
+.yearlyStatsEntry .content .count {
+    font-size: 14px;
+    color: var(--text-dim);
+    text-align: right;
+}
+
+.yearlyStatsEntry .content .bar {
+    height: 4px;
+    background: var(--bg-dark);
+}
+
+.yearlyStatsEntry .content .bar .filling {
+    top: 0px;
+    left: 0px;
+    height: 100%;
+    background: var(--accent);
+}
+
+.yearlyStatsEntryRound .speedometer {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    margin-bottom: -8px;
+}
+
+.yearlyStatsEntryRound .speedometer svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(150deg);
+    overflow: visible;
+}
+
+.yearlyStatsEntryRound .speedometer circle {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 283;
+    transition: stroke-dashoffset 1s ease-out;
+}
+
+.yearlyStatsEntryRound .speedometer .track {
+    stroke: var(--bg-dark);
+    stroke-dashoffset: 94.5;
+}
+
+.yearlyStatsEntryRound .speedometer .progress {
+    stroke: var(--color);
+    /* 188.5 is the length of the visible arc (240 degrees) */
+    stroke-dashoffset: calc(283 - (188.5 * (var(--percent) / 100)));
+}
+
+.yearlyStatsEntryRound .speedometer .value {
+    position: absolute;
+    width: 100%;
+    top: 10px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    line-height: 1;
+}
+
+.yearlyStatsEntryRound .speedometer .unit {
+    position: absolute;
+    width: 100%;
+    bottom: 4px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: white;
+    line-height: 1;
+}
+
+.yearlyStatsEntryRound .year {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.yearlyStatsEntryRound .progress {
+    font-size: 14px;
+    color: var(--text-dim);
+}

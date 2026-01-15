@@ -95,51 +95,6 @@
     }
 }
 
-#profile .yearly {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2px;
-}
-
-.yearlyStatsEntry {
-    padding: 8px;
-    background: var(--beatmap-bg);
-}
-
-.yearlyStatsEntry .year {
-    font-size: 14px;
-    width: 40px;
-    text-align: center;
-}
-
-.yearlyStatsEntry .content .values {
-    gap: 0px 4px;
-}
-
-.yearlyStatsEntry .content .values .percent {
-    font-size: 16px;
-    font-weight: 600;
-    color: white;
-    flex-grow: 1;
-}
-
-.yearlyStatsEntry .content .values .count {
-    font-size: 14px;
-    color: var(--text-dim);
-}
-
-.yearlyStatsEntry .content .bar {
-    height: 4px;
-    background: var(--bg-dark);
-}
-
-.yearlyStatsEntry .content .bar .filling {
-    top: 0px;
-    left: 0px;
-    height: 100%;
-    background: var(--accent);
-}
-
 @media (max-width: 700px) {
 
     #profile .basics {

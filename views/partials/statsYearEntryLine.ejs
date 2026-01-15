@@ -1,0 +1,29 @@
+<div class="yearlyStatsEntry rounded-4 flex gap-8 align-center">
+    <div class="year left flex-no-shrink"><%= year %></div>
+    <%
+        let percent = map_percentage_completed;
+        let unit = 'maps';
+        let completed = count_completed;
+        let total = count_total;
+        if (yearlyType == 'xp') {
+            percent = time_percentage_completed;
+            unit = 'cxp';
+            completed = xp;
+            total = xp_total;
+        }
+    %>
+    <div class="content flex col gap-4 flex-grow">
+        <div class="values flex flex-wrap align-end">
+            <div class="percent">
+                <%= percent.toFixed(2) %>%
+            </div>
+            <div class="count top">
+                <%= completed.toLocaleString() %> / <%= total.toLocaleString() %> <%= unit %>
+            </div>
+        </div>
+        <div class="bar w-full relative rounded-4 overflow-hidden">
+            <div class="filling absolute h-full rounded-4" style="width: <%= percent %>%; background: <%= color %>">
+            </div>
+        </div>
+    </div>
+</div>

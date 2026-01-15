@@ -204,9 +204,9 @@
                         <span class="label">cxp</span>
                     </a>
                 </div>
-                <div class="yearly">
+                <div class="yearlyStatsContainer">
                     <% for (const yearData of user.yearly) { %>
-                    <%- include('../partials/yearlyStatsEntry', { ...yearData, yearlyType: user.yearlyType }) %>
+                    <%- include('../partials/statsYearEntryLine', { ...yearData, yearlyType: user.yearlyType }) %>
                     <% } %>
                 </div>
             </div>
