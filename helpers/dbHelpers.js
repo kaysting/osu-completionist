@@ -462,7 +462,7 @@ const getUserRecentPasses = (userId, categoryId, limit = 100, offset = 0, after 
 
 const getUserUpdateStatus = (userId) => {
     // These constants are defined through testing
-    const SCORES_PER_MINUTE = 600;
+    const SCORES_PER_MINUTE = 700;
     const SCORES_PER_MINUTE_FULL = 3500;
     const entry = db.prepare(`SELECT * FROM user_import_queue WHERE user_id = ?`).get(userId);
     if (!entry) {
