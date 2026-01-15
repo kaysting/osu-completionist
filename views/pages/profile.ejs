@@ -219,7 +219,19 @@
                     document.getElementById('inaccurateStatsHelp').addEventListener('click', async () => {
                         const hasFullImport = '<%= user.has_full_import %>';
                         const isImporting = '<%= user.updateStatus.updating %>';
-                        if (hasFullImport === 'true') {
+                        if (isImporting === 'true') {
+                            return showPopup(
+                                'Import in progress',
+                                `
+                                    <p>Your completion stats are currently being imported from osu!, so they might seem incomplete until the import is done. Check back when it's finished to see if everything looks right.</p>
+                                `,
+                                [
+                                    {
+                                        label: 'Okay', class: 'primary'
+                                    }
+                                ]
+                            );
+                        } else if (hasFullImport === 'true') {
                             return showPopup(
                                 'Hmm...',
                                 `
@@ -237,7 +249,7 @@
                                     }
                                 ]
                             );
-                        } else if (!isImporting) {
+                        } else {
                             showPopup(
                                 `Let's do a full import`,
                                 `
@@ -252,18 +264,6 @@
                                         label: `Start full import`,
                                         class: 'primary',
                                         href: '/u/<%= user.id %>/reimport',
-                                    }
-                                ]
-                            );
-                        } else {
-                            return showPopup(
-                                'Import in progress',
-                                `
-                                    <p>Your completion stats are currently being imported from osu!, so they might seem incomplete until the import is done. Check back when it's finished to see if everything looks right.</p>
-                                `,
-                                [
-                                    {
-                                        label: 'Okay', class: 'primary'
                                     }
                                 ]
                             );
