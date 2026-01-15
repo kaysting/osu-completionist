@@ -18,7 +18,7 @@ router.get('/:id/reimport', async (req, res) => {
     if (!req.me || req.me.id != req.params.id) {
         return res.redirect(`/u/${req.params.id}`);
     }
-    const hasFullImport = req.user.has_full_import;
+    const hasFullImport = req.me.has_full_import;
     if (hasFullImport) {
         return res.redirect(`/u/${req.params.id}`);
     }
