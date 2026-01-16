@@ -183,12 +183,12 @@ const getUserHistoricalCompletionStats = (userId, categoryId, aggregate = 'day')
     if (aggregate === 'best') {
         // Return best stats achieved for rank and percentage
         const data = {
-            rank: { value: -1, date: dayjs().format('YYYY-MM-DD') },
+            rank: { value: 0, date: dayjs().format('YYYY-MM-DD') },
             percentage_completed: { value: 0, date: dayjs().format('YYYY-MM-DD') }
         };
 
         for (const row of rows) {
-            if (row.rank > 0 && (data.rank.value === -1 || row.rank < data.rank.value)) {
+            if (row.rank > 0 && (data.rank.value === 0 || row.rank < data.rank.value)) {
                 data.rank.value = row.rank;
                 data.rank.date = row.date;
             }
