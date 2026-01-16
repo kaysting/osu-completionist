@@ -523,7 +523,7 @@ const importUser = async (userId, doFullImport = false) => {
                         `SELECT mapset.id AS mapset_id, mapset.status AS status
                         FROM beatmaps map
                         JOIN beatmapsets mapset ON map.mapset_id = mapset.id
-                        ORDER BY map.id ASC
+                        ORDER BY map.mode, map.id ASC
                         LIMIT 100 OFFSET ?`
                     ).all(beatmapsOffset);
 
@@ -573,10 +573,36 @@ const importUser = async (userId, doFullImport = false) => {
 
             // Collect batch of mapsets
             const ids = pendingMapsetIds.splice(0, 50);
-            const mapsetsToSave = {};
+            const mapsetIdsNeedingStatusUpdate = [];
+
+            // Check for missing mapsets
+            const existingMapsetIds = db.prepare(
+                `SELECT id FROM beatmapsets
+                WHERE id IN (${ids.map(() => '?').join(',')})`
+            ).all(...ids).map(row => row.id);
+            const missingMapsetIds = ids.filter(id => !existingMapsetIds.includes(id));
+
+            // Fetch and save any missing mapsets
+            for (const mapsetId of missingMapsetIds) {
+                await saveMapset(mapsetId, true);
+            }
+
+            // Determine what modes need to be selected
+            const modes = db.prepare(
+                `SELECT DISTINCT mode FROM beatmaps
+                WHERE mapset_id IN (${ids.map(() => '?').join(',')})`
+            ).all(...ids).map(row => row.mode);
+            const modeSet = new Set(modes);
+            // If modes includes osu, add all modes since converts may exist
+            if (modeSet.has('osu')) {
+                modeSet.add('taiko');
+                modeSet.add('fruits');
+                modeSet.add('mania');
+            }
+            const rulesetIds = Array.from(modeSet).map(key => ({ osu: 0, taiko: 1, fruits: 2, mania: 3 }[key]));
 
             // Check for passes in each mode
-            for (const ruleset_id of [0, 1, 2, 3]) {
+            for (const ruleset_id of rulesetIds) {
                 const modeKey = utils.rulesetNameToKey(ruleset_id);
 
                 // Fetch passes
@@ -599,12 +625,11 @@ const importUser = async (userId, doFullImport = false) => {
 
                         // Check if map needs to be saved
                         // Either if we don't have a record of it, or if its status has changed
-                        const existingMapset = db.prepare(`SELECT * FROM beatmapsets WHERE id = ? LIMIT 1`).get(map.beatmapset_id);
                         const existingMap = db.prepare(`SELECT * FROM beatmaps WHERE id = ? AND mode = ? LIMIT 1`).get(map.id, modeKey);
                         const oldStatus = existingMap?.status;
                         const newStatus = map.status;
-                        if (!existingMapset || oldStatus !== newStatus) {
-                            mapsetsToSave[map.beatmapset_id] = { index: !existingMapset };
+                        if (oldStatus !== newStatus) {
+                            mapsetIdsNeedingStatusUpdate.push(map.beatmapset_id);
                         }
 
                         // Save pass
@@ -621,9 +646,9 @@ const importUser = async (userId, doFullImport = false) => {
             }
 
             // Save any mapsets that need to be saved/updated and update stats if needed
-            if (Object.keys(mapsetsToSave).length > 0) {
-                for (const entry of Object.entries(mapsetsToSave)) {
-                    await saveMapset(entry[0], entry[1].index);
+            if (mapsetIdsNeedingStatusUpdate.length > 0) {
+                for (const mapsetId of mapsetIdsNeedingStatusUpdate) {
+                    await saveMapset(mapsetId, false);
                 }
                 updateUserCategoryStats(0);
             }
