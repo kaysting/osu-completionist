@@ -474,21 +474,26 @@ const snapshotCategoryStats = () => {
 let isImportRunning = false;
 const importUser = async (userId, doFullImport = false) => {
     const user = await db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
+    isImportRunning = true;
     try {
-        isImportRunning = true;
+
+        // Delete existing passes so we have a clean slate
         utils.log(`Deleting existing passes for ${user.name}...`);
         db.prepare(`DELETE FROM user_passes WHERE user_id = ?`).run(userId);
+
         utils.log(`Starting ${doFullImport ? `FULL ` : ''}import of ${user.name}'s passes...`);
         const uniqueMapsetIds = new Set();
-        const uniqueStdMapsetIds = new Set();
         const pendingMapsetIds = [];
+
         // If full import, count total beatmaps
         let beatmapsCount = 0;
         if (doFullImport)
             beatmapsCount = db.prepare(`SELECT COUNT(*) AS count FROM beatmaps`).get().count;
+
         // Get playcounts count or use length of pendingMapsetIds if full import
         const osuUser = !doFullImport ? await osu.getUser(userId) : null;
         const playcountsCount = beatmapsCount || osuUser.beatmap_playcounts_count;
+
         // Update queue entry
         const timeStarted = Date.now();
         db.prepare(
@@ -497,132 +502,132 @@ const importUser = async (userId, doFullImport = false) => {
                 time_queued = 0, playcounts_count = ?
             WHERE user_id = ?`
         ).run(timeStarted, playcountsCount, userId);
+
         // Outer loop to fetch and process passes
         let beatmapsOffset = 0;
         let passCount = 0;
         let lastStatUpdateTime = Date.now();
         while (true) {
+
             // Inner loop to fetch unique mapset IDs from most played
-            // Skip this if doing a full import, where we've already gotten all mapset IDs
             while (true) {
+
                 if (pendingMapsetIds.length >= 50) break;
+
                 // Collect beatmap entries depending on import type
                 const entries = [];
                 if (doFullImport) {
+
                     // Fetch chunk of maps from db
                     const rows = db.prepare(
-                        `SELECT mapset.id AS mapset_id, map.mode AS mode, mapset.status AS status
+                        `SELECT mapset.id AS mapset_id, mapset.status AS status
                         FROM beatmaps map
                         JOIN beatmapsets mapset ON map.mapset_id = mapset.id
                         ORDER BY map.id ASC
                         LIMIT 100 OFFSET ?`
                     ).all(beatmapsOffset);
+
                     // Add entries
                     for (const row of rows) {
                         const mapsetId = row.mapset_id;
                         const status = row.status;
-                        const mode = row.mode;
-                        entries.push({ mapsetId, status, mode });
+                        entries.push({ mapsetId, status });
                     }
+
                 } else {
+
                     // Fetch most played maps
                     const res = await osu.getUserBeatmaps(userId, 'most_played', {
                         limit: 100, offset: beatmapsOffset
                     });
                     if (res.length == 0) break;
+
                     // Add entries
                     for (const entry of res) {
                         const mapsetId = entry.beatmapset.id;
                         const status = entry.beatmapset.status;
-                        const mode = entry.beatmap.mode;
-                        entries.push({ mapsetId, status, mode });
+                        entries.push({ mapsetId, status });
                     }
+
                 }
+
                 // Break if no more entries
                 if (entries.length === 0) break;
+
                 // Loop through entries and add unique valid mapset IDs to pending list
                 for (const entry of entries) {
-                    const { mapsetId, status, mode } = entry;
+                    const { mapsetId, status } = entry;
                     const isValidStatus = ['ranked', 'approved', 'loved'].includes(status);
                     const isUnseenMapset = !uniqueMapsetIds.has(mapsetId);
-                    const isUnseenStdMapset = mode === 'osu' && !uniqueStdMapsetIds.has(mapsetId);
                     if (isUnseenMapset && isValidStatus) {
                         uniqueMapsetIds.add(mapsetId);
                         pendingMapsetIds.push(mapsetId);
                     }
-                    if (isUnseenStdMapset && isValidStatus) {
-                        uniqueStdMapsetIds.add(mapsetId);
-                    }
                     beatmapsOffset++;
                 }
+
             }
+
             // Break if no more mapsets to process
             if (pendingMapsetIds.length === 0) break;
+
             // Collect batch of mapsets
             const ids = pendingMapsetIds.splice(0, 50);
-            const stdIds = ids.filter(id => uniqueStdMapsetIds.has(id));
-            const passes = [];
-            // Get non-convert passes for all maps
-            const res = await osu.getUserBeatmapsPassed(user.id, {
-                beatmapset_ids: ids,
-                exclude_converts: true,
-                no_diff_reduction: false
-            });
-            let savedNewMapsets = false;
-            for (const map of res.beatmaps_passed) {
-                // Skip if no leaderboard
-                const validStatuses = ['ranked', 'loved', 'approved'];
-                if (!validStatuses.includes(map.status)) continue;
-                // Save mapset data if not already saved or if status has changed
-                // We get the existing single beatmap entry to check status since sometimes
-                // a beatmap can be WIP or graveyard while the mapset is ranked
-                // It wouldn't hurt to re-save if the single beatmap status didn't match the mapset,
-                // but it's unnecessary
-                const existingMapset = db.prepare(`SELECT * FROM beatmapsets WHERE id = ? LIMIT 1`).get(map.beatmapset_id);
-                const existingMap = db.prepare(`SELECT * FROM beatmaps WHERE id = ? AND mode = ? LIMIT 1`).get(map.id, map.mode);
-                const oldStatus = existingMap?.status;
-                const newStatus = map.status;
-                if (!existingMapset || oldStatus !== newStatus) {
-                    await saveMapset(map.beatmapset_id, !existingMapset);
-                    savedNewMapsets = true;
-                }
-                // Push pass data
-                passes.push({ mapId: map.id, mapsetId: map.beatmapset_id, mode: map.mode, status: map.status, isConvert: false });
+            const mapsetsToSave = {};
+
+            // Check for passes in each mode
+            for (const ruleset_id of [0, 1, 2, 3]) {
+                const modeKey = utils.rulesetNameToKey(ruleset_id);
+
+                // Fetch passes
+                const res = await osu.getUserBeatmapsPassed(userId, {
+                    beatmapset_ids: ids,
+                    no_diff_reduction: false,
+                    ruleset_id,
+                    // Don't include converts for standard
+                    // If we left this included them, a pass on a convert would appear as a standard pass
+                    exclude_converts: ruleset_id === 0 ? true : false
+                });
+
+                // Save passes to DB
+                // Note: We do NOT trust map.mode returned from the API, since it's set to 'osu' on converts, not the convert mode
+                const transaction = db.transaction(() => {
+                    for (const map of res.beatmaps_passed) {
+
+                        // Skip if no leaderboard
+                        if (!['ranked', 'loved', 'approved'].includes(map.status)) continue;
+
+                        // Check if map needs to be saved
+                        // Either if we don't have a record of it, or if its status has changed
+                        const existingMapset = db.prepare(`SELECT * FROM beatmapsets WHERE id = ? LIMIT 1`).get(map.beatmapset_id);
+                        const existingMap = db.prepare(`SELECT * FROM beatmaps WHERE id = ? AND mode = ? LIMIT 1`).get(map.id, modeKey);
+                        const oldStatus = existingMap?.status;
+                        const newStatus = map.status;
+                        if (!existingMapset || oldStatus !== newStatus) {
+                            mapsetsToSave[map.beatmapset_id] = { index: !existingMapset };
+                        }
+
+                        // Save pass
+                        const time = Date.now();
+                        db.prepare(`INSERT OR IGNORE INTO user_passes (user_id, map_id, mapset_id, mode, time_passed) VALUES (?, ?, ?, ?, ?)`).run(
+                            user.id, map.id, map.beatmapset_id, modeKey, time
+                        );
+                        passCount++;
+
+                    }
+                });
+                transaction();
+
             }
-            // Update beatmap stats if we saved any new mapsets
-            if (savedNewMapsets) {
+
+            // Save any mapsets that need to be saved/updated and update stats if needed
+            if (Object.keys(mapsetsToSave).length > 0) {
+                for (const entry of Object.entries(mapsetsToSave)) {
+                    await saveMapset(entry[0], entry[1].index);
+                }
                 updateUserCategoryStats(0);
             }
-            // Get convert passes on standard maps
-            if (stdIds.length > 0) {
-                for (const mode of [1, 2, 3]) {
-                    const modeName = utils.rulesetNameToKey(mode);
-                    const resConverts = await osu.getUserBeatmapsPassed(user.id, {
-                        beatmapset_ids: stdIds,
-                        exclude_converts: false,
-                        no_diff_reduction: false,
-                        ruleset_id: mode
-                    });
-                    for (const map of resConverts.beatmaps_passed) {
-                        // Skip if no leaderboard
-                        const validStatuses = ['ranked', 'loved', 'approved'];
-                        if (!validStatuses.includes(map.status)) continue;
-                        // Push pass data
-                        passes.push({ mapId: map.id, mapsetId: map.beatmapset_id, mode: modeName });
-                    }
-                }
-            }
-            // Save passes to DB
-            const transaction = db.transaction(() => {
-                for (const pass of passes) {
-                    const time = Date.now();
-                    db.prepare(`INSERT OR IGNORE INTO user_passes (user_id, map_id, mapset_id, mode, time_passed) VALUES (?, ?, ?, ?, ?)`).run(
-                        user.id, pass.mapId, pass.mapsetId, pass.mode, time
-                    );
-                    passCount++;
-                }
-            });
-            transaction();
+
             // Update queue entry progress
             const percentComplete = (beatmapsOffset / playcountsCount * 100).toFixed(2);
             db.prepare(
@@ -630,15 +635,18 @@ const importUser = async (userId, doFullImport = false) => {
                 SET percent_complete = ?, count_passes_imported = ?
                 WHERE user_id = ?`
             ).run(percentComplete, passCount, userId);
+
             // Update user's times
             db.prepare(
                 `UPDATE users SET last_pass_time = ? WHERE id = ?`
             ).run(Date.now(), userId);
+
             // Log
             const scoresPerMinute = Math.round(
                 (beatmapsOffset / (Date.now() - timeStarted)) * 1000 * 60
             );
-            utils.log(`[Importing ${percentComplete}%] Saved ${passes.length} new passes for ${user.name} (${scoresPerMinute} scores/min)`);
+            utils.log(`[Importing ${percentComplete}%] Saved ${passCount} new passes for ${user.name} (${scoresPerMinute} scores/min)`);
+
             // Update stats every so often so they can see their progress
             // Only do this if they don't already have saved stats
             const statUpdateInterval = 1000 * 60 * 2;
@@ -646,21 +654,28 @@ const importUser = async (userId, doFullImport = false) => {
                 updateUserCategoryStats(userId, true);
                 lastStatUpdateTime = Date.now();
             }
+
         }
+
         // Remove from import queue
         db.prepare(`DELETE FROM user_import_queue WHERE user_id = ?`).run(userId);
+
         // Save last import time and import status
         db.prepare(
             `UPDATE users SET last_import_time = ?, has_full_import = ? WHERE id = ?`
         ).run(Date.now(), doFullImport ? 1 : 0, userId);
+
         // Update user stats
         updateUserCategoryStats(userId, true);
+
         // Log import completion and speed
         const importDurationMs = (Date.now() - timeStarted);
         const scoresPerMinute = Math.round(
             (beatmapsOffset / (Date.now() - timeStarted)) * 1000 * 60
         );
         utils.log(`Completed import of ${passCount} passes for ${user.name} in ${utils.secsToDuration(Math.round(importDurationMs / 1000))} (${scoresPerMinute} scores/min)`);
+
+        // Post log to Discord
         utils.postToUserFeed({
             author: {
                 name: user.name,
@@ -671,6 +686,7 @@ const importUser = async (userId, doFullImport = false) => {
             description: `Took ${utils.secsToDuration(Math.round(importDurationMs / 1000))} to check ${beatmapsOffset.toLocaleString()} beatmaps`,
             color: 0xA3F5F5
         });
+
     } catch (error) {
         utils.logError(`Error while importing user ${user.name}:`, error);
     }
