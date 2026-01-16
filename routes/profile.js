@@ -64,7 +64,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     stats.timeTotal = utils.secsToDuration(stats.secs_total);
 
     // Format best values
-    if (stats.rank.value < historyBest.rank.value || historyBest.rank.value === -1) {
+    if (stats.rank < historyBest.rank.value || historyBest.rank.value === -1) {
         historyBest.rank.value = stats.rank;
         historyBest.rank.date = dayjs().format('YYYY-MM-DD');
     }
