@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const { rateLimit } = require('express-rate-limit');
 const { marked } = require('marked');
 const dayjs = require('dayjs');
+dayjs.extend(require('dayjs/plugin/relativeTime'));
 
 const { log, logError } = require('./helpers/utils');
 const db = require('./helpers/db');
@@ -43,7 +44,7 @@ app.use((req, res, next) => {
 
 try {
     const hash = cp.execSync('git rev-parse --short HEAD').toString().trim();
-    const date = cp.execSync('git log -1 --format=%cd --date=relative').toString().trim();
+    const date = cp.execSync('git log -1 --format=%cI').toString().trim();
     app.locals.git = { hash, date };
 } catch (e) {
     app.locals.git = { hash: 'unknown', date: 'unknown' };
