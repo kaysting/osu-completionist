@@ -15,9 +15,11 @@
                 onError="this.onerror=null; this.src='/assets/images/beatmap-cover-fallback.png';" loading="lazy">
             <div class="coverDimming absolute w-full h-full"></div>
             <div class="text relative">
-                <div class="title overflow-hidden text-ellipsis nowrap" title="<%= beatmap.beatmapset.title %>">
+                <div class="title overflow-hidden text-ellipsis nowrap" title="<%= beatmap.beatmapset.title %>"
+                    data-tooltip-overflow="true">
                     <%= beatmap.beatmapset.title %></div>
-                <div class="artist overflow-hidden text-ellipsis nowrap" title="<%= beatmap.beatmapset.artist %>">
+                <div class="artist overflow-hidden text-ellipsis nowrap" title="<%= beatmap.beatmapset.artist %>"
+                    data-tooltip-overflow="true">
                     <%= beatmap.beatmapset.artist %></div>
                 <div class="mapper overflow-hidden text-ellipsis nowrap">Mapped by <%= beatmap.beatmapset.mapper %>
                 </div>
@@ -35,23 +37,22 @@
                             <span class="value"><%= beatmap.stars.toFixed(2) %></span>
                         </span>
                         <img src="/assets/ruleset-icons/<%= beatmap.mode %>.svg" class="ruleset flex-no-shrink">
-                        <span class="name overflow-hidden text-ellipsis nowrap"
-                            title="<%= beatmap.name %>"><%= beatmap.name %></span>
+                        <span class="name overflow-hidden text-ellipsis nowrap" title="<%= beatmap.name %>"
+                            data-tooltip-overflow="true"><%= beatmap.name %></span>
                     </div>
                 </div>
             </div>
         </div>
         <div class="buttons flex col justify-evenly align-center flex-no-shrink">
             <a href="https://osu.ppy.sh/beatmapsets/<%= beatmap.mapset_id %>#<%= beatmap.mode %>/<%= beatmap.id %>"
-                class="btn square text" target="_blank" title="Open beatmap on osu! website">
+                class="btn square text" target="_blank" title="osu! website">
                 <div class="icon">open_in_new</div>
             </a>
             <a href="https://beatconnect.io/b/<%= beatmap.mapset_id %>" class="btn square text" target="_blank"
-                title="Direct download from Beatconnect">
+                title="Download from Beatconnect">
                 <div class="icon">download</div>
             </a>
-            <a href="osu://b/<%= beatmap.id %>" class="btn square text" target="_blank"
-                title="Open beatmap in osu!direct">
+            <a href="osu://b/<%= beatmap.id %>" class="btn square text" target="_blank" title="osu!direct">
                 <div class="icon">rocket_launch</div>
             </a>
         </div>

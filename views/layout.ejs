@@ -24,6 +24,7 @@
     <link rel="stylesheet" href="<%= asset('/assets/css/theme.css') %>">
     <link rel="stylesheet" href="<%= asset('/assets/css/utils.css') %>">
     <link rel="stylesheet" href="<%= asset('/assets/css/layout.css') %>">
+    <script src="<%= asset('/assets/js/base.js') %>"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
 </head>
 
@@ -62,7 +63,7 @@
             </div>
             <div class="left">
                 <a id="navSearch" class="btn <%= page == 'search' ? 'text bright' : 'text muted' %>" href="/search"
-                    title="Search tracked players">
+                    title="Search tracked players and beatmaps">
                     <span class="icon filled">search</span>
                     <span class="label">search</span>
                 </a>
@@ -73,20 +74,20 @@
                     <span class="label">leaderboard</span>
                 </a>
                 <a id="navQueue" class="btn <%= page == 'queue' ? 'text bright' : 'text muted' %>" href="/queue"
-                    title="View top completionists">
+                    title="View the import queue">
                     <span class="icon filled">autorenew</span>
                     <span class="label">queue</span>
                 </a>
                 <% if (me) { %>
                 <a id="navRecommended" class="btn <%= page == 'recommended' ? 'text bright' : 'text muted' %>"
                     href="/recommended<%= locals?.category ? `/${locals.category}` : '' %>"
-                    title="View and filter maps you should complete next">
+                    title="View and filter maps you haven't passed yet">
                     <span class="icon filled">cards_star</span>
                     <span class="label">play next</span>
                 </a>
                 <% } %>
                 <a id="navDiscord" class="btn text muted" href="/discord" target="_blank"
-                    title="Join the Discord server to stay up to date with osu!complete development!">
+                    title="Join the Discord server to stay up to date with development and chat with other completionists">
                     <span class="icon filled">chat</span>
                     <span class="label">discord</span>
                 </a>
