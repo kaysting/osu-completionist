@@ -1,5 +1,6 @@
 const env = require('../helpers/env');
 const express = require('express');
+const dayjs = require('dayjs');
 const statCategories = require('../helpers/statCategories.js');
 const { ensureUserExists } = require('../helpers/middleware.js');
 const utils = require('../helpers/utils.js');
@@ -47,6 +48,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     const updateStatus = dbHelpers.getUserUpdateStatus(req.user.id);
     const historyDaily = dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'day');
     const historyMonthly = dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'month');
+    const historyBest = dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'best');
 
     // Format update status
     if (updateStatus.updating) {
@@ -60,6 +62,16 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     stats.timeSpent = utils.secsToDuration(stats.secs_spent);
     stats.timeRemaining = utils.secsToDuration(stats.secs_remaining);
     stats.timeTotal = utils.secsToDuration(stats.secs_total);
+
+    // Format best values
+    if (stats.rank.value < historyBest.rank.value || historyBest.rank.value === -1) {
+        historyBest.rank.value = stats.rank;
+        historyBest.rank.date = dayjs().format('YYYY-MM-DD');
+    }
+    if (stats.percentage_completed > historyBest.percentage_completed.value || historyBest.percentage_completed.value === 0) {
+        historyBest.percentage_completed.value = stats.percentage_completed;
+        historyBest.percentage_completed.date = dayjs().format('YYYY-MM-DD');
+    }
 
     // If viewing our own profile, get user trends and recommended maps
     let recommended = null;
@@ -160,7 +172,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         },
         user: {
             ...user, stats, yearly, recentPasses, updateStatus,
-            recommended, recommendedQuery, yearlyType, historyDaily, historyMonthly,
+            recommended, recommendedQuery, yearlyType, historyDaily, historyMonthly, historyBest,
             isMe: req.me?.id === req.user.id
         },
         copyable: statsText.join('\n'),

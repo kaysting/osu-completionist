@@ -136,7 +136,8 @@ const getUserHistoricalCompletionStats = (userId, categoryId, aggregate = 'day')
             rank: row.rank,
             time_saved: row.time
         })).reverse();
-    } else if (aggregate === 'month') {
+    }
+    if (aggregate === 'month') {
         // Group by month
         const monthly = {};
         for (const row of rows) {
@@ -178,6 +179,25 @@ const getUserHistoricalCompletionStats = (userId, categoryId, aggregate = 'day')
         }
         return entries;
     }
+    if (aggregate === 'best') {
+        // Return best stats achieved for rank and percentage
+        const data = {
+            rank: { value: -1, date: dayjs().format('YYYY-MM-DD') },
+            percentage_completed: { value: 0, date: dayjs().format('YYYY-MM-DD') }
+        };
+        for (const row of rows) {
+            if (row.rank > 0 && (data.rank.value === -1 || row.rank < data.rank.value)) {
+                data.rank.value = row.rank;
+                data.rank.date = row.date;
+            }
+            if (row.percent > data.percentage_completed.value) {
+                data.percentage_completed.value = row.percent;
+                data.percentage_completed.date = row.date;
+            }
+        }
+        return data;
+    }
+    return null;
 };
 
 const getUserCompletionStats = (userId, categoryId) => {

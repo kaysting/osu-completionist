@@ -55,7 +55,9 @@
             <div class="stats flex flex-wrap">
                 <div class="stat big flex col">
                     <div class="key">global rank</div>
-                    <div class="value">#<%= user.stats.rank == -1 ? '-' : user.stats.rank %></div>
+                    <div class="value"
+                        title="Highest was #<%= user.historyBest.rank.value %> on <%= user.historyBest.rank.date %>">
+                        #<%= user.stats.rank == -1 ? '-' : user.stats.rank %></div>
                 </div>
                 <div class="stat big flex col">
                     <div class="key">completion xp</div>
@@ -63,7 +65,9 @@
                 </div>
                 <div class="stat big flex col">
                     <div class="key">% completed</div>
-                    <div class="value"><%= user.stats.percentage_completed.toFixed(2) %>%</div>
+                    <div class="value" title="Highest was <%= user.historyBest.percentage_completed.value.toFixed(2) %>% on
+                        <%= user.historyBest.percentage_completed.date %>">
+                        <%= user.stats.percentage_completed.toFixed(2) %>%</div>
                 </div>
             </div>
         </div>
@@ -168,7 +172,9 @@
                         </div>
                         <div class="stat flex col gap-2">
                             <div class="key">nomod playtime remaining</div>
-                            <div class="value"><%= user.stats.timeRemaining %></div>
+                            <div class="value"
+                                title="<%= Math.round(user.stats.secs_remaining / 60 / 60).toLocaleString() %> hours">
+                                <%= user.stats.timeRemaining %></div>
                         </div>
                     </div>
                     <div id="categoryStatsHeader">
@@ -185,7 +191,9 @@
                         </div>
                         <div class="stat flex col gap-2">
                             <div class="key">total nomod playtime</div>
-                            <div class="value"><%= user.stats.timeTotal %></div>
+                            <div class="value"
+                                title="<%= Math.round(user.stats.secs_total / 60 / 60).toLocaleString() %> hours">
+                                <%= user.stats.timeTotal %></div>
                         </div>
                     </div>
                 </div>
