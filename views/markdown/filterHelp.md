@@ -27,7 +27,7 @@ Valid operators include:
 Additional notes:
 - **Range filters:** You can use a hyphen to specify a range, like `length=90-180` (between 90 and 180 seconds). This works for all numeric filters.
 - **List filters:** You can separate values with commas, like `year=2019,2021,2023`, to find maps matching ANY of those values.
-- **Smart integer ranges:** Providing a whole number like stars=5 will automatically search the full range (e.g. from 5.00 up to 6.00).
+- **Smart integer ranges:** Providing a whole number like `stars=5` will automatically search the full range (e.g. from 5.00 up to 6.00).
 - **Exclusive Constraints:** Filters are additive (`AND` logic). Using `stars=5` and `stars=6` together will yield zero results because a map cannot be both 5 stars AND 6 stars at the same time.
 
 To recap, consider the search query `stars = 5.5-7 ar>9 freedom dive`. Using the above, we can deduce that this query finds maps whose titles or artists are similar to "freedom dive", between 5.5 and 7 stars, with an AR greater than 9.
