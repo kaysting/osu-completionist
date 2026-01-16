@@ -500,7 +500,7 @@ const getUserUpdateStatus = (userId) => {
 };
 
 const searchBeatmaps = (query, category, sort, notPlayedByUserId, limit = 50, offset = 0) => {
-    const filterRegex = /(cs|ar|od|hp|keys|stars|sr|bpm|length|mode|year|month)\s?(<=|>=|=|<|>)\s?([\w.]+)(\s|$)/gi;
+    const filterRegex = /(cs|ar|od|hp|keys|stars|sr|bpm|length|mode|year|month)\s?(<=|>=|=|<|>)\s?(\S+)(\s|$)/gi;
     const filterMatches = query.matchAll(filterRegex);
     const textQuery = query.replace(filterRegex, '').trim();
     const params = [];
