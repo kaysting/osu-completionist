@@ -500,7 +500,7 @@ const getUserUpdateStatus = (userId) => {
 };
 
 const searchBeatmaps = (query, category, sort, notPlayedByUserId, limit = 50, offset = 0) => {
-    const filterRegex = /(cs|ar|od|hp|keys|stars|sr|bpm|length|mode|year|month)\s?(<=|>=|=|<|>)\s?(\S+)(\s|$)/gi;
+    const filterRegex = /(cs|ar|od|hp|keys|stars|sr|bpm|length|mode|year|month)\s?(<=|>=|=|<|>)\s?(?:(["'])(.*?)\3|(\S+))(?:\s|$)/gi;
     const filterMatches = query.matchAll(filterRegex);
     const textQuery = query.replace(filterRegex, '').trim();
     const params = [];
@@ -519,49 +519,104 @@ const searchBeatmaps = (query, category, sort, notPlayedByUserId, limit = 50, of
 
     // Parse user filters
     for (const match of filterMatches) {
+        // Extract filter components
         const key = match[1];
         const operator = match[2];
-        const value = match[3].toLowerCase();
+        let value = (match[4] || match[5]).toLowerCase();
         filters.push({ key, operator, value });
+        // Sanitize and validate value
         const valueInt = parseInt(value);
         const valueFloat = parseFloat(value);
+        const valuesIn = value.split(',').map(v => v.trim().toLowerCase());
+        const valuesInFloat = valuesIn.map(v => parseFloat(v)).filter(v => !isNaN(v));
+        const valuesInInt = valuesIn.map(v => parseInt(v)).filter(v => !isNaN(v));
+        const valuesBetween = value.split('-').map(v => v.trim().toLowerCase()).slice(0, 2);
+        const valuesBetweenFloat = valuesBetween.map(v => parseFloat(v)).filter(v => !isNaN(v));
+        const valuesBetweenInt = valuesBetween.map(v => parseInt(v)).filter(v => !isNaN(v));
+        // Function to apply where clause for float values
+        const applyFloatFilter = (col) => {
+            if (operator == '=' && valuesInFloat.length >= 2) {
+                whereClauses.push(`${col} IN (${valuesInFloat.map(() => '?').join(',')})`);
+                params.push(...valuesInFloat);
+                return;
+            }
+            if (operator == '=' && valuesBetweenFloat.length == 2) {
+                whereClauses.push(`${col} BETWEEN ? AND ?`);
+                params.push(...valuesBetweenFloat);
+                return;
+            }
+            if (operator === '=' && !isNaN(valueFloat) && !value.includes('.')) {
+                whereClauses.push(`${col} >= ? AND ${col} < ?`);
+                params.push(valueFloat, valueFloat + 1);
+                return;
+            }
+            if (!isNaN(valueFloat)) {
+                whereClauses.push(`${col} ${operator} ?`);
+                params.push(valueFloat);
+            }
+        };
+        // Function to apply where clause for string values
+        const applyStringFilter = (col) => {
+            if (operator === '=' && valuesIn.length) {
+                whereClauses.push(`${col} IN (${valuesIn.map(() => '?').join(',')})`);
+                params.push(...valuesIn);
+            } else {
+                whereClauses.push(`${col} ${operator} ?`);
+                params.push(value);
+            }
+        };
+        // Handle specific filters
         switch (key) {
             case 'stars':
             case 'sr':
-                if (!isNaN(valueFloat)) whereClauses.push(`map.stars ${operator} ${valueFloat}`);
-                break;
+                applyFloatFilter('map.stars'); break;
             case 'keys':
             case 'cs':
-                if (!isNaN(valueFloat)) whereClauses.push(`map.cs ${operator} ${valueFloat}`);
-                break;
+                applyFloatFilter('map.cs'); break;
             case 'ar':
-                if (!isNaN(valueFloat)) whereClauses.push(`map.ar ${operator} ${valueFloat}`);
-                break;
+                applyFloatFilter('map.ar'); break;
             case 'od':
-                if (!isNaN(valueFloat)) whereClauses.push(`map.od ${operator} ${valueFloat}`);
-                break;
+                applyFloatFilter('map.od'); break;
             case 'hp':
-                if (!isNaN(valueFloat)) whereClauses.push(`map.hp ${operator} ${valueFloat}`);
-                break;
+                applyFloatFilter('map.hp'); break;
             case 'bpm':
-                if (!isNaN(valueFloat)) whereClauses.push(`map.bpm ${operator} ${valueFloat}`);
-                break;
+                applyFloatFilter('map.bpm'); break;
             case 'length':
-                if (!isNaN(valueInt)) whereClauses.push(`map.duration_secs ${operator} ${valueInt}`);
-                break;
+                applyFloatFilter('map.duration_secs'); break;
             case 'mode':
-                // User-specified mode overrides/narrows category mode if both exist, but usually redundant
-                const modeKey = utils.rulesetNameToKey(value);
-                if (!modeKey || operator !== '=') break;
-                whereClauses.push(`map.mode = '${modeKey}'`);
+                value = utils.rulesetNameToKey(value);
+                applyStringFilter('map.mode');
                 break;
             case 'year': {
+                // Handle year range
+                if (operator === '=' && valuesBetweenInt.length === 2) {
+                    const y1 = valuesBetweenInt[0];
+                    const y2 = valuesBetweenInt[1];
+                    const startMs = Date.UTC(Math.min(y1, y2), 0, 1);
+                    const endMs = Date.UTC(Math.max(y1, y2) + 1, 0, 1);
+                    whereClauses.push(`mapset.time_ranked BETWEEN ${startMs} AND ${endMs}`);
+                    break;
+                }
+
+                // Handle year IN
+                if (operator === '=' && valuesInInt.length >= 2) {
+                    const ranges = valuesInInt.map(y => {
+                        const startMs = Date.UTC(y, 0, 1);
+                        const endMs = Date.UTC(y + 1, 0, 1);
+                        return `(mapset.time_ranked BETWEEN ${startMs} AND ${endMs})`;
+                    });
+                    whereClauses.push(`(${ranges.join(' OR ')})`);
+                    break;
+                }
+
+                // Handle single year
                 if (isNaN(valueInt) || valueInt < 2007 || valueInt > new Date().getFullYear() + 1) break;
                 const startMs = Date.UTC(valueInt, 0, 1);
                 const endMs = Date.UTC(valueInt + 1, 0, 1);
+
                 switch (operator) {
                     case '=':
-                        whereClauses.push(`mapset.time_ranked >= ${startMs} AND mapset.time_ranked < ${endMs}`);
+                        whereClauses.push(`mapset.time_ranked BETWEEN ${startMs} AND ${endMs}`);
                         break;
                     case '>=':
                         whereClauses.push(`mapset.time_ranked >= ${startMs}`);
