@@ -115,10 +115,14 @@
         <%- include('pages/' + page) %>
         <div id="footer">
             <p>
-                &copy; <a href="https://kaysting.dev">Kayla Kersting</a> 2026
+                osu!complete &copy; <a href="https://kaysting.dev">Kayla Kersting</a> 2026
                 <br> <a href="/tos">Terms of Service</a> &bullet; <a href="/privacy">Privacy Policy</a> &bullet; <a
                     href="https://github.com/kaysting/osu-completion" target="_blank"
                     rel="noopener noreferrer">GitHub</a>
+                <br>Running commit <a
+                    href="https://github.com/kaysting/osu-completionist/commit/<%= locals?.git?.hash %>" target="_blank"
+                    rel="noopener noreferrer"><%= locals?.git?.hash %></a> deployed
+                <%= locals?.git?.date %>
             </p>
         </div>
     </div>

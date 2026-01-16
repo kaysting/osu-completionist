@@ -1,5 +1,6 @@
 const env = require('./helpers/env');
 const fs = require('fs');
+const cp = require('child_process');
 const express = require('express');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
@@ -11,7 +12,6 @@ const { log, logError } = require('./helpers/utils');
 const db = require('./helpers/db');
 const { getAuthenticatedUser, updateLastUrl } = require('./helpers/middleware');
 const path = require('path');
-const utils = require('./helpers/utils');
 
 const app = express();
 
@@ -40,6 +40,14 @@ app.use((req, res, next) => {
     // Move to next middleware
     next();
 });
+
+try {
+    const hash = cp.execSync('git rev-parse --short HEAD').toString().trim();
+    const date = cp.execSync('git log -1 --format=%cd --date=relative').toString().trim();
+    app.locals.git = { hash, date };
+} catch (e) {
+    app.locals.git = { hash: 'unknown', date: 'unknown' };
+}
 
 // Add functions for use within EJS
 app.locals.dayjs = dayjs;
