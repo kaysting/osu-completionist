@@ -885,11 +885,12 @@ const queueUserForImport = async (userId, full = false) => {
             return false;
         }
         // Add to queue
+        const queueTime = full ? Date.now() + (1000 * 60 * 60 * 24 * 7) : Date.now();
         db.prepare(
             `INSERT OR IGNORE INTO user_import_queue
             (user_id, time_queued, playcounts_count, is_full)
             VALUES (?, ?, ?, ?)`
-        ).run(userId, Date.now(), playcountsCount, full ? 1 : 0);
+        ).run(userId, queueTime, playcountsCount, full ? 1 : 0);
         utils.log(`Queued ${user.username} for ${full ? 'full ' : ''}import`);
         return true;
     } catch (error) {
