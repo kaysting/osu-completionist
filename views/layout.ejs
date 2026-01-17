@@ -69,25 +69,25 @@
                 </a>
                 <a id="navLeaderboard" class="btn <%= page == 'leaderboard' ? 'text bright' : 'text muted' %>"
                     href="/leaderboard<%= locals?.category ? `/${locals.category}` : '' %>"
-                    title="View top completionists">
+                    title="View top completionists per category">
                     <span class="icon filled">leaderboard</span>
                     <span class="label">leaderboard</span>
                 </a>
                 <% if (me) { %>
                 <a id="navRecommended" class="btn <%= page == 'recommended' ? 'text bright' : 'text muted' %>"
                     href="/recommended<%= locals?.category ? `/${locals.category}` : '' %>"
-                    title="View and filter maps you haven't passed yet">
+                    title="View and filter the maps you haven't passed yet">
                     <span class="icon filled">cards_star</span>
                     <span class="label">play next</span>
                 </a>
                 <% } %>
                 <a id="navQueue" class="btn <%= page == 'queue' ? 'text bright' : 'text muted' %>" href="/queue"
-                    title="View the import queue">
+                    title="View the user import queue">
                     <span class="icon filled">autorenew</span>
                     <span class="label">queue</span>
                 </a>
                 <a id="navFaq" class="btn <%= locals?.title?.toLowerCase() == 'faq' ? 'text bright' : 'text muted' %>"
-                    href="/faq" title="View frequently asked questions">
+                    href="/faq" title="See frequently asked questions">
                     <span class="icon filled">help</span>
                     <span class="label">faq</span>
                 </a>
