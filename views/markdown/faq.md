@@ -13,6 +13,8 @@ Completion XP (or cxp, stylistically lowercase), is osu!complete's version of a 
 
 cxp is calculated as the nomod length of all maps you've passed in seconds divided by 10.
 
+This metric aims to give more weight to longer maps, as they account for more of osu!.
+
 ## How is completion percentage calculated?
 Completion percentage (as seen at the top of your profile and on leaderboards) is calculated by dividing the length of all maps in a category by the length of the maps you've completed, irrespective of the mods you used to pass them. This can also be seen as dividing your cxp by the total available cxp in a category.
 
