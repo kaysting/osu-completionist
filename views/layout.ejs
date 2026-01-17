@@ -73,11 +73,6 @@
                     <span class="icon filled">leaderboard</span>
                     <span class="label">leaderboard</span>
                 </a>
-                <a id="navQueue" class="btn <%= page == 'queue' ? 'text bright' : 'text muted' %>" href="/queue"
-                    title="View the import queue">
-                    <span class="icon filled">autorenew</span>
-                    <span class="label">queue</span>
-                </a>
                 <% if (me) { %>
                 <a id="navRecommended" class="btn <%= page == 'recommended' ? 'text bright' : 'text muted' %>"
                     href="/recommended<%= locals?.category ? `/${locals.category}` : '' %>"
@@ -86,6 +81,16 @@
                     <span class="label">play next</span>
                 </a>
                 <% } %>
+                <a id="navQueue" class="btn <%= page == 'queue' ? 'text bright' : 'text muted' %>" href="/queue"
+                    title="View the import queue">
+                    <span class="icon filled">autorenew</span>
+                    <span class="label">queue</span>
+                </a>
+                <a id="navFaq" class="btn <%= title.toLowerCase() == 'faq' ? 'text bright' : 'text muted' %>"
+                    href="/faq" title="View frequently asked questions">
+                    <span class="icon filled">help</span>
+                    <span class="label">faq</span>
+                </a>
                 <a id="navDiscord" class="btn text muted" href="/discord" target="_blank"
                     title="Join the Discord server to stay up to date with development and chat with other completionists">
                     <span class="icon filled">chat</span>

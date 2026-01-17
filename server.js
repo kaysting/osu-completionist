@@ -125,6 +125,16 @@ app.use('/privacy', (req, res) => {
         }
     });
 });
+app.use('/faq', (req, res) => {
+    res.renderPage('raw', {
+        html: marked.parse(fs.readFileSync('views/markdown/faq.md', 'utf-8')),
+        title: 'FAQ',
+        meta: {
+            title: 'osu!complete FAQ',
+            description: 'View frequently asked questions.'
+        }
+    });
+});
 app.use('/discord', (req, res) => {
     res.redirect('https://discord.gg/fNSnMG7S3C');
 });
