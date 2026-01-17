@@ -333,7 +333,7 @@
                 </div>
                 <% } %>
                 <% for (const pass of user.recentPasses) { %>
-                <%- include('../partials/beatmapNarrow', { beatmap: pass.beatmap, time: `Passed ${pass.timeSincePass}` }) %>
+                <%- include('../partials/beatmapNarrow', { beatmap: pass.beatmap, time: `Passed ${pass.timeSincePass} for ${pass.beatmap.xp} cxp` }) %>
                 <% } %>
             </div>
         </div>

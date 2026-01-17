@@ -335,7 +335,8 @@ const formatBeatmap = (beatmap) => ({
     ar: beatmap?.ar,
     od: beatmap?.od,
     hp: beatmap?.hp,
-    bpm: beatmap?.bpm
+    bpm: beatmap?.bpm,
+    xp: secsToXp(beatmap.duration_secs)
 });
 
 const formatBeatmapset = (beatmapset) => ({
