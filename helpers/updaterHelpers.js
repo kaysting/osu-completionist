@@ -700,6 +700,14 @@ const importUser = async (userId, doFullImport = false) => {
         );
         utils.log(`Completed import of ${passCount} passes for ${user.name} in ${utils.secsToDuration(Math.round(importDurationMs / 1000))} (${scoresPerMinute} scores/min)`);
 
+        // Get remaining queue details
+        const queueEntries = db.prepare(`SELECT * FROM user_import_queue`).all();
+        const queueCount = queueEntries.length;
+        const queueSecsRemaining = queueEntries.reduce((secs, entry) => {
+            const perSec = (entry.is_full ? env.SCORES_PER_MINUTE_FULL : env.SCORES_PER_MINUTE) / 60;
+            return (secs + (entry.playcounts_count / perSec));
+        }, 0);
+
         // Post log to Discord
         utils.postToUserFeed({
             author: {
@@ -708,7 +716,10 @@ const importUser = async (userId, doFullImport = false) => {
                 url: `${env.HTTPS ? 'https' : 'http'}://${env.HOST}/u/${user.id}`
             },
             title: `Completed ${doFullImport ? 'full ' : ''}import of ${passCount.toLocaleString()} passes`,
-            description: `Took ${utils.secsToDuration(Math.round(importDurationMs / 1000))} to check ${beatmapsOffset.toLocaleString()} beatmaps`,
+            description: [
+                `Took ${utils.secsToDuration(Math.round(importDurationMs / 1000))} to check ${beatmapsOffset.toLocaleString()} beatmaps`,
+                `${queueCount == 0 ? `The queue is now empty.` : `Queue of ${queueCount} user${queueCount > 1 ? 's' : ''} estimated to be empty in ${utils.getRelativeTimestamp(Date.now() + Math.round(queueSecsRemaining * 1000), undefined, false)}`}...`
+            ].join('\n'),
             color: 0xA3F5F5
         });
 

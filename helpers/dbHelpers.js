@@ -486,8 +486,6 @@ const getUserRecentPasses = (userId, categoryId, limit = 100, offset = 0, after 
 
 const getUserUpdateStatus = (userId) => {
     // These constants are defined through testing
-    const SCORES_PER_MINUTE = 700;
-    const SCORES_PER_MINUTE_FULL = 3500;
     const entry = db.prepare(`SELECT * FROM user_import_queue WHERE user_id = ?`).get(userId);
     if (!entry) {
         return {
@@ -504,7 +502,7 @@ const getUserUpdateStatus = (userId) => {
         const scoresCompleted = e.playcounts_count * (e.percent_complete / 100);
         const scoresRemaining = e.playcounts_count - scoresCompleted;
         playcountsCountAhead += scoresRemaining;
-        const scoresPerSec = e.is_full ? (SCORES_PER_MINUTE_FULL / 60) : (SCORES_PER_MINUTE / 60);
+        const scoresPerSec = e.is_full ? (env.SCORES_PER_MINUTE_FULL / 60) : (env.SCORES_PER_MINUTE / 60);
         secsAhead += scoresRemaining / scoresPerSec;
     }
     const position = entriesAhead.length || 1;
