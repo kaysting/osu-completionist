@@ -307,6 +307,7 @@ const updateUserCategoryStats = (userId, force = false) => {
     const IS_GLOBAL = userId === 0;
     let user;
     try {
+
         // Get user info or global placeholder
         user = IS_GLOBAL ? {
             id: 0,
@@ -315,6 +316,7 @@ const updateUserCategoryStats = (userId, force = false) => {
         if (!user) {
             throw new Error(`User with ID ${userId} not found in database`);
         }
+
         // Check if user is importing
         if (!force && !IS_GLOBAL) {
             const queueEntry = db.prepare(`SELECT * FROM user_import_queue WHERE user_id = ?`).get(userId);
@@ -323,6 +325,7 @@ const updateUserCategoryStats = (userId, force = false) => {
                 return;
             }
         }
+
         // Load unfiltered data into memory
         const cols = [
             `diff.mode AS mode`,
@@ -335,13 +338,14 @@ const updateUserCategoryStats = (userId, force = false) => {
             `diff.duration_secs AS duration_secs`,
             `CAST(strftime('%Y', mapset.time_ranked / 1000, 'unixepoch') AS INTEGER) as year`
         ];
+
         let rows;
         if (IS_GLOBAL) {
             rows = db.prepare(`
                 SELECT ${cols.join(', ')}
                 FROM beatmaps diff
                 JOIN beatmapsets mapset ON diff.mapset_id = mapset.id
-            `).all();
+            `).iterate();
         } else {
             rows = db.prepare(`
                 SELECT ${cols.join(', ')}
@@ -349,39 +353,72 @@ const updateUserCategoryStats = (userId, force = false) => {
                 JOIN beatmaps diff ON pass.map_id = diff.id AND pass.mode = diff.mode
                 JOIN beatmapsets mapset ON diff.mapset_id = mapset.id
                 WHERE pass.user_id = ?
-            `).all(userId);
+            `).iterate(userId);
         }
+
+        // Prepare a map to store collected stats
+        const catTotals = {};
+        const catYearly = {};
+        const catStatsOld = {};
+
+        // Get existing stats for each category
+        for (const cat of statCategories.definitions) {
+            catStatsOld[cat.id] = dbHelpers.getUserCompletionStats(userId, cat.id);
+        }
+
+        // Loop through rows
+        // Switched to using iterator approach so we don't use a ton of memory
+        // and we only have to loop through the rows once, not once per category
+        for (const row of rows) {
+            // Loop through categories
+            for (const cat of statCategories.definitions) {
+
+                // Skip row if it doesn't match category filters
+                if (!matchesCatDefFilters(row, cat)) continue;
+
+                // Update totals
+                if (!catTotals[cat.id])
+                    catTotals[cat.id] = { count: 0, seconds: 0 };
+                catTotals[cat.id].count++;
+                catTotals[cat.id].seconds += row.duration_secs;
+
+                // Update yearly
+                if (!catYearly[cat.id])
+                    catYearly[cat.id] = {};
+                if (!catYearly[cat.id][row.year])
+                    catYearly[cat.id][row.year] = { count: 0, seconds: 0 };
+                catYearly[cat.id][row.year].count++;
+                catYearly[cat.id][row.year].seconds += row.duration_secs;
+
+            }
+        }
+
         // Prepare insert statements
         const stmtMain = db.prepare(`
             INSERT OR REPLACE INTO user_category_stats 
-            (user_id, category, count, seconds) VALUES (?, ?, ?, ?)
+            (user_id, category, count, seconds, best_rank, best_rank_time, best_percent, best_percent_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `);
         const stmtYearly = db.prepare(`
             INSERT OR REPLACE INTO user_category_stats_yearly 
             (user_id, category, year, count, seconds) VALUES (?, ?, ?, ?, ?)
         `);
-        // Do the updates in a transaction
-        const transaction = db.transaction(() => {
-            // Loop through categories
+
+        // Update stats
+        const statsUpdateTransaction = db.transaction(() => {
             for (const cat of statCategories.definitions) {
-                // Track totals
-                let totalCount = 0;
-                let totalSecs = 0;
+
+                const totals = catTotals[cat.id] || { count: 0, seconds: 0 };
+                const yearlyTotals = catYearly[cat.id] || {};
                 const defaultYearlyData = { count: 0, seconds: 0 };
-                const yearlyTotals = {};
-                // Loop through rows and see if they match the category definition
-                for (const row of rows) {
-                    if (!matchesCatDefFilters(row, cat)) continue;
-                    // Add to totals
-                    totalCount++;
-                    totalSecs += row.duration_secs;
-                    if (!yearlyTotals[row.year])
-                        yearlyTotals[row.year] = { ...defaultYearlyData };
-                    yearlyTotals[row.year].count++;
-                    yearlyTotals[row.year].seconds += row.duration_secs;
-                }
+                const statsOld = catStatsOld[cat.id];
+
                 // Insert main stats
-                stmtMain.run(user.id, cat.id, totalCount, totalSecs);
+                stmtMain.run(
+                    user.id, cat.id, totals.count, totals.seconds,
+                    statsOld.best_rank, statsOld.best_rank_time,
+                    statsOld.best_percentage_completed, statsOld.best_percentage_completed_time
+                );
+
                 // Insert yearly stats
                 const startYear = 2007;
                 const currentYear = new Date().getFullYear();
@@ -389,9 +426,57 @@ const updateUserCategoryStats = (userId, force = false) => {
                     const yearly = yearlyTotals[year] || defaultYearlyData;
                     stmtYearly.run(user.id, cat.id, year, yearly.count, yearly.seconds);
                 }
+
             }
         });
-        transaction();
+        // Update bests
+        const bestsUpdateTransaction = db.transaction(() => {
+            for (const cat of statCategories.definitions) {
+
+                const totals = catTotals[cat.id] || { count: 0, seconds: 0 };
+                const statsOld = catStatsOld[cat.id];
+
+                // Get new main stats
+                const statsNew = dbHelpers.getUserCompletionStats(userId, cat.id);
+                let bestRank = statsOld.best_rank;
+                let bestPercent = statsOld.best_percentage_completed;
+                let bestRankTime = statsOld.best_rank_time;
+                let bestPercentTime = statsOld.best_percentage_completed_time;
+                let hasNewBests = false;
+
+                // Check if we have a new best rank
+                if (statsNew.rank > 0 && (statsOld.best_rank === 0 || statsNew.rank <= statsOld.best_rank)) {
+                    bestRank = statsNew.rank;
+                    bestRankTime = Date.now();
+                    hasNewBests = true;
+                }
+
+                // Check if we have a new best completion percentage
+                if (statsNew.percentage_completed > 0 && (statsOld.best_percentage_completed === 0 || statsNew.percentage_completed >= statsOld.best_percentage_completed)) {
+                    bestPercent = statsNew.percentage_completed;
+                    bestPercentTime = Date.now();
+                    hasNewBests = true;
+                }
+
+                // Write new bests if needed
+                if (hasNewBests) {
+                    stmtMain.run(
+                        user.id, cat.id, totals.count, totals.seconds, bestRank, bestRankTime, bestPercent, bestPercentTime
+                    );
+                }
+
+                // If the new completion percentage is 100 and the old one was less,
+                // save a full completions entry
+                if (statsNew.percentage_completed === 100 && statsOld.percentage_completed < 100) {
+                    db.prepare(`INSERT INTO user_full_completions (user_id, category, count, seconds, time) VALUES (?, ?, ?, ?, ?)`).run(
+                        user.id, cat.id, totals.count, totals.seconds, Date.now()
+                    );
+                }
+
+            }
+        });
+        statsUpdateTransaction();
+        bestsUpdateTransaction();
         utils.log(`Updated stats in ${statCategories.definitions.length} categories for ${user.name}`);
     } catch (error) {
         utils.logError(`Error while updating category stats for ${user.name}:`, error);

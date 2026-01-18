@@ -13,11 +13,7 @@ CREATE INDEX idx_user_passes_lookup ON user_passes (user_id, map_id, mode);
 CREATE INDEX idx_user_passes_recent ON user_passes (user_id, mode, time_passed DESC);
 
 CREATE TABLE
-	IF NOT EXISTS "country_names" (
-		"code" TEXT NOT NULL,
-		"name" TEXT NOT NULL,
-		PRIMARY KEY ("code")
-	);
+	IF NOT EXISTS "country_names" ("code" TEXT NOT NULL, "name" TEXT NOT NULL, PRIMARY KEY ("code"));
 
 CREATE TABLE
 	IF NOT EXISTS "users" (
@@ -30,14 +26,14 @@ CREATE TABLE
 		"team_name" TEXT,
 		"team_name_short" TEXT,
 		"team_flag_url" TEXT,
-		last_pass_time integer not null default 0,
-		last_import_time integer not null default 0,
-		time_created integer not null default 1766376098955,
-		last_profile_update_time integer not null default 0,
-		last_login_time integer not null default 0,
+		last_pass_time INTEGER NOT NULL DEFAULT 0,
+		last_import_time INTEGER NOT NULL DEFAULT 0,
+		time_created INTEGER NOT NULL DEFAULT 1766376098955,
+		last_profile_update_time INTEGER NOT NULL DEFAULT 0,
+		last_login_time INTEGER NOT NULL DEFAULT 0,
 		api_key text,
-		osu_join_date integer default 0,
-		has_full_import integer default 0,
+		osu_join_date INTEGER DEFAULT 0,
+		has_full_import INTEGER DEFAULT 0,
 		PRIMARY KEY ("id")
 	);
 
@@ -56,13 +52,7 @@ CREATE TABLE
 
 CREATE INDEX idx_beatmapsets_time_ranked ON beatmapsets (time_ranked);
 
-CREATE VIRTUAL TABLE beatmaps_search USING fts5 (
-	title,
-	artist,
-	name,
-	map_id UNINDEXED,
-	mode UNINDEXED
-)
+CREATE VIRTUAL TABLE beatmaps_search USING fts5 (title, artist, name, map_id UNINDEXED, mode UNINDEXED)
 /* beatmaps_search(title,artist,name,map_id,mode) */;
 
 CREATE TABLE
@@ -89,7 +79,7 @@ CREATE TABLE
 		"name" TEXT,
 		"stars" REAL NOT NULL,
 		"is_convert" INTEGER NOT NULL,
-		"duration_secs" integer NOT NULL DEFAULT 0,
+		"duration_secs" INTEGER NOT NULL DEFAULT 0,
 		cs REAL,
 		ar REAL,
 		od REAL,
@@ -99,11 +89,7 @@ CREATE TABLE
 	);
 
 CREATE TABLE
-	user_previous_names (
-		user_id int not null,
-		name text not null,
-		primary key (user_id, name)
-	);
+	user_previous_names (user_id INT NOT NULL, name text NOT NULL, PRIMARY key (user_id, name));
 
 CREATE VIRTUAL TABLE users_search USING fts5 (names)
 /* users_search(names) */;
@@ -124,10 +110,7 @@ CREATE TABLE
 	IF NOT EXISTS 'users_search_config' (k PRIMARY KEY, v) WITHOUT ROWID;
 
 CREATE TABLE
-	global_recents_cursors (
-		mode TEXT NOT NULL PRIMARY KEY,
-		cursor TEXT NOT NULL
-	);
+	global_recents_cursors (mode TEXT NOT NULL PRIMARY KEY, CURSOR TEXT NOT NULL);
 
 CREATE TABLE
 	IF NOT EXISTS "user_import_queue" (
@@ -136,8 +119,8 @@ CREATE TABLE
 		"time_started" INTEGER DEFAULT 0,
 		"percent_complete" REAL DEFAULT 0,
 		"count_passes_imported" INTEGER DEFAULT 0,
-		playcounts_count integer default 0,
-		is_full integer default 0
+		playcounts_count INTEGER DEFAULT 0,
+		is_full INTEGER DEFAULT 0
 	);
 
 CREATE INDEX idx_users_last_pass ON users (last_pass_time);
@@ -148,6 +131,10 @@ CREATE TABLE
 		"category" TEXT NOT NULL,
 		"count" INTEGER NOT NULL DEFAULT 0,
 		"seconds" INTEGER NOT NULL DEFAULT 0,
+		best_rank INTEGER NOT NULL DEFAULT 0,
+		best_rank_time INTEGER NOT NULL DEFAULT 0,
+		best_percent REAL NOT NULL DEFAULT 0,
+		best_percent_time INTEGER NOT NULL DEFAULT 0,
 		PRIMARY KEY ("user_id", "category")
 	);
 
@@ -195,3 +182,14 @@ CREATE TABLE
 CREATE INDEX idx_user_passes_time ON user_passes (time_passed);
 
 CREATE INDEX idx_user_passes_map_id ON user_passes (map_id);
+
+CREATE TABLE
+	IF NOT EXISTS "user_full_completions" (
+		"user_id" INTEGER NOT NULL,
+		"category" TEXT NOT NULL,
+		"count" INTEGER NOT NULL DEFAULT 0,
+		"seconds" INTEGER NOT NULL DEFAULT 0,
+		"time" INTEGER NOT NULL
+	);
+
+CREATE INDEX idx_full_completions_user ON user_full_completions (user_id);

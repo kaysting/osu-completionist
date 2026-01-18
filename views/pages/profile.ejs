@@ -56,8 +56,8 @@
                 <div class="stat big flex col">
                     <div class="key">global rank</div>
                     <div class="value"
-                        title="Highest was #<%= user.historyBest.rank.value %> on <%= user.historyBest.rank.date %>">
-                        #<%= user.stats.rank == -1 ? '-' : user.stats.rank %></div>
+                        title="Best was #<%= user.stats.best_rank %> on <%= dayjs(user.stats.best_rank_time).format('YYYY-MM-DD') %>">
+                        #<%= user.stats.rank == 0 ? '-' : user.stats.rank %></div>
                 </div>
                 <div class="stat big flex col">
                     <div class="key">completion xp</div>
@@ -65,8 +65,8 @@
                 </div>
                 <div class="stat big flex col">
                     <div class="key">% completed</div>
-                    <div class="value" title="Highest was <%= user.historyBest.percentage_completed.value.toFixed(2) %>% on
-                        <%= user.historyBest.percentage_completed.date %>">
+                    <div class="value"
+                        title="Best was <%= user.stats.best_percentage_completed.toFixed(2) %>% on <%= dayjs(user.stats.best_percentage_completed_time).format('YYYY-MM-DD') %>">
                         <%= user.stats.percentage_completed.toFixed(2) %>%</div>
                 </div>
             </div>

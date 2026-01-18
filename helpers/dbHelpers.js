@@ -89,13 +89,17 @@ const getBulkUserCompletionStats = (userIds, categoryId) => {
         count_completed: 0,
         count_total: totals.count,
         percentage_completed: 0,
+        best_percentage_completed: 0,
+        best_percentage_completed_time: Date.now(),
         xp: 0,
         xp_remaining: secsToXp(totals.seconds),
         xp_total: secsToXp(totals.seconds),
         secs_spent: 0,
         secs_remaining: totals.seconds,
         secs_total: totals.seconds,
-        rank: -1
+        rank: 0,
+        best_rank: 0,
+        best_rank_time: Date.now()
     };
     for (const row of rows) {
         const stats = { ...defaultStats };
@@ -107,6 +111,10 @@ const getBulkUserCompletionStats = (userIds, categoryId) => {
         stats.secs_remaining = totals.seconds - row.seconds;
         stats.percentage_completed = row.seconds > 0 ? ((row.seconds / totals.seconds) * 100) : 0;
         stats.rank = row.rank;
+        stats.best_rank = row.best_rank;
+        stats.best_rank_time = row.best_rank_time;
+        stats.best_percentage_completed = row.best_percent;
+        stats.best_percentage_completed_time = row.best_percent_time;
         statsByUserId[row.user_id] = stats;
     }
 
