@@ -1,12 +1,17 @@
 const puppeteer = require('puppeteer');
+const utils = require('./utils');
 
 // CONFIGURATION
-const MAX_CONCURRENT_PAGES = 2;
-const MAX_RENDERS_BEFORE_RESTART = 100;
+// Locking this to 1 is the single best thing for stability on an 8GB server sharing resources with a DB.
+const MAX_CONCURRENT_PAGES = 1;
+const MAX_RENDERS_BEFORE_RESTART = 50; // Lowered slightly to keep memory fresh
 const BROWSER_ARGS = [
     '--no-sandbox',
     '--disable-setuid-sandbox',
-    '--disable-dev-shm-usage',
+    '--disable-dev-shm-usage',      // Critical for Docker/Linux environments
+    '--disable-gpu',                // Critical stability flag for headless Linux
+    '--disable-extensions',
+    '--disable-accelerated-2d-canvas', // Saves RAM
     '--font-render-hinting=none',
     '--force-color-profile=srgb',
     '--hide-scrollbars'
@@ -19,19 +24,22 @@ let renderCount = 0;
 const queue = [];
 
 /**
- * Lazily initializes the browser instance.
+ * Lazily initializes the browser instance with robust timeout settings.
  */
 async function getBrowser() {
     if (!browser) {
+        utils.log('Starting new Puppeteer browser instance...');
         browser = await puppeteer.launch({
             headless: 'new',
             args: BROWSER_ARGS,
-            protocolTimeout: 60000 // Increased to 60s to prevent premature timeouts
+            // 60s timeout gives the browser plenty of time to start under load
+            protocolTimeout: 60000
         });
 
         renderCount = 0;
 
         browser.on('disconnected', () => {
+            utils.log('Lost connection to Puppeteer browser, resetting instance...');
             browser = null;
         });
     }
@@ -39,14 +47,7 @@ async function getBrowser() {
 }
 
 /**
- * Call this when your server starts to pre-launch Puppeteer.
- */
-function warmup() {
-    getBrowser().catch(() => { });
-}
-
-/**
- * Checks if the browser needs to be recycled (restarted) to clear memory.
+ * Checks if the browser needs to be recycled to clear memory leaks.
  */
 async function checkLifecycle() {
     if (renderCount >= MAX_RENDERS_BEFORE_RESTART && activeWorkers === 0 && browser) {
@@ -57,7 +58,7 @@ async function checkLifecycle() {
 }
 
 /**
- * Worker to process the queue.
+ * Worker to process the URL queue.
  */
 async function processQueue() {
     if (activeWorkers >= MAX_CONCURRENT_PAGES || queue.length === 0) {
@@ -79,16 +80,15 @@ async function processQueue() {
             deviceScaleFactor: task.scaleFactor
         });
 
-        const defaultWait = task.url ? 'networkidle0' : 'load';
-        const waitStrategy = task.waitUntil || defaultWait;
+        // 1. Navigate
+        // 'networkidle0' is safer for complex SPAs like osu! stats, ensuring hydration finishes
+        await page.goto(task.url, {
+            waitUntil: task.waitUntil || 'networkidle0',
+            timeout: 20000
+        });
 
-        if (task.url) {
-            await page.goto(task.url, { waitUntil: waitStrategy, timeout: 15000 });
-        } else if (task.html) {
-            await page.setContent(task.html, { waitUntil: waitStrategy, timeout: 10000 });
-        }
-
-        // Force lazy images to load
+        // 2. Force Lazy Images (Stability Fix)
+        // Helps prevent white boxes where images should be
         await page.evaluate(async () => {
             const selectors = Array.from(document.querySelectorAll("img"));
             await Promise.all(selectors.map(img => {
@@ -101,13 +101,17 @@ async function processQueue() {
             }));
         });
 
-        // Wait for fonts
+        // 3. Wait for Fonts
         await page.evaluateHandle('document.fonts.ready');
 
+        // 4. Capture Screenshot (Performance Fix)
+        // captureBeyondViewport: false prevents Puppeteer from calculating layout 
+        // for the entire scrollable page, which causes "ProtocolError: Timed out"
         const imageBuffer = await page.screenshot({
             type: 'png',
             omitBackground: false,
             encoding: 'binary',
+            captureBeyondViewport: false,
             clip: { x: 0, y: 0, width: task.viewportWidth, height: task.viewportHeight }
         });
 
@@ -115,12 +119,14 @@ async function processQueue() {
         renderCount++;
 
     } catch (error) {
-        // If the browser hangs or times out, kill it so the next request gets a fresh instance
+        // Critical Error Handling
+        // If the browser hangs, kills the process so the next request gets a fresh start
         const isCriticalError = error.message.includes('Protocol error') ||
             error.message.includes('timed out') ||
             error.message.includes('Target closed');
 
         if (isCriticalError && browser) {
+            console.error('Critical Puppeteer error detected. Restarting browser...');
             browser.close().catch(() => { });
             browser = null;
         }
@@ -131,18 +137,16 @@ async function processQueue() {
 
         activeWorkers--;
         await checkLifecycle();
+        // Trigger next task immediately
         processQueue();
     }
 }
 
 /**
- * Renders HTML string to PNG.
+ * Call this when your server starts to pre-warm the browser.
  */
-function htmlToPng(html, viewportWidth = 600, viewportHeight = 315, scaleFactor = 2, waitUntil = 'load') {
-    return new Promise((resolve, reject) => {
-        queue.push({ html, viewportWidth, viewportHeight, scaleFactor, waitUntil, resolve, reject });
-        processQueue();
-    });
+function warmup() {
+    getBrowser().catch(() => { });
 }
 
 /**
@@ -164,7 +168,6 @@ async function closeBrowser() {
 
 module.exports = {
     warmup,
-    htmlToPng,
     urlToPng,
     closeBrowser
 };

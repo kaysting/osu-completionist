@@ -1,12 +1,9 @@
-const env = require('../helpers/env');
 const express = require('express');
-const dayjs = require('dayjs');
 const statCategories = require('../helpers/statCategories.js');
 const { ensureUserExists } = require('../helpers/middleware.js');
 const utils = require('../helpers/utils.js');
 const updater = require('../helpers/updaterHelpers.js');
 const dbHelpers = require('../helpers/dbHelpers.js');
-const imageRenderer = require('../helpers/imageRenderer.js');
 
 const router = express.Router();
 
@@ -157,7 +154,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         meta: {
             title: `${req.user.name}'s ${categoryName.toLowerCase()} completionist profile`,
             description: `${req.user.name} has passed ${stats.percentage_completed.toFixed(2)}% of beatmaps in this category. Click to view more of their completionist stats!`,
-            image: `/u/${user.id}/${category}/renders/main?t=${user.last_pass_time}`
+            image: `/renders/profile-meta?category=${category}&user_id=${req.user.id}`
         },
         user: {
             ...user, stats, yearly, recentPasses, updateStatus,
@@ -169,35 +166,6 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         category_navigation: statCategories.getCategoryNavPaths(`/u/${req.user.id}`, category),
     });
 
-});
-
-imageRenderer.warmup();
-
-router.get('/:id/:category/renders/:type', ensureUserExists, async (req, res) => {
-    const user = req.user;
-    const userId = req.user.id;
-    const category = req.params.category.toLowerCase();
-    const type = req.params.type.toLowerCase();
-    // Check category
-    if (!statCategories.definitions.find(cat => cat.id === category)) {
-        return res.status(404).end();
-    }
-    // Check type
-    let template;
-    switch (type) {
-        case 'main': template = 'profileMain'; break;
-        default:
-            return res.status(404).end();
-    }
-    // Render image
-    const url = `http://localhost:${env.WEBSERVER_PORT}/renders/html/${template}?user_id=${userId}&category=${category}`;
-    const startTime = Date.now();
-    const buffer = await imageRenderer.urlToPng(url, undefined, undefined, 1);
-    utils.log(`Rendered social image ${type} for ${user.name} in category ${category} in ${Date.now() - startTime}ms`);
-    // Set headers and send image
-    res.set('Content-Type', 'image/png');
-    res.set('Cache-Control', 'no-store'); // Don't cache
-    res.send(buffer);
 });
 
 module.exports = router;
