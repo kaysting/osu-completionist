@@ -55,15 +55,3 @@ const audioVolumeUp = () => {
     let volume = parseFloat(localStorage.getItem('mapPreview')) || 0.5;
     audioVolumeSet(volume + 0.1);
 };
-
-// Handle image load states
-const images = document.querySelectorAll('img');
-images.forEach(img => {
-    if (img.complete) {
-        img.classList.add('loaded');
-    } else {
-        img.addEventListener('load', () => {
-            img.classList.add('loaded');
-        });
-    }
-});

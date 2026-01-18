@@ -226,6 +226,23 @@ document.addEventListener('DOMContentLoaded', () => {
     initCustomTooltips();
 });
 
+// Handle image load states
+const initImageLoadStates = (parent = document) => {
+    const images = parent.querySelectorAll('img');
+    images.forEach(img => {
+        if (img.complete) {
+            img.classList.add('loaded');
+        } else {
+            img.addEventListener('load', () => {
+                img.classList.add('loaded');
+            });
+        }
+    });
+};
+document.addEventListener('DOMContentLoaded', () => {
+    initImageLoadStates();
+});
+
 const reloadElement = async (selectors, url = window.location.href) => {
     // 1. Normalize input and apply loading state
     const targets = Array.isArray(selectors) ? selectors : [selectors];
@@ -261,6 +278,7 @@ const reloadElement = async (selectors, url = window.location.href) => {
             if (oldElement && newElement) {
                 // Success: replacing the element removes the 'loading' class automatically
                 oldElement.replaceWith(newElement);
+                initImageLoadStates(newElement);
                 successCount++;
             } else {
                 // Partial failure: ensure we remove loading class if we couldn't replace it

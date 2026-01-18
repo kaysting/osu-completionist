@@ -284,7 +284,7 @@
             <% } %>
         </div>
         <% if (user.recommended) { %>
-        <div class="card lighter recommended flex col gap-16">
+        <div id="playNext" class="card lighter recommended flex col gap-16">
             <div>
                 <span class="header">what to play next</span>
             </div>
@@ -299,7 +299,10 @@
                 <% } %>
             </div>
             <div class="flex col gap-8">
-                <div class="flex justify-center">
+                <div class="flex gap-8 justify-center">
+                    <button class="btn square" onClick="reloadElement('#playNext')" title="Refresh selection">
+                        <span class="icon">refresh</span>
+                    </button>
                     <a href="/recommended/<%= category %>?q=<%- encodeURIComponent(user.recommendedQuery) %>"
                         class="btn primary">
                         <span class="icon filled">cards_star</span>
