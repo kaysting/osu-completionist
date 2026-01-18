@@ -29,8 +29,9 @@ env.OSU_CLIENT_SECRET = process.env.OSU_CLIENT_SECRET;
 env.OSU_AUTH_REDIRECT_URI = process.env.OSU_AUTH_REDIRECT_URI || `${env.HTTPS ? 'https' : 'http'}://${env.HOST}/auth/callback`;
 
 // Time remaining estimation constants
+// These are determined through testing
 env.SCORES_PER_MINUTE = Number(process.env.SCORES_PER_MINUTE || 700);
-env.SCORES_PER_MINUTE_FULL = Number(process.env.SCORES_PER_MINUTE_FULL || 3500);
+env.SCORES_PER_MINUTE_FULL = Number(process.env.SCORES_PER_MINUTE_FULL || 3350);
 
 // Discord
 env.DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
