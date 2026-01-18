@@ -117,7 +117,7 @@
             </div>
         </div>
     </div>
-    <div id="main">
+    <main>
         <%- include('pages/' + page) %>
         <div id="footer">
             <p>
@@ -131,7 +131,7 @@
                 <%= dayjs(locals?.git?.date).fromNow() %>
             </p>
         </div>
-    </div>
+    </main>
     <script src="<%= asset('/assets/js/index.js') %>"></script>
     <script>
 

@@ -243,8 +243,21 @@ document.addEventListener('DOMContentLoaded', () => {
     initImageLoadStates();
 });
 
-const reloadElement = async (selectors, url = window.location.href) => {
-    // 1. Normalize input and apply loading state
+const executeScripts = (container) => {
+    const scripts = container.querySelectorAll('script');
+    scripts.forEach((oldScript) => {
+        const newScript = document.createElement('script');
+        Array.from(oldScript.attributes).forEach(attr => {
+            newScript.setAttribute(attr.name, attr.value);
+        });
+        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+        oldScript.parentNode.replaceChild(newScript, oldScript);
+    });
+};
+
+const reloadElement = async (selectors, options = { url: window.location.href, replaceAddress: false, pushAddress: false }) => {
+
+    // Collect target elements
     const targets = Array.isArray(selectors) ? selectors : [selectors];
     const affectedElements = [];
 
@@ -258,11 +271,12 @@ const reloadElement = async (selectors, url = window.location.href) => {
     });
 
     try {
-        // 2. Fetch content
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`Server returned ${response.status}`);
 
-        // 3. Parse HTML
+        // Fetch content
+        const response = await fetch(options.url);
+        if (!response.ok) throw new Error(`Server returned ${response.status} ${response.statusText}`);
+
+        // Parse HTML
         const text = await response.text();
         const parser = new DOMParser();
         const doc = parser.parseFromString(text, 'text/html');
@@ -270,53 +284,58 @@ const reloadElement = async (selectors, url = window.location.href) => {
         let successCount = 0;
         const missing = [];
 
-        // 4. Swap Elements
+        // Swap Elements
         for (const selector of targets) {
             const oldElement = document.querySelector(selector);
             const newElement = doc.querySelector(selector);
 
             if (oldElement && newElement) {
-                // Success: replacing the element removes the 'loading' class automatically
+                // Replacing the element removes the 'loading' class automatically
                 oldElement.replaceWith(newElement);
                 initImageLoadStates(newElement);
+                executeScripts(newElement);
                 successCount++;
             } else {
-                // Partial failure: ensure we remove loading class if we couldn't replace it
+                // Ensure we remove loading class if we couldn't replace the element
                 if (oldElement) oldElement.classList.remove('loading');
                 missing.push(selector);
                 console.warn(`reloadElement: '${selector}' not found in source or target.`);
             }
         }
 
-        // 5. Check for Total Failure
+        // Check for Total Failure
         if (successCount === 0) {
             throw new Error(`No matching elements found to update. (Failed: ${missing.join(', ')})`);
+        }
+
+        // Update browser address if needed
+        if (options.replaceAddress) {
+            window.history.replaceState({}, '', options.url);
+        } else if (options.pushAddress) {
+            window.history.pushState({}, '', options.url);
         }
 
     } catch (error) {
         console.error('Reload failed:', error);
 
-        // 6. Cleanup on Error
-        // Remove loading class from any elements still in the DOM
+        // Remove loading class from all affected elements
         affectedElements.forEach(el => {
             if (el && el.isConnected) el.classList.remove('loading');
         });
 
-        // 7. Trigger Custom Popup on Failure
+        // Show error popup
         showPopup(
-            'Update failed',
+            'Refresh failed',
             /*html*/`
                 <p>Failed to refresh the requested content. Please check your connection or try again later.</p>
-                <pre><code>${error.message}</code></pre>
+                <p>Error: <code>${error.message}</code></p>
             `,
             [
                 {
-                    label: 'Okay'
-                }, {
                     label: 'Try again',
-                    class: 'primary',
-                    onClick: () => reloadElement(selectors, url)
-                }
+                    onClick: () => reloadElement(selectors, options)
+                },
+                { label: 'Okay', class: 'primary' }
             ]
         );
     }

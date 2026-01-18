@@ -144,7 +144,7 @@
     padding: 0px;
 }
 
-#main {
+main {
     max-width: var(--globalWidth);
     margin: 0 auto;
     margin-top: calc(54px + 16px);
@@ -168,7 +168,7 @@
 }
 
 @media (max-width: 600px) {
-    #main {
+    main {
         padding: 0px 4px 16px 4px;
     }
 

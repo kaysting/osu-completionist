@@ -79,7 +79,7 @@
                 <div style="height: 100px">
                     <canvas id="progressGraph"></canvas>
                     <script>
-                        window.addEventListener('load', () => {
+                        function loadProgressGraph() {
                             // Prepare data
                             const data = JSON.parse('<%- JSON.stringify(user.historyDaily) %>');
                             const datapointNow = {
@@ -151,7 +151,8 @@
                                     }
                                 }
                             });
-                        });
+                        }
+                        loadProgressGraph();
                     </script>
                 </div>
                 <div id="progressStatsRow" class="flex gap-16">
@@ -203,11 +204,11 @@
             </div>
             <div id="yearlyStats" class="flex col gap-8">
                 <div class="btnGroup">
-                    <btn onClick="reloadElement('#yearlyStats', '?yearly_type=maps')"
+                    <btn onClick="reloadElement('#yearlyStats', { url: '?yearly_type=maps' })"
                         class="btn <%= user.yearlyType == 'maps' ? 'primary' : '' %> small">
                         <span class="label">map count</span>
                     </btn>
-                    <btn onClick="reloadElement('#yearlyStats', '?yearly_type=xp')"
+                    <btn onClick="reloadElement('#yearlyStats', { url: '?yearly_type=xp' })"
                         class="btn <%= user.yearlyType == 'xp' ? 'primary' : '' %> small">
                         <span class="label">cxp</span>
                     </btn>
