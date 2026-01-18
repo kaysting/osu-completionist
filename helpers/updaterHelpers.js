@@ -404,6 +404,9 @@ const updateUserCategoryStats = (userId, force = false) => {
             INSERT OR REPLACE INTO user_category_stats_yearly 
             (user_id, category, year, count, seconds) VALUES (?, ?, ?, ?, ?)
         `);
+        const stmtFullCompletions = db.prepare(`
+            INSERT INTO user_full_completions (user_id, category, count, seconds, time) VALUES (?, ?, ?, ?, ?)
+        `);
 
         // Update stats
         const statsUpdateTransaction = db.transaction(() => {
@@ -432,49 +435,57 @@ const updateUserCategoryStats = (userId, force = false) => {
             }
         });
         // Update bests
+        const bestsInserts = [];
+        const fullCompletionInserts = [];
+        for (const cat of statCategories.definitions) {
+
+            const totals = catTotals[cat.id] || { count: 0, seconds: 0 };
+            const statsOld = catStatsOld[cat.id];
+
+            // Get new main stats
+            const statsNew = dbHelpers.getUserCompletionStats(userId, cat.id);
+            let bestRank = statsOld.best_rank;
+            let bestPercent = statsOld.best_percentage_completed;
+            let bestRankTime = statsOld.best_rank_time;
+            let bestPercentTime = statsOld.best_percentage_completed_time;
+            let hasNewBests = false;
+
+            // Check if we have a new best rank
+            if (statsNew.rank > 0 && (statsOld.best_rank === 0 || statsNew.rank <= statsOld.best_rank)) {
+                bestRank = statsNew.rank;
+                bestRankTime = Date.now();
+                hasNewBests = true;
+            }
+
+            // Check if we have a new best completion percentage
+            if (statsNew.percentage_completed > 0 && (statsOld.best_percentage_completed === 0 || statsNew.percentage_completed >= statsOld.best_percentage_completed)) {
+                bestPercent = statsNew.percentage_completed;
+                bestPercentTime = Date.now();
+                hasNewBests = true;
+            }
+
+            // Write new bests if needed
+            if (hasNewBests) {
+                bestsInserts.push([
+                    user.id, cat.id, totals.count, totals.seconds, bestRank, bestRankTime, bestPercent, bestPercentTime
+                ]);
+            }
+
+            // If the new completion percentage is 100 and the old one was less,
+            // save a full completions entry
+            if (statsNew.percentage_completed === 100 && statsOld.percentage_completed < 100) {
+                fullCompletionInserts.push([
+                    user.id, cat.id, totals.count, totals.seconds, Date.now()
+                ]);
+            }
+
+        }
         const bestsUpdateTransaction = db.transaction(() => {
-            for (const cat of statCategories.definitions) {
-
-                const totals = catTotals[cat.id] || { count: 0, seconds: 0 };
-                const statsOld = catStatsOld[cat.id];
-
-                // Get new main stats
-                const statsNew = dbHelpers.getUserCompletionStats(userId, cat.id);
-                let bestRank = statsOld.best_rank;
-                let bestPercent = statsOld.best_percentage_completed;
-                let bestRankTime = statsOld.best_rank_time;
-                let bestPercentTime = statsOld.best_percentage_completed_time;
-                let hasNewBests = false;
-
-                // Check if we have a new best rank
-                if (statsNew.rank > 0 && (statsOld.best_rank === 0 || statsNew.rank <= statsOld.best_rank)) {
-                    bestRank = statsNew.rank;
-                    bestRankTime = Date.now();
-                    hasNewBests = true;
-                }
-
-                // Check if we have a new best completion percentage
-                if (statsNew.percentage_completed > 0 && (statsOld.best_percentage_completed === 0 || statsNew.percentage_completed >= statsOld.best_percentage_completed)) {
-                    bestPercent = statsNew.percentage_completed;
-                    bestPercentTime = Date.now();
-                    hasNewBests = true;
-                }
-
-                // Write new bests if needed
-                if (hasNewBests) {
-                    stmtMain.run(
-                        user.id, cat.id, totals.count, totals.seconds, bestRank, bestRankTime, bestPercent, bestPercentTime
-                    );
-                }
-
-                // If the new completion percentage is 100 and the old one was less,
-                // save a full completions entry
-                if (statsNew.percentage_completed === 100 && statsOld.percentage_completed < 100) {
-                    db.prepare(`INSERT INTO user_full_completions (user_id, category, count, seconds, time) VALUES (?, ?, ?, ?, ?)`).run(
-                        user.id, cat.id, totals.count, totals.seconds, Date.now()
-                    );
-                }
-
+            for (const params of bestsInserts) {
+                stmtMain.run(...params);
+            }
+            for (const params of fullCompletionInserts) {
+                stmtFullCompletions.run(...params);
             }
         });
         statsUpdateTransaction();
