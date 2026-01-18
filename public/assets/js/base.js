@@ -268,12 +268,25 @@ const reloadElement = async (selectors, options = {}) => {
     const targets = Array.isArray(selectors) ? selectors : [selectors];
     const affectedElements = [];
 
-    // Apply 'loading' class immediately to existing elements
+    // Function to apply loading styles
+    const applyLoadingStyle = (element) => {
+        element.style.transition = '0.1s ease-in-out';
+        element.style.opacity = '0.5';
+        element.style.pointerEvents = 'none';
+    };
+    const removeLoadingStyle = (element) => {
+        element.style.removeProperty('opacity');
+        element.style.removeProperty('pointer-events');
+        setTimeout(() => {
+            element.style.removeProperty('transition');
+        }, 300);
+    };
+    // Apply loading styling to elements immediately
     if (!silent) {
         targets.forEach(selector => {
             const el = document.querySelector(selector);
             if (el) {
-                el.classList.add('loading');
+                applyLoadingStyle(el);
                 affectedElements.push(el);
             }
         });
@@ -303,9 +316,16 @@ const reloadElement = async (selectors, options = {}) => {
             const newElement = doc.querySelector(selector);
 
             if (oldElement && newElement) {
-                // Replacing the element removes the 'loading' class automatically
+                // Add loading styling to new element temporarily to enable transitions
                 oldElement.replaceWith(newElement);
-                if (typeof initImageLoadStates === 'function') initImageLoadStates(newElement);
+                if (!silent) {
+                    applyLoadingStyle(newElement);
+                    setTimeout(() => {
+                        removeLoadingStyle(newElement);
+                    }, 50);
+                }
+                // Re-init any needed functionality
+                initImageLoadStates(newElement);
                 executeScripts(newElement);
                 successCount++;
             } else {

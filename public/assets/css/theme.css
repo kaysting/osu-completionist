@@ -1228,8 +1228,3 @@ img {
     transform: translateY(-50%);
     border-right-color: var(--tooltip-bg);
 }
-
-.loading {
-    opacity: 0.5;
-    pointer-events: none;
-}

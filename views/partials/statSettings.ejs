@@ -1,52 +1,39 @@
 <div id="statSettings" class="flex flex-wrap justify-center">
+    <% const button = (key, label, includes, icon, title, isActiveOverride, alwaysFilled = false) => {
+        const isActive = typeof isActiveOverride === 'boolean' ? isActiveOverride : category.includes(includes);
+    %>
+    <button
+        onClick="reloadElement([ '#statSettings', '#profileContent', '#leaderboardContent', '#recommended' ], { url: '<%= category_navigation[key] %>', replaceAddress: true })"
+        class="btn <%= isActive ? 'primary' : '' %>" <% if (title) { %>title="<%= title %>" <% } %>>
+        <% if (icon) { %>
+        <span class="icon <%= alwaysFilled || isActive ? 'filled' : '' %>"><%= icon %></span>
+        <% } %>
+        <span class="label"><%= label %></span>
+    </button>
+    <% } %>
     <div class="section mode">
         <div class="btnGroup">
-            <button onClick="reloadElement('main', { url: '<%= category_navigation.global %>', replaceAddress: true })"
-                class="btn <%= category.includes('global-') ? 'primary' : '' %>" title="All game modes">All</button>
-            <button onClick="reloadElement('main', { url: '<%= category_navigation.osu %>', replaceAddress: true })"
-                class="btn <%= category.includes('osu-') ? 'primary' : '' %>">osu</button>
-            <button onClick="reloadElement('main', { url: '<%= category_navigation.taiko %>', replaceAddress: true })"
-                class="btn <%= category.includes('taiko-') ? 'primary' : '' %>">taiko</button>
-            <button onClick="reloadElement('main', { url: '<%= category_navigation.catch %>', replaceAddress: true })"
-                class="btn <%= category.includes('catch-') ? 'primary' : '' %>">catch</button>
-            <button onClick="reloadElement('main', { url: '<%= category_navigation.mania %>', replaceAddress: true })"
-                class="btn <%= category.includes('mania-') ? 'primary' : '' %>">mania</button>
+            <% button('global', 'All', 'global-', null, 'All game modes') %>
+            <% button('osu', 'osu', 'osu-') %>
+            <% button('taiko', 'taiko', 'taiko-') %>
+            <% button('catch', 'catch', 'catch-') %>
+            <% button('mania', 'mania', 'mania-') %>
         </div>
     </div>
     <% if (category.includes('mania-')) { %>
     <div class="section">
         <div class="btnGroup">
-            <button onClick="reloadElement('main', { url: '<%= category_navigation.mania %>', replaceAddress: true })"
-                class="btn <%= !category.match(/-(\dk|otherkeys)$/) ? 'primary' : '' %>">
-                <span class="icon filled">piano</span>
-                <span class="label">All</span>
-            </button>
-            <button onClick="reloadElement('main', { url: '<%= category_navigation.mania4k %>', replaceAddress: true })"
-                class="btn <%= category.includes('-4k') ? 'primary' : '' %>">4K</button>
-            <button onClick="reloadElement('main', { url: '<%= category_navigation.mania7k %>', replaceAddress: true })"
-                class="btn <%= category.includes('-7k') ? 'primary' : '' %>">7K</button>
-            <button
-                onClick="reloadElement('main', { url: '<%= category_navigation.maniaOther %>', replaceAddress: true })"
-                class="btn <%= category.includes('-otherkeys') ? 'primary' : '' %>"
-                title="All other keycounts (not 4K or 7K)">Other</button>
+            <% button('mania', 'All', 'mania-', 'piano', null, !category.match(/-(\dk|otherkeys)$/), true) %>
+            <% button('mania4k', '4K', '-4k') %>
+            <% button('mania7k', '7K', '-7k') %>
+            <% button('maniaOther', 'Other', '-otherkeys', null, 'All other keycounts (not 4K or 7K)') %>
         </div>
     </div>
     <% } %>
     <div class="section flex gap-8 flex-wrap">
-        <button onClick="reloadElement('main', { url: '<%= category_navigation.toggleLoved %>', replaceAddress: true })"
-            class="btn <%= category.includes('loved') ? 'primary' : '' %>"
-            title="Should loved maps be included in stats?">
-            <span class="icon <%= category.includes('loved') ? 'filled' : '' %>">favorite</span>
-            Include loved
-        </button>
+        <% button('toggleLoved', 'Include loved', 'loved', 'favorite', 'Should loved maps be included in stats?') %>
         <% if (!category.includes('osu-')) { %>
-        <button
-            onClick="reloadElement('main', { url: '<%= category_navigation.toggleConverts %>', replaceAddress: true })"
-            class="btn <%= category.includes('converts') ? 'primary' : '' %>"
-            title="Should converts be included in stats?">
-            <span class="icon <%= category.includes('converts') ? 'filled' : '' %>">swap_horizontal_circle</span>
-            Include converts
-        </button>
+        <% button('toggleConverts', 'Include converts', 'converts', 'swap_horizontal_circle', 'Should converts be included in stats?') %>
         <% } %>
     </div>
 </div>
