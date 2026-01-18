@@ -255,25 +255,38 @@ const executeScripts = (container) => {
     });
 };
 
-const reloadElement = async (selectors, options = { url: window.location.href, replaceAddress: false, pushAddress: false }) => {
+const reloadElement = async (selectors, options = {}) => {
+    // Destructure options with defaults to ensure safety
+    const {
+        url = window.location.href,
+        replaceAddress = false,
+        pushAddress = false,
+        silent = false
+    } = options;
 
     // Collect target elements
     const targets = Array.isArray(selectors) ? selectors : [selectors];
     const affectedElements = [];
 
     // Apply 'loading' class immediately to existing elements
-    targets.forEach(selector => {
-        const el = document.querySelector(selector);
-        if (el) {
-            el.classList.add('loading');
-            affectedElements.push(el);
-        }
-    });
+    if (!silent) {
+        targets.forEach(selector => {
+            const el = document.querySelector(selector);
+            if (el) {
+                el.classList.add('loading');
+                affectedElements.push(el);
+            }
+        });
+    }
 
     try {
-
         // Fetch content
-        const response = await fetch(options.url);
+        // Pass selectors via header so the server has the opportunity to only return necessary content
+        const response = await fetch(url, {
+            headers: {
+                'X-Reload-Selectors': targets.join(',')
+            }
+        });
         if (!response.ok) throw new Error(`Server returned ${response.status} ${response.statusText}`);
 
         // Parse HTML
@@ -292,31 +305,31 @@ const reloadElement = async (selectors, options = { url: window.location.href, r
             if (oldElement && newElement) {
                 // Replacing the element removes the 'loading' class automatically
                 oldElement.replaceWith(newElement);
-                initImageLoadStates(newElement);
+                if (typeof initImageLoadStates === 'function') initImageLoadStates(newElement);
                 executeScripts(newElement);
                 successCount++;
             } else {
                 // Ensure we remove loading class if we couldn't replace the element
                 if (oldElement) oldElement.classList.remove('loading');
                 missing.push(selector);
-                console.warn(`reloadElement: '${selector}' not found in source or target.`);
+                if (!silent) console.warn(`reloadElement: '${selector}' not found in source or target.`);
             }
         }
 
         // Check for Total Failure
-        if (successCount === 0) {
+        if (successCount === 0 && !silent) {
             throw new Error(`No matching elements found to update. (Failed: ${missing.join(', ')})`);
         }
 
         // Update browser address if needed
-        if (options.replaceAddress) {
-            window.history.replaceState({}, '', options.url);
-        } else if (options.pushAddress) {
-            window.history.pushState({}, '', options.url);
+        if (replaceAddress) {
+            window.history.replaceState({}, '', url);
+        } else if (pushAddress) {
+            window.history.pushState({}, '', url);
         }
 
     } catch (error) {
-        console.error('Reload failed:', error);
+        if (!silent) console.error('Reload failed:', error);
 
         // Remove loading class from all affected elements
         affectedElements.forEach(el => {
@@ -324,19 +337,88 @@ const reloadElement = async (selectors, options = { url: window.location.href, r
         });
 
         // Show error popup
-        showPopup(
-            'Refresh failed',
-            /*html*/`
+        if (!silent) {
+            showPopup(
+                'Refresh failed',
+                /*html*/`
                 <p>Failed to refresh the requested content. Please check your connection or try again later.</p>
                 <p>Error: <code>${error.message}</code></p>
             `,
-            [
-                {
-                    label: 'Try again',
-                    onClick: () => reloadElement(selectors, options)
-                },
-                { label: 'Okay', class: 'primary' }
-            ]
-        );
+                [
+                    {
+                        label: 'Try again',
+                        onClick: () => reloadElement(selectors, options)
+                    },
+                    { label: 'Okay', class: 'primary' }
+                ]
+            );
+        }
     }
 };
+
+// Global state to track when a batch (interval + url) was last refreshed
+const autoReloadBatches = new Map();
+
+// The Manager Loop
+setInterval(() => {
+    // Don't run if tab isn't visible
+    if (document.hidden) return;
+
+    const now = Date.now();
+    const groups = new Map();
+
+    // 1. Group elements by Interval + URL
+    document.querySelectorAll('[data-reload-interval]').forEach(el => {
+        // Ensure element has ID
+        if (!el.id) {
+            console.warn('Auto-reload element missing ID:', el);
+            return;
+        }
+
+        // Get interval in seconds
+        const secs = parseInt(el.dataset.reloadInterval);
+        if (isNaN(secs) || secs <= 0) return;
+
+        // Get optional URL (default to 'CURRENT' placeholder)
+        const url = el.getAttribute('data-reload-url') || 'CURRENT';
+
+        // Create Group Key
+        const key = `${secs}|${url}`;
+
+        if (!groups.has(key)) {
+            groups.set(key, []);
+        }
+        groups.get(key).push(`#${el.id}`);
+    });
+
+    // 2. Process Groups
+    groups.forEach((selectors, key) => {
+        const [secsStr, urlStr] = key.split('|');
+        const intervalMs = parseInt(secsStr) * 1000;
+
+        // Initialize timer if new group
+        if (!autoReloadBatches.has(key)) {
+            autoReloadBatches.set(key, now);
+            return;
+        }
+
+        const lastRun = autoReloadBatches.get(key);
+
+        if (now - lastRun >= intervalMs) {
+            // Update timestamp IMMEDIATELY to prevent double-firing while request is pending
+            autoReloadBatches.set(key, now);
+
+            // Determine actual URL
+            const targetUrl = urlStr === 'CURRENT' ? window.location.href : urlStr;
+
+            console.log(`Batch refreshing (${secsStr}s):`, selectors);
+
+            // Trigger batch reload
+            reloadElement(selectors, {
+                url: targetUrl,
+                silent: true
+            });
+        }
+    });
+
+}, 1000);
