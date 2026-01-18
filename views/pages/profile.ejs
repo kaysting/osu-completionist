@@ -201,16 +201,16 @@
             <div>
                 <span class="header">completion by year</span>
             </div>
-            <div class="flex col gap-8">
+            <div id="yearlyStats" class="flex col gap-8">
                 <div class="btnGroup">
-                    <a href="/u/<%= user.id %>/<%= category %>?yearly_type=maps"
+                    <btn onClick="reloadElement('#yearlyStats', '?yearly_type=maps')"
                         class="btn <%= user.yearlyType == 'maps' ? 'primary' : '' %> small">
                         <span class="label">map count</span>
-                    </a>
-                    <a href="/u/<%= user.id %>/<%= category %>?yearly_type=xp"
+                    </btn>
+                    <btn onClick="reloadElement('#yearlyStats', '?yearly_type=xp')"
                         class="btn <%= user.yearlyType == 'xp' ? 'primary' : '' %> small">
                         <span class="label">cxp</span>
-                    </a>
+                    </btn>
                 </div>
                 <div class="yearlyStatsContainer">
                     <% for (const yearData of user.yearly) { %>

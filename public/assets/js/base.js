@@ -225,3 +225,47 @@ const initCustomTooltips = () => {
 document.addEventListener('DOMContentLoaded', () => {
     initCustomTooltips();
 });
+
+const reloadElement = async (selector, url = window.location.href) => {
+    try {
+        // 1. Fetch content
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Server returned ${response.status}`);
+
+        // 2. Parse HTML
+        const text = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+
+        // 3. Swap Elements
+        const oldElement = document.querySelector(selector);
+        const newElement = doc.querySelector(selector);
+
+        if (oldElement && newElement) {
+            oldElement.replaceWith(newElement);
+        } else {
+            throw new Error(`Target element "${selector}" not found in response.`);
+        }
+
+    } catch (error) {
+        console.error('Reload failed:', error);
+
+        // 4. Trigger Custom Popup on Failure
+        showPopup(
+            'Update failed',
+            /*html*/`
+                <p>Failed to refresh the requested content. Please check your connection or try again later.</p>
+                <pre><code>${error.message}</code></pre>
+            `,
+            [
+                {
+                    label: 'Okay'
+                }, {
+                    label: 'Try again',
+                    class: 'primary',
+                    onClick: () => reloadElement(selector, url)
+                }
+            ]
+        );
+    }
+};
