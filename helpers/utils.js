@@ -35,24 +35,6 @@ const utils = {
         console.log(`[${timestamp}]`, ...args);
     },
 
-    postToPassFeed: async content => {
-        await utils.sendDiscordMessage(env.PASS_FEED_DISCORD_CHANNEL_ID, {
-            content
-        });
-    },
-
-    postToUserFeed: async (embed) => {
-        await utils.sendDiscordMessage(env.USER_FEED_DISCORD_CHANNEL_ID, {
-            embeds: [embed]
-        });
-    },
-
-    postToMapFeed: async (embed) => {
-        await utils.sendDiscordMessage(env.MAP_FEED_DISCORD_CHANNEL_ID, {
-            embeds: [embed]
-        });
-    },
-
     logError: (...args) => {
         const timestamp = new Date().toISOString();
         console.error(`[${timestamp}]`, ...args);

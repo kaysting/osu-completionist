@@ -126,7 +126,7 @@ async function processQueue() {
             error.message.includes('Target closed');
 
         if (isCriticalError && browser) {
-            console.error('Critical Puppeteer error detected. Restarting browser...');
+            utils.logError('Critical Puppeteer error detected. Restarting browser...');
             browser.close().catch(() => { });
             browser = null;
         }

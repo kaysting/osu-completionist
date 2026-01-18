@@ -57,34 +57,36 @@ const saveMapset = async (mapsetId, index = true) => {
     const mapset = dbHelpers.getBeatmapset(mapsetId, true);
     // Log to Discord
     setImmediate(() => {
-        utils.postToMapFeed({
-            author: {
-                name: `${index ? `Saved new beatmapset` : 'Updated saved beatmapset'}`,
-            },
-            title: `${mapset.artist} - ${mapset.title}`,
-            url: `https://osu.ppy.sh/beatmapsets/${mapset.id}`,
-            fields: [
-                {
-                    name: 'Status',
-                    value: mapset.status,
-                    inline: true
+        utils.sendDiscordMessage(env.MAP_FEED_DISCORD_CHANNEL_ID, {
+            embeds: [{
+                author: {
+                    name: `${index ? `Saved new beatmapset` : 'Updated saved beatmapset'}`,
                 },
-                {
-                    name: 'Mapper',
-                    value: mapset.mapper,
-                    inline: true
+                title: `${mapset.artist} - ${mapset.title}`,
+                url: `https://osu.ppy.sh/beatmapsets/${mapset.id}`,
+                fields: [
+                    {
+                        name: 'Status',
+                        value: mapset.status,
+                        inline: true
+                    },
+                    {
+                        name: 'Mapper',
+                        value: mapset.mapper,
+                        inline: true
+                    },
+                    {
+                        name: `Difficulties (${mapset.beatmaps.length})`,
+                        value: mapset.beatmaps.map(map => {
+                            return `* **${utils.rulesetKeyToName(map.mode)} ${map.stars.toFixed(2)} ★** - [${map.name}](https://osu.ppy.sh/beatmapsets/${mapset.id}#${map.mode}/${map.id})`;
+                        }).join('\n')
+                    }
+                ],
+                thumbnail: {
+                    url: `https://assets.ppy.sh/beatmaps/${mapset.id}/covers/list.jpg`
                 },
-                {
-                    name: `Difficulties (${mapset.beatmaps.length})`,
-                    value: mapset.beatmaps.map(map => {
-                        return `* **${utils.rulesetKeyToName(map.mode)} ${map.stars.toFixed(2)} ★** - [${map.name}](https://osu.ppy.sh/beatmapsets/${mapset.id}#${map.mode}/${map.id})`;
-                    }).join('\n')
-                }
-            ],
-            thumbnail: {
-                url: `https://assets.ppy.sh/beatmaps/${mapset.id}/covers/list.jpg`
-            },
-            color: 0xBEA3F5
+                color: 0xBEA3F5
+            }]
         });
     });
     // Return new entry
@@ -794,18 +796,20 @@ const importUser = async (userId, doFullImport = false) => {
         }, 0);
 
         // Post log to Discord
-        utils.postToUserFeed({
-            author: {
-                name: user.name,
-                icon_url: user.avatar_url,
-                url: `${env.HTTPS ? 'https' : 'http'}://${env.HOST}/u/${user.id}`
-            },
-            title: `Completed ${doFullImport ? 'full ' : ''}import of ${passCount.toLocaleString()} passes`,
-            description: [
-                `Took ${utils.secsToDuration(Math.round(importDurationMs / 1000))} to check ${beatmapsOffset.toLocaleString()} beatmaps`,
-                `${queueCount == 0 ? `The queue is now empty.` : `Queue of ${queueCount} user${queueCount > 1 ? 's' : ''} estimated to be empty in ${utils.getRelativeTimestamp(Date.now() + Math.round(queueSecsRemaining * 1000), undefined, false)}`}...`
-            ].join('\n'),
-            color: 0xA3F5F5
+        await utils.sendDiscordMessage(env.USER_FEED_DISCORD_CHANNEL_ID, {
+            embeds: [{
+                author: {
+                    name: user.name,
+                    icon_url: user.avatar_url,
+                    url: `${env.HTTPS ? 'https' : 'http'}://${env.HOST}/u/${user.id}`
+                },
+                title: `Completed ${doFullImport ? 'full ' : ''}import of ${passCount.toLocaleString()} passes`,
+                description: [
+                    `Took ${utils.secsToDuration(Math.round(importDurationMs / 1000))} to check ${beatmapsOffset.toLocaleString()} beatmaps`,
+                    `${queueCount == 0 ? `The queue is now empty.` : `Queue of ${queueCount} user${queueCount > 1 ? 's' : ''} estimated to be empty in ${utils.getRelativeTimestamp(Date.now() + Math.round(queueSecsRemaining * 1000), undefined, false)}`}...`
+                ].join('\n'),
+                color: 0xA3F5F5
+            }]
         });
 
     } catch (error) {
@@ -938,10 +942,10 @@ const savePassesFromGlobalRecents = async () => {
         }
         // Log passes to Discord
         if (savedPasses.length > 0) {
-            const description = savedPasses.map(pass => {
+            const content = savedPasses.map(pass => {
                 return `-# * **[${pass.userName}](<${env.HTTPS ? 'https' : 'http'}://${env.HOST}/u/${pass.userId}>)** gained **${pass.xp.toLocaleString()} cxp** from **${utils.rulesetKeyToName(pass.mode, true)}** [${pass.mapName}](<https://osu.ppy.sh/beatmapsets/${pass.mapsetId}#${pass.mode}/${pass.mapId}>)`;
             }).join('\n');
-            utils.postToPassFeed(description);
+            await utils.sendDiscordMessage(env.PASS_FEED_DISCORD_CHANNEL_ID, { content });
             utils.log(`Completed processing global recents, saved ${savedPasses.length} new passes`);
         }
     } catch (error) {

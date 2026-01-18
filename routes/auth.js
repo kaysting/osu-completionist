@@ -53,14 +53,16 @@ router.get('/callback', async (req, res) => {
             await updaterHelpers.queueUserForImport(user.data.id);
             const userCount = db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
             utils.log(`${user.data.username} registered as a new user!`);
-            utils.postToUserFeed({
-                author: {
-                    name: userEntry.name,
-                    icon_url: userEntry.avatar_url,
-                    url: `${env.HTTPS ? 'https' : 'http'}://${env.HOST}/u/${userEntry.id}`
-                },
-                title: `Registered as our ${utils.ordinalSuffix(userCount)} user!`,
-                color: 0xA3F5A3
+            await utils.sendDiscordMessage(env.USER_FEED_DISCORD_CHANNEL_ID, {
+                embeds: [{
+                    author: {
+                        name: userEntry.name,
+                        icon_url: userEntry.avatar_url,
+                        url: `${env.HTTPS ? 'https' : 'http'}://${env.HOST}/u/${userEntry.id}`
+                    },
+                    title: `Registered as our ${utils.ordinalSuffix(userCount)} user!`,
+                    color: 0xA3F5A3
+                }]
             });
         } else if (!userEntry?.last_import_time && !existingQueueEntry) {
             // Queue user if they haven't been imported and they aren't queued
