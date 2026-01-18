@@ -226,31 +226,65 @@ document.addEventListener('DOMContentLoaded', () => {
     initCustomTooltips();
 });
 
-const reloadElement = async (selector, url = window.location.href) => {
+const reloadElement = async (selectors, url = window.location.href) => {
+    // 1. Normalize input and apply loading state
+    const targets = Array.isArray(selectors) ? selectors : [selectors];
+    const affectedElements = [];
+
+    // Apply 'loading' class immediately to existing elements
+    targets.forEach(selector => {
+        const el = document.querySelector(selector);
+        if (el) {
+            el.classList.add('loading');
+            affectedElements.push(el);
+        }
+    });
+
     try {
-        // 1. Fetch content
+        // 2. Fetch content
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Server returned ${response.status}`);
 
-        // 2. Parse HTML
+        // 3. Parse HTML
         const text = await response.text();
         const parser = new DOMParser();
         const doc = parser.parseFromString(text, 'text/html');
 
-        // 3. Swap Elements
-        const oldElement = document.querySelector(selector);
-        const newElement = doc.querySelector(selector);
+        let successCount = 0;
+        const missing = [];
 
-        if (oldElement && newElement) {
-            oldElement.replaceWith(newElement);
-        } else {
-            throw new Error(`Target element "${selector}" not found in response.`);
+        // 4. Swap Elements
+        for (const selector of targets) {
+            const oldElement = document.querySelector(selector);
+            const newElement = doc.querySelector(selector);
+
+            if (oldElement && newElement) {
+                // Success: replacing the element removes the 'loading' class automatically
+                oldElement.replaceWith(newElement);
+                successCount++;
+            } else {
+                // Partial failure: ensure we remove loading class if we couldn't replace it
+                if (oldElement) oldElement.classList.remove('loading');
+                missing.push(selector);
+                console.warn(`reloadElement: '${selector}' not found in source or target.`);
+            }
+        }
+
+        // 5. Check for Total Failure
+        if (successCount === 0) {
+            throw new Error(`No matching elements found to update. (Failed: ${missing.join(', ')})`);
         }
 
     } catch (error) {
         console.error('Reload failed:', error);
 
-        // 4. Trigger Custom Popup on Failure
+        // 6. Cleanup on Error
+        // Remove loading class from any elements still in the DOM
+        affectedElements.forEach(el => {
+            if (el && el.isConnected) el.classList.remove('loading');
+        });
+
+        // 7. Trigger Custom Popup on Failure
         showPopup(
             'Update failed',
             /*html*/`
@@ -263,7 +297,7 @@ const reloadElement = async (selector, url = window.location.href) => {
                 }, {
                     label: 'Try again',
                     class: 'primary',
-                    onClick: () => reloadElement(selector, url)
+                    onClick: () => reloadElement(selectors, url)
                 }
             ]
         );
