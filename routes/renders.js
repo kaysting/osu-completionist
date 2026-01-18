@@ -1,4 +1,6 @@
 const env = require('../helpers/env');
+const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const dbHelpers = require('../helpers/dbHelpers');
 const statsCategories = require('../helpers/statCategories');
@@ -16,13 +18,28 @@ const router = express.Router();
 imageRenderer.warmup();
 
 router.get('/:template', async (req, res) => {
+    // Piece together render HTML URL
     const template = req.params.template;
-    utils.log(`Rendering ${template} with params ${JSON.stringify(req.query)}`);
     const queryRaw = req.originalUrl.split('?')[1] || '';
     const url = `http://localhost:${env.WEBSERVER_PORT}/renders/${template}/html?${queryRaw}`;
-    const buffer = await imageRenderer.urlToPng(url, req.query.width || undefined, req.query.height || undefined);
-    res.set('Content-Type', 'image/png');
-    res.send(buffer);
+    // Create cache dir if it doesn't exist
+    const cacheDir = path.join(__dirname, '../cache/renders');
+    if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+    }
+    // Check cache for render and create if missing/stale
+    const hash = utils.sha256(url);
+    const cachePath = path.join(cacheDir, `${hash}.png`);
+    const cacheLifetimeMs = 1000 * 60 * 15;
+    if (!fs.existsSync(cachePath) || (Date.now() - fs.statSync(cachePath).mtimeMs) > cacheLifetimeMs) {
+        utils.log(`Rendering ${template} with params ${JSON.stringify(req.query)}`);
+        const buffer = await imageRenderer.urlToPng(url, req.query.width || undefined, req.query.height || undefined);
+        fs.writeFileSync(cachePath, buffer);
+    }
+    // Set attachment name
+    res.setHeader('Content-Disposition', `inline; filename="${template}.png"`);
+    // Send image
+    res.sendFile(cachePath);
 });
 
 router.get('/:template/html', async (req, res) => {

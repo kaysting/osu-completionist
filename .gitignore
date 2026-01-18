@@ -4,3 +4,4 @@
 .*
 !.env.example
 !.gitignore
+/cache
