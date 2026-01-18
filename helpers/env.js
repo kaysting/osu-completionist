@@ -18,7 +18,7 @@ env.HOST = process.env.HOST || `localhost:${env.WEBSERVER_PORT}`;
 env.HTTPS = process.env.HTTPS !== 'false';
 
 // Webserver rate limits
-env.CLIENT_RATE_LIMIT_LIMIT = Number(process.env.CLIENT_RATE_LIMIT_LIMIT || 50);
+env.CLIENT_RATE_LIMIT_LIMIT = Number(process.env.CLIENT_RATE_LIMIT_LIMIT || 150);
 env.CLIENT_RATE_LIMIT_WINDOW_SECS = Number(process.env.CLIENT_RATE_LIMIT_WINDOW_SECS || 300);
 env.API_RATE_LIMIT_LIMIT = Number(process.env.API_RATE_LIMIT_LIMIT || 60);
 env.API_RATE_LIMIT_WINDOW_SECS = Number(process.env.API_RATE_LIMIT_WINDOW_SECS || 60);
