@@ -33,7 +33,12 @@ const middleware = {
         req.me = null;
         if (data?.id) {
             req.me = db.prepare('SELECT * FROM users WHERE id = ?').get(data.id);
-            db.prepare(`UPDATE users SET last_login_time = ? WHERE id = ?`).run(Date.now(), data.id);
+            if (req.me) {
+                const updateLastLoginTimeAfterMs = 1000 * 60 * 5;
+                if ((Date.now() - req.me.last_login_time) > updateLastLoginTimeAfterMs) {
+                    db.prepare(`UPDATE users SET last_login_time = ? WHERE id = ?`).run(Date.now(), data.id);
+                }
+            }
         }
         next();
     },
