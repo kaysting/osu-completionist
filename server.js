@@ -37,7 +37,10 @@ app.use((req, res, next) => {
         });
     };
     // Log request
-    log(ip, req.method, req.url);
+    const logParts = [ip, req.method, req.url];
+    const reloadSelectors = req.headers['x-reload-selectors'];
+    if (reloadSelectors) logParts.push(JSON.stringify(reloadSelectors.split(',')));
+    log(...logParts);
     // Move to next middleware
     next();
 });

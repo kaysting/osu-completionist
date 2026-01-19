@@ -35,7 +35,7 @@
                 </button>
             </div>
         </div>
-        <div class="basics overflow-hidden flex gap-16 align-center" data-reload-interval="15">
+        <div class="basics overflow-hidden flex gap-16 align-center">
             <img src="<%= user.avatar_url %>" class="avatar rounded-24">
             <div class="text overflow-hidden text-ellipsis nowrap flex col gap-4 flex-grow">
                 <div class="name overflow-hidden text-ellipsis nowrap"><%= user.name %></div>
@@ -52,7 +52,7 @@
                     <% } %>
                 </div>
             </div>
-            <div id="basicStats" class="stats flex flex-wrap">
+            <div id="basicStats" class="stats flex flex-wrap" data-reload-interval="15">
                 <div class="stat big flex col">
                     <div class="key">global rank</div>
                     <div class="value"
