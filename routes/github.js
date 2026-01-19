@@ -66,7 +66,7 @@ router.post('/webhook', async (req, res) => {
                         }],
                         url: commit.url,
                         timestamp: new Date(commit.timestamp).toISOString(),
-                        color: 0x4078c0
+                        color: 0xffffff
                     }]
                 });
             }
