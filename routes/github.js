@@ -78,14 +78,15 @@ router.post('/webhook', async (req, res) => {
                 utils.log(`Pulling latest code from GitHub...`);
                 const output = cp.execSync(`git pull`);
 
-                // Check if dependencies changed
+                // Clean reinstall dependencies if they changed
                 if (output.toString().includes('package.json') || output.toString().includes('package-lock.json')) {
-                    // Install updated dependencies
                     utils.log(`Reinstalling dependencies...`);
                     cp.execSync(`npm ci`);
                 }
 
-                // Gracefully restart server 
+                // Gracefully restart webserver
+                // Note that we don't restart the updater here - not only can we not control it from here,
+                // but restarting it has a decent likelihood to interrupt an ongoing import
                 utils.log(`Restarting server to apply updates...`);
                 process.kill(process.pid, 'SIGTERM');
 
