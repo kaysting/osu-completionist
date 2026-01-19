@@ -838,6 +838,7 @@ const savePassesFromGlobalRecents = async () => {
         const mapIds = new Set();
         const scoresByUser = {};
         const newCursors = {};
+        let maxFetchedCount = 0;
         for (const mode of modes) {
             const cursor = db.prepare(
                 `SELECT cursor FROM global_recents_cursors WHERE mode = ?`
@@ -855,6 +856,7 @@ const savePassesFromGlobalRecents = async () => {
                 scoresByUser[score.user_id].push(score);
                 mapIds.add(score.beatmap_id);
             }
+            maxFetchedCount = Math.max(maxFetchedCount, res.scores.length);
             // Make note of new cursor
             newCursors[mode] = res.cursor_string;
         };
@@ -958,6 +960,12 @@ const savePassesFromGlobalRecents = async () => {
             }).join('\n');
             await utils.sendDiscordMessage(env.PASS_FEED_DISCORD_CHANNEL_ID, { content });
             utils.log(`Completed processing global recents, saved ${savedPasses.length} new passes`);
+        }
+        // Immediately run again if we fetched a lot of scores,
+        // indicating that there are probably more to fetch
+        if (maxFetchedCount > 800) {
+            utils.log(`Fetched a large number of scores (${maxFetchedCount}), checking global recents again...`);
+            return await savePassesFromGlobalRecents();
         }
     } catch (error) {
         utils.logError(`Error while processing global recents:`, error);
