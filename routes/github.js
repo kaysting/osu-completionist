@@ -72,14 +72,26 @@ router.post('/webhook', async (req, res) => {
                 });
             }
 
-            // Pull code from GitHub
-            utils.log(`Pulling latest code from GitHub...`);
-            const output = cp.execSync(`git pull`);
-            utils.log(output.toString());
+            try {
 
-            // Gracefully restart server 
-            utils.log(`Restarting server to apply updates...`);
-            process.kill(process.pid, 'SIGTERM');
+                // Pull code from GitHub
+                utils.log(`Pulling latest code from GitHub...`);
+                const output = cp.execSync(`git pull`);
+
+                // Check if dependencies changed
+                if (output.toString().includes('package.json') || output.toString().includes('package-lock.json')) {
+                    // Install updated dependencies
+                    utils.log(`Reinstalling dependencies...`);
+                    cp.execSync(`npm ci`);
+                }
+
+                // Gracefully restart server 
+                utils.log(`Restarting server to apply updates...`);
+                process.kill(process.pid, 'SIGTERM');
+
+            } catch (error) {
+                utils.logError(`Error updating from GitHub: ${error.message}`);
+            }
 
             break;
         }
