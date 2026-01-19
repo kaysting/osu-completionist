@@ -43,7 +43,11 @@ app.use((req, res, next) => {
 });
 
 // Register JSON middleware and API route
-app.use(express.json());
+app.use(express.json({
+    verify: (req, res, buf) => {
+        req.rawBody = buf; // Store raw bytes for later
+    }
+}));
 app.use('/api/v1', require('./routes/api-v1'));
 
 // Register webhook routes
