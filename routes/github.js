@@ -52,6 +52,10 @@ router.post('/webhook', async (req, res) => {
                     ...commit.removed.map(f => ({ path: f, type: 'r' })),
                     ...commit.modified.map(f => ({ path: f, type: 'm' }))
                 ];
+                const extraFiles = files.splice(10);
+                if (extraFiles.length > 0) {
+                    files.push({ path: `... and ${extraFiles.length} more`, type: 'm' });
+                }
                 await utils.sendDiscordMessage(env.GITHUB_FEED_DISCORD_CHANNEL_ID, {
                     embeds: [{
                         author: {
