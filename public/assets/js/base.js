@@ -296,8 +296,6 @@ const initLiveForms = () => {
             clearTimeout(timeout);
             e.preventDefault();
             performUpdate();
-            // Blur field to hide mobile keyboard
-            if (document.activeElement) document.activeElement.blur();
         });
     });
 };
