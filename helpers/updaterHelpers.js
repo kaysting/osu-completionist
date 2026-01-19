@@ -362,10 +362,12 @@ const updateUserCategoryStats = (userId, force = false) => {
         const catTotals = {};
         const catYearly = {};
         const catStatsOld = {};
+        const catStatsYearlyOld = {};
 
         // Get existing stats for each category
         for (const cat of statCategories.definitions) {
             catStatsOld[cat.id] = dbHelpers.getUserCompletionStats(userId, cat.id);
+            //catStatsYearlyOld[cat.id] = dbHelpers.getUserYearlyCompletionStats(userId, cat.id);
         }
 
         // Loop through rows
@@ -404,9 +406,6 @@ const updateUserCategoryStats = (userId, force = false) => {
             INSERT OR REPLACE INTO user_category_stats_yearly 
             (user_id, category, year, count, seconds) VALUES (?, ?, ?, ?, ?)
         `);
-        const stmtFullCompletions = db.prepare(`
-            INSERT INTO user_full_completions (user_id, category, count, seconds, time) VALUES (?, ?, ?, ?, ?)
-        `);
 
         // Update stats
         const statsUpdateTransaction = db.transaction(() => {
@@ -436,7 +435,6 @@ const updateUserCategoryStats = (userId, force = false) => {
         });
         // Update bests
         const bestsInserts = [];
-        const fullCompletionInserts = [];
         for (const cat of statCategories.definitions) {
 
             const totals = catTotals[cat.id] || { count: 0, seconds: 0 };
@@ -471,26 +469,33 @@ const updateUserCategoryStats = (userId, force = false) => {
                 ]);
             }
 
-            // If the new completion percentage is 100 and the old one was less,
-            // save a full completions entry
-            if (statsNew.percentage_completed === 100 && statsOld.percentage_completed < 100) {
-                fullCompletionInserts.push([
-                    user.id, cat.id, totals.count, totals.seconds, Date.now()
-                ]);
-            }
-
         }
         const bestsUpdateTransaction = db.transaction(() => {
             for (const params of bestsInserts) {
                 stmtMain.run(...params);
             }
-            for (const params of fullCompletionInserts) {
-                stmtFullCompletions.run(...params);
-            }
         });
         statsUpdateTransaction();
         bestsUpdateTransaction();
         utils.log(`Updated stats in ${statCategories.definitions.length} categories for ${user.name}`);
+
+        // Check for milestones
+        for (const cat of statCategories.definitions) {
+            const totals = catTotals[cat.id] || { count: 0, seconds: 0 };
+            const statsOld = catStatsOld[cat.id];
+            const statsNew = dbHelpers.getUserCompletionStats(userId, cat.id);
+            //const yearlyOld = catStatsYearlyOld[cat.id];
+            //const yearlyNew = dbHelpers.getUserYearlyCompletionStats(userId, cat.id);
+
+            // If the new completion percentage is 100 and the old one was less,
+            // save a full completions entry
+            if (statsNew.percentage_completed === 100 && statsOld.percentage_completed < 100) {
+                db.prepare(`
+                    INSERT INTO user_full_completions (user_id, category, count, seconds, time) VALUES (?, ?, ?, ?, ?)
+                `).run(user.id, cat.id, totals.count, totals.seconds, Date.now());
+            }
+        }
+
     } catch (error) {
         utils.logError(`Error while updating category stats for ${user.name}:`, error);
     }

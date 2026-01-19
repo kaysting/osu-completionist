@@ -1,21 +1,13 @@
 <link rel="stylesheet" href="/assets/css/search.css">
 <div id="search" class="card flex col gap-8">
-    <form class="flex gap-8">
+    <form class="flex gap-8" data-reload-selectors="#results">
         <div class="textbox medium hasIcon flex-grow">
             <span class="icon">search</span>
             <input type="text" name="q" id="inputQuery" class="input" placeholder="Search tracked players and maps..."
                 value="<%= query %>">
         </div>
-        <button type="submit" class="btn primary medium" id="searchSubmit">Go</button>
-        <script>
-            const inputQuery = document.querySelector('#inputQuery');
-            // Focus input
-            inputQuery.focus();
-            // Move cursor to the end
-            inputQuery.selectionStart = inputQuery.selectionEnd = inputQuery.value.length;
-        </script>
     </form>
-    <div class="results card lighter flex col gap-16">
+    <div id="results" class="results card lighter flex col gap-16">
         <div>
             <% if (query) { %>
             <span class="header">Players (<%= user_results.total_matches.toLocaleString() %>)</span>

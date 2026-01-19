@@ -221,11 +221,6 @@ const initCustomTooltips = () => {
 
 };
 
-// Initialize tooltips on page load
-document.addEventListener('DOMContentLoaded', () => {
-    initCustomTooltips();
-});
-
 // Handle image load states
 const initImageLoadStates = (parent = document) => {
     const images = parent.querySelectorAll('img');
@@ -239,9 +234,6 @@ const initImageLoadStates = (parent = document) => {
         }
     });
 };
-document.addEventListener('DOMContentLoaded', () => {
-    initImageLoadStates();
-});
 
 const executeScripts = (container) => {
     const scripts = container.querySelectorAll('script');
@@ -252,6 +244,61 @@ const executeScripts = (container) => {
         });
         newScript.appendChild(document.createTextNode(oldScript.innerHTML));
         oldScript.parentNode.replaceChild(newScript, oldScript);
+    });
+};
+
+const initLiveForms = () => {
+    const forms = document.querySelectorAll('form[data-reload-selectors]');
+    forms.forEach(form => {
+        // Prevent double-binding if this function runs multiple times
+        if (form.dataset.liveBound) return;
+        form.dataset.liveBound = 'true';
+
+        const selectors = form.dataset.reloadSelectors.split(',').map(s => s.trim());
+        const action = form.getAttribute('action') || window.location.pathname;
+
+        // Function to perform update
+        const performUpdate = () => {
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData);
+            const targetUrl = `${action}?${params.toString()}`;
+
+            // Trigger the partial reload
+            reloadElement(selectors, {
+                url: targetUrl,
+                replaceAddress: true
+            });
+        };
+
+        // Function to debounce typing
+        let timeout;
+        const debouncedUpdate = () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(performUpdate, 500);
+        };
+
+        // Handle text inputs
+        form.addEventListener('input', (e) => {
+            if (e.target.matches('input[type="text"], input[type="search"], textarea')) {
+                debouncedUpdate();
+            }
+        });
+
+        // Handle other changes immediately
+        form.addEventListener('change', (e) => {
+            if (e.target.matches('select, input[type="checkbox"], input[type="radio"]')) {
+                performUpdate();
+            }
+        });
+
+        // Handle submission
+        form.addEventListener('submit', (e) => {
+            clearTimeout(timeout);
+            e.preventDefault();
+            performUpdate();
+            // Blur field to hide mobile keyboard
+            if (document.activeElement) document.activeElement.blur();
+        });
     });
 };
 
@@ -326,6 +373,7 @@ const reloadElement = async (selectors, options = {}) => {
                 }
                 // Re-init any needed functionality
                 initImageLoadStates(newElement);
+                initLiveForms();
                 executeScripts(newElement);
                 successCount++;
             } else if (oldElement && !newElement) {
@@ -384,7 +432,7 @@ const reloadElement = async (selectors, options = {}) => {
 // Global state to track when a batch (interval + url) was last refreshed
 const autoReloadBatches = new Map();
 
-// The Manager Loop
+// Auto-partial reload logic
 setInterval(() => {
     // Don't run if tab isn't visible
     if (document.hidden) return;
@@ -447,3 +495,10 @@ setInterval(() => {
     });
 
 }, 1000);
+
+// Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    initCustomTooltips();
+    initLiveForms();
+    initImageLoadStates();
+});
