@@ -44,6 +44,7 @@ router.post('/webhook', async (req, res) => {
     utils.log(`Received GitHub webhook event: ${eventType}`);
     switch (eventType) {
         case 'push': {
+
             // Log commits to Discord
             for (const commit of req.body.commits) {
                 const files = [
@@ -70,10 +71,16 @@ router.post('/webhook', async (req, res) => {
                     }]
                 });
             }
-            // Deploy changes by pulling latest code
+
+            // Pull code from GitHub
             utils.log(`Pulling latest code from GitHub...`);
             const output = cp.execSync(`git pull`);
             utils.log(output.toString());
+
+            // Gracefully restart server
+            utils.log(`Restarting server to apply updates...`);
+            process.kill(process.pid, 'SIGTERM');
+
             break;
         }
     }
