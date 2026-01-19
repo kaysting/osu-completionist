@@ -22,12 +22,13 @@
                     </div>
                 </div>
             </div>
-            <div id="searchHint" class="hint flex align-center">
+            <div class="hint flex align-center">
                 <button class="help btn small text accent" id="filterHelpButton" type="button">
                     <span class="icon">filter_alt</span>
                     <span class="label">Filter help</span>
                 </button>
-                <div class="status">Found <%= results.total_matches.toLocaleString() %> un-passed maps</div>
+                <div id="searchHint" class="status">Found <%= results.total_matches.toLocaleString() %> un-passed maps
+                </div>
             </div>
         </form>
         <div id="results">
