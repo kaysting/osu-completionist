@@ -54,9 +54,9 @@ router.post('/webhook', async (req, res) => {
                 await utils.sendDiscordMessage(env.GITHUB_FEED_DISCORD_CHANNEL_ID, {
                     embeds: [{
                         author: {
-                            name: `${commit.author.username} committed to ${req.body.repository.full_name}`,
+                            name: `${req.body.sender.login} pushed a commit to ${req.body.repository.name}`,
                             url: req.body.repository.html_url,
-                            icon_url: commit.author.avatar_url
+                            icon_url: req.body.sender.avatar_url
                         },
                         title: commit.message.split('\n')[0],
                         description: commit.message.split('\n').slice(1).join('\n'),
