@@ -1,4 +1,6 @@
-<div id="importProgressCard" class="card warning flex align-center gap-8" data-reload-interval="15">
+<% if (updateStatus.updating) { %>
+
+<div id="importProgressCard" class="card warning flex align-center gap-8" data-reload-interval="5">
     <div class="icon"><%= updateStatus.details.time_started ? 'update' : 'hourglass' %></div>
     <div class="text">
         <% if (updateStatus.details.time_started) { %>
@@ -17,3 +19,5 @@
         <% } %>
     </div>
 </div>
+
+<% } %>

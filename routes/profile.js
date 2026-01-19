@@ -40,14 +40,8 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     req.session.category = category;
     req.session.yearlyType = yearlyType;
 
-    // Get data
-    const stats = dbHelpers.getUserCompletionStats(req.user.id, category);
-    const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
-    const timeRecentsAfter = Date.now() - (1000 * 60 * 60 * 24);
-    const recentPasses = dbHelpers.getUserRecentPasses(req.user.id, category, 100, 0, timeRecentsAfter);
+    // Get user update status
     const updateStatus = dbHelpers.getUserUpdateStatus(req.user.id);
-    const historyDaily = dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'day');
-    const historyMonthly = dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'month');
 
     // Format update status
     if (updateStatus.updating) {
@@ -56,6 +50,19 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         );
         updateStatus.details.position_ordinal = utils.ordinalSuffix(updateStatus.details.position);
     }
+
+    // Render import progress partial if requested
+    if (selectors.match(/#importProgressCard/)) {
+        return res.renderPartial('profileImportProgressCard', { updateStatus });
+    }
+
+    // Get other data
+    const stats = dbHelpers.getUserCompletionStats(req.user.id, category);
+    const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
+    const timeRecentsAfter = Date.now() - (1000 * 60 * 60 * 24);
+    const recentPasses = dbHelpers.getUserRecentPasses(req.user.id, category, 100, 0, timeRecentsAfter);
+    const historyDaily = dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'day');
+    const historyMonthly = dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'month');
 
     // Format durations
     stats.timeSpent = utils.secsToDuration(stats.secs_spent);

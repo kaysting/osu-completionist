@@ -27,6 +27,11 @@ app.use((req, res, next) => {
             me: req.me
         });
     };
+    res.renderPartial = (partial, data = {}) => {
+        res.render(`partials/${partial}`, {
+            ...data
+        });
+    };
     res.renderError = (number, title, message) => {
         res.status(number).render('layout', {
             title: title || number,
