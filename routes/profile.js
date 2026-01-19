@@ -40,54 +40,47 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     req.session.category = category;
     req.session.yearlyType = yearlyType;
 
-    // Get user update status
-    const updateStatus = dbHelpers.getUserUpdateStatus(req.user.id);
+    const getUpdateStatus = () => {
+        const updateStatus = dbHelpers.getUserUpdateStatus(req.user.id);
+        // Format time remaining and position
+        if (updateStatus.updating) {
+            updateStatus.details.time_remaining = utils.getRelativeTimestamp(
+                (Date.now() + (updateStatus.details.time_remaining_secs * 1000)), undefined, false
+            );
+            updateStatus.details.position_ordinal = utils.ordinalSuffix(updateStatus.details.position);
+        }
+        return updateStatus;
+    };
 
-    // Format update status
-    if (updateStatus.updating) {
-        updateStatus.details.time_remaining = utils.getRelativeTimestamp(
-            (Date.now() + (updateStatus.details.time_remaining_secs * 1000)), undefined, false
-        );
-        updateStatus.details.position_ordinal = utils.ordinalSuffix(updateStatus.details.position);
-    }
+    const getYearlyStats = () => {
+        const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
+        // Get completion colors for each year
+        for (const yearData of yearly) {
+            const completed = yearlyType == 'xp' ? yearData.xp : yearData.count_completed;
+            const total = yearlyType == 'xp' ? yearData.xp_total : yearData.count_total;
+            yearData.color = utils.percentageToColor(completed / total);
+        }
+        return yearly;
+    };
 
-    // Render import progress partial if requested
-    if (selectors.match(/#importProgressCard/)) {
-        return res.renderPartial('profileImportProgressCard', { updateStatus });
-    }
+    const getStats = () => {
+        const stats = dbHelpers.getUserCompletionStats(req.user.id, category);
+        // Format durations
+        stats.timeSpent = utils.secsToDuration(stats.secs_spent);
+        stats.timeRemaining = utils.secsToDuration(stats.secs_remaining);
+        stats.timeTotal = utils.secsToDuration(stats.secs_total);
+        return stats;
+    };
 
-    // Get yearly stats
-    const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
+    const getRecommended = (recentPasses) => {
+        // If not viewing our own profile or if basic stats are requested, return null
+        if (req.user.id !== req.me?.id || selectors.match(/#basicStats/)) {
+            return { recommended: null, recommendedQuery: null };
+        }
 
-    // Get completion colors for each year
-    for (const yearData of yearly) {
-        const completed = yearlyType == 'xp' ? yearData.xp : yearData.count_completed;
-        const total = yearlyType == 'xp' ? yearData.xp_total : yearData.count_total;
-        yearData.color = utils.percentageToColor(completed / total);
-    }
-
-    // Render yearly stats partial if requested
-    if (selectors.match(/#yearlyStats/)) {
-        return res.renderPartial('profileYearlyStats', { yearly, yearlyType });
-    }
-
-    // Get other data
-    const stats = dbHelpers.getUserCompletionStats(req.user.id, category);
-    const timeRecentsAfter = Date.now() - (1000 * 60 * 60 * 24);
-    const recentPasses = dbHelpers.getUserRecentPasses(req.user.id, category, 100, 0, timeRecentsAfter);
-    const historyDaily = dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'day');
-    const historyMonthly = dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'month');
-
-    // Format durations
-    stats.timeSpent = utils.secsToDuration(stats.secs_spent);
-    stats.timeRemaining = utils.secsToDuration(stats.secs_remaining);
-    stats.timeTotal = utils.secsToDuration(stats.secs_total);
-
-    // If viewing our own profile, get user trends and recommended maps
-    let recommended = null;
-    let recommendedQuery = '';
-    let recommendedLimit = 6;
-    if (req.user.id === req.me?.id && !selectors.match(/(#yearlyStats|#basicStats)/)) {
+        let recommended = null;
+        let recommendedQuery = '';
+        let recommendedLimit = 6;
 
         // Collect star ratings and ranked times from recent passes
         let passesToCheck = 25;
@@ -146,26 +139,68 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
                 ...dbHelpers.searchBeatmaps('', category, 'random', req.user.id, recommendedLimit - recommended.length).beatmaps
             );
         }
+        return { recommended, recommendedQuery };
+    };
 
+    const getRecentPasses = () => {
+        const timeRecentsAfter = Date.now() - (1000 * 60 * 60 * 24);
+        const recentPasses = dbHelpers.getUserRecentPasses(req.user.id, category, 100, 0, timeRecentsAfter);
+        // Get relative timestamps for recent passes
+        for (const pass of recentPasses) {
+            pass.timeSincePass = utils.getRelativeTimestamp(pass.time_passed);
+        }
+        return recentPasses;
+    };
+
+    const getCopyableStats = (stats, yearly) => {
+        const categoryName = statCategories.getCategoryName(category);
+        const statsText = [
+            `${user.name}'s ${categoryName.toLowerCase()} completion stats:\n`
+        ];
+        for (const year of yearly) {
+            const checkbox = year.count_completed === year.count_total ? '☑' : '☐';
+            statsText.push(`${checkbox} ${year.year}: ${year.count_completed.toLocaleString()} / ${year.count_total.toLocaleString()} (${year.map_percentage_completed.toFixed(2)}%)`);
+        }
+        statsText.push(`\nTotal: ${stats.count_completed.toLocaleString()} / ${stats.count_total.toLocaleString()} (${stats.percentage_completed.toFixed(2)}%)`);
+        return statsText.join('\n');
+    };
+
+    const getDailyHistory = () => {
+        return dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'day');
+    };
+
+    const getMonthlyHistory = () => {
+        return dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'month');
+    };
+
+    // Render import progress partial if requested
+    if (selectors.match(/#importProgressCard/)) {
+        return res.renderPartial('profileImportProgressCard', { updateStatus: getUpdateStatus() });
     }
 
-    // Get relative timestamps for recent passes
-    for (const pass of recentPasses) {
-        pass.timeSincePass = utils.getRelativeTimestamp(pass.time_passed);
+    // Render yearly stats partial if requested
+    if (selectors.match(/#yearlyStats/)) {
+        return res.renderPartial('profileYearlyStats', { yearly: getYearlyStats(), yearlyType });
     }
 
-    // Build copyable text
+    // Render play next partial if requested
+    if (selectors.match(/#playNext/)) {
+        const recentPasses = getRecentPasses();
+        const { recommended, recommendedQuery } = getRecommended(recentPasses);
+        console.log(`playnext`);
+        return res.renderPartial('profilePlayNextCard', { recommended, recommendedQuery, category });
+    }
+
+    // Render full page
+    const stats = getStats();
+    const yearly = getYearlyStats();
+    const recentPasses = getRecentPasses();
+    const { recommended, recommendedQuery } = getRecommended(recentPasses);
+    const updateStatus = getUpdateStatus();
+    const historyDaily = getDailyHistory();
+    const historyMonthly = getMonthlyHistory();
+    const statsText = getCopyableStats(stats, yearly);
     const categoryName = statCategories.getCategoryName(category);
-    const statsText = [
-        `${user.name}'s ${categoryName.toLowerCase()} completion stats:\n`
-    ];
-    for (const year of yearly) {
-        const checkbox = year.count_completed === year.count_total ? '☑' : '☐';
-        statsText.push(`${checkbox} ${year.year}: ${year.count_completed.toLocaleString()} / ${year.count_total.toLocaleString()} (${year.map_percentage_completed.toFixed(2)}%)`);
-    }
-    statsText.push(`\nTotal: ${stats.count_completed.toLocaleString()} / ${stats.count_total.toLocaleString()} (${stats.percentage_completed.toFixed(2)}%)`);
-
-    // Render
     res.renderPage('profile', {
         title: req.user.name,
         meta: {
@@ -179,7 +214,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         },
         stats, yearly, recentPasses, updateStatus,
         recommended, recommendedQuery, yearlyType, historyDaily, historyMonthly,
-        copyable: statsText.join('\n'),
+        copyable: statsText,
         category,
         category_navigation: statCategories.getCategoryNavPaths(`/u/${req.user.id}`, category),
     });
