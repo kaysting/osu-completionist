@@ -42,31 +42,13 @@ app.use((req, res, next) => {
     next();
 });
 
-try {
-    const hash = cp.execSync('git rev-parse --short HEAD').toString().trim();
-    const date = cp.execSync('git log -1 --format=%cI').toString().trim();
-    app.locals.git = { hash, date };
-} catch (e) {
-    app.locals.git = { hash: 'unknown', date: 'unknown' };
-}
-
-// Add functions for use within EJS
-app.locals.dayjs = dayjs;
-app.locals.includeMarkdown = (filePath) => marked.parse(fs.readFileSync(filePath, 'utf-8'));
-app.locals.asset = (pathRel) => {
-    const fullPath = path.join(__dirname, 'public', pathRel);
-    try {
-        const stats = fs.statSync(fullPath);
-        const mtime = stats.mtime.getTime();
-        return `${pathRel}?v=${mtime}`;
-    } catch (error) {
-        return pathRel;
-    }
-};
-
 // Register JSON middleware and API route
 app.use(express.json());
 app.use('/api/v1', require('./routes/api-v1'));
+
+// Register webhook routes
+app.use('/discord', require('./routes/discord'));
+app.use('/github', require('./routes/github'));
 
 // Register static files and view engine
 app.set('view engine', 'ejs');
@@ -94,6 +76,29 @@ app.use(rateLimit({
         res.renderError(429, '429 rate limit exceeded', `You're going too fast! Slow down, play more.`);
     }
 }));
+
+// Expose git info to templates
+try {
+    const hash = cp.execSync('git rev-parse --short HEAD').toString().trim();
+    const date = cp.execSync('git log -1 --format=%cI').toString().trim();
+    app.locals.git = { hash, date };
+} catch (e) {
+    app.locals.git = { hash: 'unknown', date: 'unknown' };
+}
+
+// Add functions for use within EJS
+app.locals.dayjs = dayjs;
+app.locals.includeMarkdown = (filePath) => marked.parse(fs.readFileSync(filePath, 'utf-8'));
+app.locals.asset = (pathRel) => {
+    const fullPath = path.join(__dirname, 'public', pathRel);
+    try {
+        const stats = fs.statSync(fullPath);
+        const mtime = stats.mtime.getTime();
+        return `${pathRel}?v=${mtime}`;
+    } catch (error) {
+        return pathRel;
+    }
+};
 
 // Register webapp routes
 app.use('/', require('./routes/home'));
@@ -134,9 +139,6 @@ app.use('/faq', (req, res) => {
             description: 'View frequently asked questions.'
         }
     });
-});
-app.use('/discord', (req, res) => {
-    res.redirect('https://discord.gg/fNSnMG7S3C');
 });
 
 app.use((req, res) => {
