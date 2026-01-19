@@ -112,7 +112,10 @@
                                 options: {
                                     responsive: true,
                                     maintainAspectRatio: false,
-                                    animation: false,
+                                    // Disable the load animation but keep tooltip animations
+                                    animation: {
+                                        duration: 0
+                                    },
                                     plugins: {
                                         legend: {
                                             display: false
