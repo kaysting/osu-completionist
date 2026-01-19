@@ -77,7 +77,7 @@ router.post('/webhook', async (req, res) => {
             const output = cp.execSync(`git pull`);
             utils.log(output.toString());
 
-            // Gracefully restart server
+            // Gracefully restart server 
             utils.log(`Restarting server to apply updates...`);
             process.kill(process.pid, 'SIGTERM');
 
