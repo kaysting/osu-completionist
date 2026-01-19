@@ -1,0 +1,39 @@
+<div id="playNext" class="card lighter recommended flex col gap-16">
+    <div>
+        <span class="header">what to play next</span>
+    </div>
+    <div class="beatmapCardContainer">
+        <% if (recommended.length === 0) { %>
+        <div class="empty">
+            <p>Either no recommendations could be made or you've passed all maps in this category.</p>
+        </div>
+        <% } %>
+        <% for (const beatmap of recommended) { %>
+        <%- include('../partials/beatmapCard', { beatmap }) %>
+        <% } %>
+    </div>
+    <div class="flex col gap-8">
+        <div class="flex gap-8 justify-center">
+            <button class="btn square" onClick="reloadElement('#playNext')" title="Refresh selection">
+                <span class="icon">refresh</span>
+            </button>
+            <a href="/recommended/<%= category %>?q=<%- encodeURIComponent(recommendedQuery) %>" class="btn primary">
+                <span class="icon filled">cards_star</span>
+                <span class="label">More like this in play next...</span>
+            </a>
+        </div>
+        <div class="flex gap-8 justify-center flex-wrap">
+            <a href="/recommended/<%= category %>/surprise?dest=direct&q=<%- encodeURIComponent(recommendedQuery) %>"
+                class="btn text accent small">
+                <span class="icon filled">casino</span>
+                <span class="label">Pick for me (osu!direct)</span>
+            </a>
+            <a target="_blank"
+                href="/recommended/<%= category %>/surprise?dest=osu&q=<%- encodeURIComponent(recommendedQuery) %>"
+                class="btn text small">
+                <span class="icon filled">casino</span>
+                <span class="label">Pick for me (osu!web)</span>
+            </a>
+        </div>
+    </div>
+</div>

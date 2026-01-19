@@ -1,0 +1,199 @@
+<div id="completionProgressCard" class="card lighter progress flex col gap-16" data-reload-interval="15">
+    <div class="flex col gap-16 flex-grow">
+        <div>
+            <span class="header">completion progress</span>
+        </div>
+        <div style="height: 100px">
+            <canvas id="progressGraph"></canvas>
+            <script>
+                function loadProgressGraph() {
+                    // Prepare data
+                    const data = JSON.parse('<%- JSON.stringify(historyDaily) %>');
+                    const datapointNow = {
+                        date: 'now',
+                        percentage_completed: '<%= stats.percentage_completed %>'
+                    };
+                    data.push(datapointNow);
+                    if (data.length < 2) {
+                        data.push(datapointNow);
+                    }
+                    // Get context and create chart
+                    const ctx = document.getElementById('progressGraph').getContext('2d');
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 100);
+                    gradient.addColorStop(0, 'hsla(150, 90%, 60%, 20%)');
+                    gradient.addColorStop(1, 'hsla(150, 90%, 60%, 0%)');
+                    const chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.map(entry => entry.date),
+                            datasets: [{
+                                data: data.map(entry => entry.percentage_completed),
+                                backgroundColor: gradient,
+                                borderColor: 'hsl(150, 90%, 60%)',
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                fill: true,
+                                tension: 0.3
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            // Disable the load animation but keep tooltip animations
+                            animation: {
+                                duration: 0
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    mode: 'index',
+                                    intersect: false,
+                                    displayColors: false,
+                                    cornerRadius: 8,
+                                    padding: 8,
+                                    titleMarginBottom: 2,
+                                    backgroundColor: 'hsl(220, 20%, 8%)',
+                                    titleFont: {
+                                        size: 12,
+                                        weight: 600,
+                                        family: 'Torus'
+                                    },
+                                    bodyFont: {
+                                        size: 16,
+                                        weight: 'normal',
+                                        family: 'Torus'
+                                    },
+                                    titleColor: `hsl(220, 20%, 65%)`,
+                                    bodyColor: `hsl(220, 20%, 90%)`,
+                                    callbacks: {
+                                        label: context => `${context.parsed.y.toFixed(4)}% completed`,
+                                        title: context => `${context[0].label}`
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: { display: false },
+                                y: { display: false }
+                            },
+                            layout: {
+                                padding: 0
+                            }
+                        }
+                    });
+                }
+                loadProgressGraph();
+            </script>
+        </div>
+        <div id="progressStatsRow" class="flex gap-16">
+            <div class="stats flex-grow flex flex-wrap">
+                <div class="stat flex col gap-2">
+                    <div class="key">maps passed</div>
+                    <div class="value"><%= stats.count_completed.toLocaleString() %></div>
+                </div>
+                <div class="stat flex col gap-2">
+                    <div class="key">maps remaining</div>
+                    <div class="value">
+                        <%= (stats.count_total - stats.count_completed).toLocaleString() %>
+                    </div>
+                </div>
+                <div class="stat flex col gap-2">
+                    <div class="key">cxp remaining</div>
+                    <div class="value"><%= stats.xp_remaining.toLocaleString() %></div>
+                </div>
+                <div class="stat flex col gap-2">
+                    <div class="key">nomod playtime remaining</div>
+                    <div class="value" title="<%= Math.round(stats.secs_remaining / 60 / 60).toLocaleString() %> hours">
+                        <%= stats.timeRemaining %></div>
+                </div>
+            </div>
+            <div id="categoryStatsHeader">
+                <span class="header">category totals</span>
+            </div>
+            <div class="stats flex flex-wrap">
+                <div class="stat flex col gap-2">
+                    <div class="key">total maps</div>
+                    <div class="value"><%= stats.count_total.toLocaleString() %></div>
+                </div>
+                <div class="stat flex col gap-2">
+                    <div class="key">total obtainable cxp</div>
+                    <div class="value"><%= stats.xp_total.toLocaleString() %></div>
+                </div>
+                <div class="stat flex col gap-2">
+                    <div class="key">total nomod playtime</div>
+                    <div class="value" title="<%= Math.round(stats.secs_total / 60 / 60).toLocaleString() %> hours">
+                        <%= stats.timeTotal %></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <span class="header">completion by year</span>
+    </div>
+    <%- include('./profileYearlyStats', { yearly, yearlyType }) %>
+    <% if (user.isMe) { %>
+    <div>
+        <button id="inaccurateStatsHelp" class="btn text accent small">
+            <span class="label">help, my stats aren't accurate...</span>
+        </button>
+        <script>
+            document.getElementById('inaccurateStatsHelp').addEventListener('click', async () => {
+                const hasFullImport = '<%= user.has_full_import %>';
+                const isImporting = '<%= updateStatus.updating %>';
+                if (isImporting === 'true') {
+                    return showPopup(
+                        'Import in progress',
+                        `
+                                    <p>Your completion stats are currently being imported from osu!, so they might seem incomplete until the import is done. Check back when it's finished to see if everything looks right.</p>
+                                `,
+                        [
+                            {
+                                label: 'Okay', class: 'primary'
+                            }
+                        ]
+                    );
+                } else if (hasFullImport === 'true') {
+                    return showPopup(
+                        'Hmm...',
+                        `
+                                    <p>We've already fully imported your completion stats, so importing again is unlikely to fix anything.</p>
+                                    <p>If you think you're still missing passes or your stats are inaccurate, please join the Discord server and let Kayla know so we can investigate further.</p>
+                                `,
+                        [
+                            {
+                                label: 'Join Discord server',
+                                href: '/discord',
+                                newTab: true
+                            },
+                            {
+                                label: 'Okay', class: 'primary'
+                            }
+                        ]
+                    );
+                } else {
+                    showPopup(
+                        `Let's do a full import`,
+                        `
+                                    <p>When we initially imported your completion data, we used your <b>most played maps</b> to determine what maps we should check for passes. While this is accurate for the vast majority of casual completionists, you may find that you're missing some passes if you've been playing osu! for a long time or have passed lots of maps.</p>
+                                    <p>Click the button below to start a <b>full import</b> for your account, where we'll check every single map to make sure we've saved all of your passes. This can help to catch those that might have been missed by checking your most played, but <b>it'll take a few hours and can only be done once</b>.</p>
+                                    <p>Your profile will appear frozen while the import is in progress, but new passes will be saved in the background.</p>
+                                    <p><small>If you've already done a full import, this option is available again because we fixed bugs that could've impacted your results.</small></p>
+                                `,
+                        [
+                            {
+                                label: 'Nevermind'
+                            },
+                            {
+                                label: `Start full import`,
+                                class: 'primary',
+                                href: '/u/<%= user.id %>/reimport',
+                            }
+                        ]
+                    );
+                }
+            });
+        </script>
+    </div>
+    <% } %>
+</div>

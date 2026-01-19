@@ -1,0 +1,18 @@
+<div id="basicStats" class="stats flex flex-wrap" data-reload-interval="15">
+    <div class="stat big flex col">
+        <div class="key">global rank</div>
+        <div class="value"
+            title="Best was #<%= stats.best_rank %> on <%= dayjs(stats.best_rank_time).format('YYYY-MM-DD') %>">
+            #<%= stats.rank == 0 ? '-' : stats.rank %></div>
+    </div>
+    <div class="stat big flex col">
+        <div class="key">completion xp</div>
+        <div class="value"><%= stats.xp.toLocaleString() %></div>
+    </div>
+    <div class="stat big flex col">
+        <div class="key">% completed</div>
+        <div class="value"
+            title="Best was <%= stats.best_percentage_completed.toFixed(2) %>% on <%= dayjs(stats.best_percentage_completed_time).format('YYYY-MM-DD') %>">
+            <%= stats.percentage_completed.toFixed(2) %>%</div>
+    </div>
+</div>

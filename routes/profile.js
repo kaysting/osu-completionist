@@ -29,13 +29,16 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     const user = req.user;
     const category = req.params.category.toLowerCase();
     const yearlyType = utils.ensureOneOf(req.query.yearly_type || req.session.yearlyType, ['maps', 'xp'], 'maps');
-    req.session.yearlyType = yearlyType;
+    const selectors = req.headers['x-reload-selectors'] || '';
 
     // Check category
     if (!statCategories.definitions.find(cat => cat.id === category)) {
         return res.redirect(`/u/${req.user.id}/osu-ranked`);
     }
+
+    // Update session variables
     req.session.category = category;
+    req.session.yearlyType = yearlyType;
 
     // Get data
     const stats = dbHelpers.getUserCompletionStats(req.user.id, category);
@@ -63,7 +66,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     let recommended = null;
     let recommendedQuery = '';
     let recommendedLimit = 6;
-    if (req.user.id === req.me?.id) {
+    if (req.user.id === req.me?.id && !selectors.match(/(#yearlyStats|#basicStats)/)) {
 
         // Collect star ratings and ranked times from recent passes
         let passesToCheck = 25;
@@ -157,10 +160,11 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
             image: `/renders/profile-meta?category=${category}&user_id=${req.user.id}`
         },
         user: {
-            ...user, stats, yearly, recentPasses, updateStatus,
-            recommended, recommendedQuery, yearlyType, historyDaily, historyMonthly,
+            ...user,
             isMe: req.me?.id === req.user.id
         },
+        stats, yearly, recentPasses, updateStatus,
+        recommended, recommendedQuery, yearlyType, historyDaily, historyMonthly,
         copyable: statsText.join('\n'),
         category,
         category_navigation: statCategories.getCategoryNavPaths(`/u/${req.user.id}`, category),

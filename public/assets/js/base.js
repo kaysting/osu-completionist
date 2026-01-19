@@ -328,11 +328,16 @@ const reloadElement = async (selectors, options = {}) => {
                 initImageLoadStates(newElement);
                 executeScripts(newElement);
                 successCount++;
+            } else if (oldElement && !newElement) {
+                // Gracefully remove the old element if there's no replacement
+                oldElement.style.transition = '0.1s ease-in-out';
+                oldElement.style.opacity = '0';
+                setTimeout(() => {
+                    oldElement.remove();
+                }, 200);
+                successCount++;
             } else {
-                // Ensure we remove loading class if we couldn't replace the element
-                if (oldElement) oldElement.classList.remove('loading');
                 missing.push(selector);
-                if (!silent) console.warn(`reloadElement: '${selector}' not found in source or target.`);
             }
         }
 

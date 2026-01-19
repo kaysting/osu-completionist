@@ -1,0 +1,19 @@
+<div id="importProgressCard" class="card warning flex align-center gap-8" data-reload-interval="15">
+    <div class="icon"><%= updateStatus.details.time_started ? 'update' : 'hourglass' %></div>
+    <div class="text">
+        <% if (updateStatus.details.time_started) { %>
+        <p>
+            <b>Importing completion data from osu!</b>
+            <br><%= Math.floor(updateStatus.details.percent_completed) %>% complete,
+            about <%= updateStatus.details.time_remaining %> remaining. Discovered
+            <%= updateStatus.details.count_passes_imported.toLocaleString() %> passes so far.
+        </p>
+        <% } else { %>
+        <p>
+            <b>Queued for import (<%= updateStatus.details.position_ordinal %> in line)</b>
+            <br>This profile is pending import from osu! and we expect to have it done in about
+            <%= updateStatus.details.time_remaining %>. Stay tuned!
+        </p>
+        <% } %>
+    </div>
+</div>

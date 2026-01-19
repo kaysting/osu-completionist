@@ -1,0 +1,17 @@
+<div id="yearlyStats" class="flex col gap-8">
+    <div class="btnGroup">
+        <btn onClick="reloadElement('#yearlyStats', { url: '?yearly_type=maps' })"
+            class="btn <%= yearlyType == 'maps' ? 'primary' : '' %> small">
+            <span class="label">map count</span>
+        </btn>
+        <btn onClick="reloadElement('#yearlyStats', { url: '?yearly_type=xp' })"
+            class="btn <%= yearlyType == 'xp' ? 'primary' : '' %> small">
+            <span class="label">cxp</span>
+        </btn>
+    </div>
+    <div class="yearlyStatsContainer">
+        <% for (const yearData of yearly) { %>
+        <%- include('./statsYearEntryLine', { ...yearData, yearlyType: yearlyType }) %>
+        <% } %>
+    </div>
+</div>
