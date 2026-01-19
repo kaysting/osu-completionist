@@ -56,9 +56,23 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         return res.renderPartial('profileImportProgressCard', { updateStatus });
     }
 
+    // Get yearly stats
+    const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
+
+    // Get completion colors for each year
+    for (const yearData of yearly) {
+        const completed = yearlyType == 'xp' ? yearData.xp : yearData.count_completed;
+        const total = yearlyType == 'xp' ? yearData.xp_total : yearData.count_total;
+        yearData.color = utils.percentageToColor(completed / total);
+    }
+
+    // Render yearly stats partial if requested
+    if (selectors.match(/#yearlyStats/)) {
+        return res.renderPartial('profileYearlyStats', { yearly, yearlyType });
+    }
+
     // Get other data
     const stats = dbHelpers.getUserCompletionStats(req.user.id, category);
-    const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
     const timeRecentsAfter = Date.now() - (1000 * 60 * 60 * 24);
     const recentPasses = dbHelpers.getUserRecentPasses(req.user.id, category, 100, 0, timeRecentsAfter);
     const historyDaily = dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'day');
@@ -133,13 +147,6 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
             );
         }
 
-    }
-
-    // Get completion colors for each year
-    for (const yearData of yearly) {
-        const completed = yearlyType == 'xp' ? yearData.xp : yearData.count_completed;
-        const total = yearlyType == 'xp' ? yearData.xp_total : yearData.count_total;
-        yearData.color = utils.percentageToColor(completed / total);
     }
 
     // Get relative timestamps for recent passes
