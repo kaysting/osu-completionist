@@ -39,7 +39,7 @@
                     <div class="diffDimming absolute w-full h-full"></div>
                     <div class="content relative flex gap-4 align-center">
                         <span class="beatmapStars rounded-16 flex-no-shrink"
-                            style="background: <%= beatmap.difficulty_color %>; color: <%= beatmap.stars < 6.8 ? 'black' : 'hsl(40, 100%, 70%)' %>">
+                            style="background: <%= beatmap.difficulty_color %>; color: <%= beatmap.stars < 6.5 ? 'black' : 'hsl(40, 100%, 70%)' %>">
                             <span class="icon">star</span>
                             <span class="value"><%= beatmap.stars.toFixed(2) %></span>
                         </span>

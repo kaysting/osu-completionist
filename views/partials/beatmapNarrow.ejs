@@ -11,11 +11,11 @@
                 <span
                     class="beatmapStatus rounded-16 flex-no-shrink <%= beatmap.status %>"><%= beatmap.status.toUpperCase() %></span>
                 <span class="beatmapStars rounded-16 flex-no-shrink"
-                    style="background: <%= beatmap.difficulty_color %>; color: <%= beatmap.stars < 6.8 ? 'black' : 'hsl(40, 100%, 70%)' %>">
+                    style="background: <%= beatmap.difficulty_color %>; color: <%= beatmap.stars < 6.5 ? 'black' : 'hsl(40, 100%, 70%)' %>">
                     <span class="icon">star</span><span class="value"><%= beatmap.stars.toFixed(2) %></span>
                 </span>
                 <span class="text overflow-hidden text-ellipsis"
-                    style=" color: <%= beatmap.stars < 6.8 ? beatmap.difficulty_color : 'hsl(40, 100%, 70%)' %>">
+                    style=" color: <%= beatmap.stars < 6.5 ? beatmap.difficulty_color : 'white' %>">
                     <span class="name overflow-hidden text-ellipsis nowrap"><%= beatmap.name %></span>
                     <span class="mapper overflow-hidden text-ellipsis nowrap">mapped by
                         <%= beatmap.beatmapset.mapper || '<unknown>' %></span>
