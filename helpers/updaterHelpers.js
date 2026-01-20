@@ -519,9 +519,9 @@ const updateUserCategoryStats = (userId, force = false) => {
                         },
                         title: `Reached ${newStep}% completion in category ${statCategories.getCategoryName(cat.id)}!`,
                         fields: [
-                            { name: 'Rank', value: `#${statsNew.rank.toLocaleString()}`, inline: true },
-                            { name: 'Completion xp', value: statsNew.xp.toLocaleString(), inline: true },
-                            { name: 'Maps passed', value: statsNew.count_completed.toLocaleString(), inline: true }
+                            { name: 'rank', value: `#${statsNew.rank.toLocaleString()}`, inline: true },
+                            { name: 'completion xp', value: statsNew.xp.toLocaleString(), inline: true },
+                            { name: 'maps passed', value: statsNew.count_completed.toLocaleString(), inline: true }
                         ],
                         footer: {
                             text: `osu!complete`
