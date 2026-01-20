@@ -56,6 +56,14 @@ const saveMapset = async (mapsetId, index = true) => {
     // Get formatted map data
     const mapset = dbHelpers.getBeatmapset(mapsetId, true);
     // Log to Discord
+    const diffLines = [];
+    for (const map of mapset.beatmaps) {
+        diffLines.push(`* **${utils.rulesetKeyToName(map.mode)} ${map.stars.toFixed(2)} ★** - [${map.name}](https://osu.ppy.sh/beatmapsets/${mapset.id}#${map.mode}/${map.id})`);
+        if (diffLines.join('\n').length > 1000) {
+            diffLines.pop();
+            diffLines.push(`... and ${mapset.beatmaps.length - diffLines.length} more ...`);
+        }
+    }
     setImmediate(() => {
         utils.sendDiscordMessage(env.MAP_FEED_DISCORD_CHANNEL_ID, {
             embeds: [{
@@ -77,9 +85,7 @@ const saveMapset = async (mapsetId, index = true) => {
                     },
                     {
                         name: `Difficulties (${mapset.beatmaps.length})`,
-                        value: mapset.beatmaps.map(map => {
-                            return `* **${utils.rulesetKeyToName(map.mode)} ${map.stars.toFixed(2)} ★** - [${map.name}](https://osu.ppy.sh/beatmapsets/${mapset.id}#${map.mode}/${map.id})`;
-                        }).join('\n')
+                        value: diffLines.join('\n')
                     }
                 ],
                 thumbnail: {
