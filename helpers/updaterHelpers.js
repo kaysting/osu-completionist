@@ -1038,7 +1038,7 @@ const savePassesFromGlobalRecents = async () => {
         // Log passes to Discord
         if (savedPasses.length > 0) {
             const content = savedPasses.map(pass => {
-                return `-# * **[${pass.userName}](<${env.HTTPS ? 'https' : 'http'}://${env.HOST}/u/${pass.userId}>)** gained **${pass.xp.toLocaleString()} cxp** from **${utils.rulesetKeyToName(pass.mode, true)}** [${pass.mapName}](<https://osu.ppy.sh/beatmapsets/${pass.mapsetId}#${pass.mode}/${pass.mapId}>)`;
+                return `-# * **[${pass.userName}](<${env.HTTPS ? 'https' : 'http'}://${env.HOST}/u/${pass.userId}>)** gained **${pass.xp.toLocaleString()} cxp** from [${pass.mapName}](<https://osu.ppy.sh/beatmapsets/${pass.mapsetId}#${pass.mode}/${pass.mapId}>) **(${utils.rulesetKeyToName(pass.mode, true)})**`;
             }).join('\n');
             await utils.sendDiscordMessage(env.PASS_FEED_DISCORD_CHANNEL_ID, { content });
             utils.log(`Completed processing global recents, saved ${savedPasses.length} new passes`);
