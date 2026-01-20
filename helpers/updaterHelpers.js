@@ -373,7 +373,7 @@ const updateUserCategoryStats = (userId, force = false) => {
         // Get existing stats for each category
         for (const cat of statCategories.definitions) {
             catStatsOld[cat.id] = dbHelpers.getUserCompletionStats(userId, cat.id);
-            //catStatsYearlyOld[cat.id] = dbHelpers.getUserYearlyCompletionStats(userId, cat.id);
+            catStatsYearlyOld[cat.id] = dbHelpers.getUserYearlyCompletionStats(userId, cat.id);
         }
 
         // Loop through rows
@@ -439,9 +439,11 @@ const updateUserCategoryStats = (userId, force = false) => {
 
             }
         });
+
         // Update bests
         const bestsInserts = [];
         for (const cat of statCategories.definitions) {
+            if (IS_GLOBAL) continue;
 
             const totals = catTotals[cat.id] || { count: 0, seconds: 0 };
             const statsOld = catStatsOld[cat.id];
@@ -481,24 +483,90 @@ const updateUserCategoryStats = (userId, force = false) => {
                 stmtMain.run(...params);
             }
         });
+
+        // Run transactions
         statsUpdateTransaction();
         bestsUpdateTransaction();
         utils.log(`Updated stats in ${statCategories.definitions.length} categories for ${user.name}`);
 
         // Check for milestones
+        const userBaseUrl = `${env.HTTPS ? 'https' : 'http'}://${env.HOST}/u/${user.id}`;
         for (const cat of statCategories.definitions) {
-            const totals = catTotals[cat.id] || { count: 0, seconds: 0 };
+            if (IS_GLOBAL) continue;
+            // Collect old and new stats
             const statsOld = catStatsOld[cat.id];
+            const yearlyOld = catStatsYearlyOld[cat.id];
             const statsNew = dbHelpers.getUserCompletionStats(userId, cat.id);
-            //const yearlyOld = catStatsYearlyOld[cat.id];
-            //const yearlyNew = dbHelpers.getUserYearlyCompletionStats(userId, cat.id);
+            const yearlyNew = dbHelpers.getUserYearlyCompletionStats(userId, cat.id);
+
+            // Define milestone step sizes
+            const totalPercentStep = 1;
+            const yearlyPercentStep = 5;
+            const floorToNearest = (value, step) => {
+                return Math.floor(value / step) * step;
+            };
+
+            // Check total completion percentage milestones
+            const oldStep = floorToNearest(statsOld.percentage_completed, totalPercentStep);
+            const newStep = floorToNearest(statsNew.percentage_completed, totalPercentStep);
+            if (newStep > oldStep && !force) {
+                utils.sendDiscordMessage(env.MILESTONE_FEED_DISCORD_CHANNEL_ID, {
+                    embeds: [{
+                        author: {
+                            name: user.name,
+                            icon_url: user.avatar_url,
+                            url: `${userBaseUrl}/${cat.id}`
+                        },
+                        title: `Reached ${newStep}% completion in category ${statCategories.getCategoryName(cat.id)}!`,
+                        fields: [
+                            { name: 'Rank', value: `#${statsNew.rank.toLocaleString()}`, inline: true },
+                            { name: 'Completion xp', value: statsNew.xp.toLocaleString(), inline: true },
+                            { name: 'Maps passed', value: statsNew.count_completed.toLocaleString(), inline: true }
+                        ],
+                        footer: {
+                            text: `osu!complete`
+                        },
+                        timestamp: new Date().toISOString(),
+                        color: 0xf5e7a3
+                    }]
+                });
+            }
+
+            // Loop through each year to check for yearly milestones
+            for (const statsNew of yearlyNew) {
+                if (force) continue;
+                const statsOld = yearlyOld.find(s => s.year === statsNew.year) || { time_percentage_completed: 0 };
+                const oldStep = floorToNearest(statsOld.time_percentage_completed, yearlyPercentStep);
+                const newStep = floorToNearest(statsNew.time_percentage_completed, yearlyPercentStep);
+                if (newStep > oldStep) {
+                    utils.sendDiscordMessage(env.MILESTONE_FEED_DISCORD_CHANNEL_ID, {
+                        embeds: [{
+                            author: {
+                                name: user.name,
+                                icon_url: user.avatar_url,
+                                url: `${userBaseUrl}/${cat.id}`
+                            },
+                            title: `Reached ${newStep}% ${statsNew.year} completion in category ${statCategories.getCategoryName(cat.id)}!`,
+                            fields: [
+                                { name: 'completion xp', value: statsNew.xp.toLocaleString(), inline: true },
+                                { name: 'maps passed', value: statsNew.count_completed.toLocaleString(), inline: true }
+                            ],
+                            footer: {
+                                text: `osu!complete`
+                            },
+                            timestamp: new Date().toISOString(),
+                            color: 0xf5e7a3
+                        }]
+                    });
+                }
+            }
 
             // If the new completion percentage is 100 and the old one was less,
             // save a full completions entry
             if (statsNew.percentage_completed === 100 && statsOld.percentage_completed < 100) {
                 db.prepare(`
                     INSERT INTO user_full_completions (user_id, category, count, seconds, time) VALUES (?, ?, ?, ?, ?)
-                `).run(user.id, cat.id, totals.count, totals.seconds, Date.now());
+                `).run(user.id, cat.id, statsNew.count_completed, statsNew.secs_spent, Date.now());
             }
         }
 
@@ -515,7 +583,7 @@ const updateAllUserCategoryStats = () => {
     userIds.push(0);
     console.log(`Updating category stats for ${userIds.length} users...`);
     for (const id of userIds) {
-        updateUserCategoryStats(id);
+        updateUserCategoryStats(id, true);
     }
 };
 
