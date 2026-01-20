@@ -501,7 +501,7 @@ const updateUserCategoryStats = (userId, force = false) => {
 
             // Define milestone step sizes
             const totalPercentStep = 1;
-            const yearlyPercentStep = 5;
+            const yearlyPercentStep = 10;
             const floorToNearest = (value, step) => {
                 return Math.floor(value / step) * step;
             };
@@ -517,7 +517,7 @@ const updateUserCategoryStats = (userId, force = false) => {
                             icon_url: user.avatar_url,
                             url: `${userBaseUrl}/${cat.id}`
                         },
-                        title: `Reached ${newStep}% completion in category ${statCategories.getCategoryName(cat.id)}!`,
+                        title: `Reached ${newStep}% completion in category ${statCategories.getCategoryName(cat.id).toLowerCase()}!`,
                         fields: [
                             { name: 'rank', value: `#${statsNew.rank.toLocaleString()}`, inline: true },
                             { name: 'completion xp', value: statsNew.xp.toLocaleString(), inline: true },
@@ -546,7 +546,7 @@ const updateUserCategoryStats = (userId, force = false) => {
                                 icon_url: user.avatar_url,
                                 url: `${userBaseUrl}/${cat.id}`
                             },
-                            title: `Reached ${newStep}% ${statsNew.year} completion in category ${statCategories.getCategoryName(cat.id)}!`,
+                            title: `Reached ${newStep}% ${statsNew.year} completion in category ${statCategories.getCategoryName(cat.id).toLowerCase()}!`,
                             fields: [
                                 { name: 'completion xp', value: statsNew.xp.toLocaleString(), inline: true },
                                 { name: 'maps passed', value: statsNew.count_completed.toLocaleString(), inline: true }
