@@ -505,30 +505,29 @@ const updateUserCategoryStats = (userId, force = false) => {
             const floorToNearest = (value, step) => {
                 return Math.floor(value / step) * step;
             };
+            const milestoneEmbeds = [];
 
             // Check total completion percentage milestones
             const oldStep = floorToNearest(statsOld.percentage_completed, totalPercentStep);
             const newStep = floorToNearest(statsNew.percentage_completed, totalPercentStep);
             if (newStep > oldStep && !force) {
-                utils.sendDiscordMessage(env.MILESTONE_FEED_DISCORD_CHANNEL_ID, {
-                    embeds: [{
-                        author: {
-                            name: user.name,
-                            icon_url: user.avatar_url,
-                            url: `${userBaseUrl}/${cat.id}`
-                        },
-                        title: `Reached ${newStep}% completion in category ${statCategories.getCategoryName(cat.id).toLowerCase()}!`,
-                        fields: [
-                            { name: 'rank', value: `#${statsNew.rank.toLocaleString()}`, inline: true },
-                            { name: 'completion xp', value: statsNew.xp.toLocaleString(), inline: true },
-                            { name: 'maps passed', value: statsNew.count_completed.toLocaleString(), inline: true }
-                        ],
-                        footer: {
-                            text: `osu!complete`
-                        },
-                        timestamp: new Date().toISOString(),
-                        color: 0xf5e7a3
-                    }]
+                milestoneEmbeds.push({
+                    author: {
+                        name: user.name,
+                        icon_url: user.avatar_url,
+                        url: `${userBaseUrl}/${cat.id}`
+                    },
+                    title: `Reached ${newStep}% completion in category ${statCategories.getCategoryName(cat.id).toLowerCase()}!`,
+                    fields: [
+                        { name: 'rank', value: `#${statsNew.rank.toLocaleString()}`, inline: true },
+                        { name: 'completion xp', value: statsNew.xp.toLocaleString(), inline: true },
+                        { name: 'maps passed', value: statsNew.count_completed.toLocaleString(), inline: true }
+                    ],
+                    footer: {
+                        text: `osu!complete`
+                    },
+                    timestamp: new Date().toISOString(),
+                    color: 0xf5e7a3
                 });
             }
 
@@ -539,26 +538,30 @@ const updateUserCategoryStats = (userId, force = false) => {
                 const oldStep = floorToNearest(statsOld.time_percentage_completed, yearlyPercentStep);
                 const newStep = floorToNearest(statsNew.time_percentage_completed, yearlyPercentStep);
                 if (newStep > oldStep) {
-                    utils.sendDiscordMessage(env.MILESTONE_FEED_DISCORD_CHANNEL_ID, {
-                        embeds: [{
-                            author: {
-                                name: user.name,
-                                icon_url: user.avatar_url,
-                                url: `${userBaseUrl}/${cat.id}`
-                            },
-                            title: `Reached ${newStep}% ${statsNew.year} completion in category ${statCategories.getCategoryName(cat.id).toLowerCase()}!`,
-                            fields: [
-                                { name: 'completion xp', value: statsNew.xp.toLocaleString(), inline: true },
-                                { name: 'maps passed', value: statsNew.count_completed.toLocaleString(), inline: true }
-                            ],
-                            footer: {
-                                text: `osu!complete`
-                            },
-                            timestamp: new Date().toISOString(),
-                            color: 0xf5e7a3
-                        }]
+                    milestoneEmbeds.push({
+                        author: {
+                            name: user.name,
+                            icon_url: user.avatar_url,
+                            url: `${userBaseUrl}/${cat.id}`
+                        },
+                        title: `Reached ${newStep}% ${statsNew.year} completion in category ${statCategories.getCategoryName(cat.id).toLowerCase()}!`,
+                        fields: [
+                            { name: 'completion xp', value: statsNew.xp.toLocaleString(), inline: true },
+                            { name: 'maps passed', value: statsNew.count_completed.toLocaleString(), inline: true }
+                        ],
+                        footer: {
+                            text: `osu!complete`
+                        },
+                        timestamp: new Date().toISOString(),
+                        color: 0xf5e7a3
                     });
                 }
+            }
+            // Send milestone embeds lumped together
+            while (milestoneEmbeds.length > 0) {
+                utils.sendDiscordMessage(env.MILESTONE_FEED_DISCORD_CHANNEL_ID, {
+                    embeds: milestoneEmbeds.splice(0, 10)
+                });
             }
 
             // If the new completion percentage is 100 and the old one was less,
