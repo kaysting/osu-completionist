@@ -14,7 +14,7 @@
     </div>
     <div class="flex col gap-8">
         <div class="flex gap-8 justify-center">
-            <button class="btn square" onClick="reloadElement('#playNext')" title="Refresh selection">
+            <button class="btn square" data-reload-selectors="#playNext" title="Refresh selection">
                 <span class="icon">refresh</span>
             </button>
             <a href="/recommended/<%= category %>?q=<%- encodeURIComponent(recommendedQuery) %>" class="btn primary">

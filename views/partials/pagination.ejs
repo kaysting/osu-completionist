@@ -3,7 +3,7 @@
     <% if (num === '...') { %>
     <span class="dots flex align-center">...</span>
     <% } else { %>
-    <btn onClick="reloadElement('#leaderboardContent', { url: '<%= pagination.basePath %>?p=<%= num %>', replaceAddress: true })"
+    <btn data-reload-selectors="#leaderboard" data-reload-url="<%= pagination.basePath %>?p=<%= num %>"
         class="btn <%= num === pagination.current ? 'primary' : 'text' %>"><%= num %></btn>
     <% } %>
     <% } %>

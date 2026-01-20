@@ -2,8 +2,8 @@
     <% const button = (key, label, includes, icon, title, isActiveOverride, alwaysFilled = false) => {
         const isActive = typeof isActiveOverride === 'boolean' ? isActiveOverride : category.includes(includes);
     %>
-    <button
-        onClick="reloadElement([ '#statSettings', '#profileContent', '#leaderboardContent', '#recommended' ], { url: '<%= category_navigation[key] %>', replaceAddress: true })"
+    <button data-reload-selectors="#statSettings,#profileContent,#leaderboardContent,#recommended"
+        data-reload-url="<%= category_navigation[key] %>" data-reload-replace-address="true"
         class="btn <%= isActive ? 'primary' : '' %>" <% if (title) { %>title="<%= title %>" <% } %>>
         <% if (icon) { %>
         <span class="icon <%= alwaysFilled || isActive ? 'filled' : '' %>"><%= icon %></span>
