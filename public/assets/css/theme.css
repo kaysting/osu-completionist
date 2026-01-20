@@ -922,7 +922,9 @@ img {
 
 .beatmapCard .title,
 .beatmapCard .artist,
+.beatmapCard .details,
 .beatmapCard .mapper,
+.beatmapCard .stats,
 .beatmapCard .time,
 .beatmapCard .diff .name {
     min-width: 0;
@@ -942,7 +944,9 @@ img {
     color: white;
 }
 
-.beatmapCard .mapper {
+.beatmapCard .details,
+.beatmapCard .mapper,
+.beatmapCard .stats {
     font-size: 14px;
     font-weight: 600;
     color: var(--text-light);
@@ -953,8 +957,6 @@ img {
     font-weight: 600;
     color: hsl(220, 20%, 75%);
 }
-
-.beatmapCard .beatmapStatus {}
 
 .beatmapCard .diff {
     padding: 5px;

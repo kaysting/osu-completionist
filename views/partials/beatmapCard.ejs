@@ -21,7 +21,14 @@
                 <div class="artist overflow-hidden text-ellipsis nowrap" title="<%= beatmap.beatmapset.artist %>"
                     data-tooltip-overflow="true">
                     <%= beatmap.beatmapset.artist %></div>
-                <div class="mapper overflow-hidden text-ellipsis nowrap">Mapped by <%= beatmap.beatmapset.mapper %>
+                <div class="details flex row gap-8 align-center overflow-hidden text-ellipsis nowrap">
+                    <span class="mapper overflow-hidden text-ellipsis nowrap">
+                        Mapped by <%= beatmap.beatmapset.mapper %>
+                    </span>
+                    <span>•</span>
+                    <span class="stats overflow-hidden text-ellipsis nowrap flex-no-shrink">
+                        <span class="cxp"><%= beatmap.xp %> cxp</span>
+                    </span>
                 </div>
             </div>
             <div class="flex gap-4 align-center">
