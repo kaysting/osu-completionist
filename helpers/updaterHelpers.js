@@ -822,7 +822,7 @@ const importUser = async (userId, doFullImport = false) => {
                 title: `Completed ${doFullImport ? 'full ' : ''}import of ${passCount.toLocaleString()} passes`,
                 description: [
                     `Took ${utils.secsToDuration(Math.round(importDurationMs / 1000))} to check ${beatmapsOffset.toLocaleString()} beatmaps (${scoresPerMinute} scores/min)`,
-                    `${queueCount == 0 ? `The queue is now empty.` : `Queue of ${queueCount} user${queueCount > 1 ? 's' : ''} estimated to be empty in ${utils.getRelativeTimestamp(Date.now() + Math.round(queueSecsRemaining * 1000), undefined, false)}`}...`
+                    `${queueCount == 0 ? `The queue is now empty!` : `Queue of ${queueCount} user${queueCount > 1 ? 's' : ''} estimated to be empty in ${utils.getRelativeTimestamp(Date.now() + Math.round(queueSecsRemaining * 1000), undefined, false)}...`}`
                 ].join('\n'),
                 color: 0xA3F5F5
             }]
