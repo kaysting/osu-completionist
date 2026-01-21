@@ -74,9 +74,12 @@ async function processQueue() {
         const browserInstance = await getBrowser();
         page = await browserInstance.newPage();
 
+        // If height is 'auto', use a reasonable temporary height for navigation
+        const initialHeight = task.viewportHeight === 'auto' ? 200 : task.viewportHeight;
+
         await page.setViewport({
             width: task.viewportWidth,
-            height: task.viewportHeight,
+            height: initialHeight,
             deviceScaleFactor: task.scaleFactor
         });
 
@@ -86,6 +89,18 @@ async function processQueue() {
             waitUntil: task.waitUntil || 'networkidle0',
             timeout: 20000
         });
+
+        // If height is 'auto', measure the actual scroll height and update viewport
+        if (task.viewportHeight === 'auto') {
+            const scrollHeight = await page.evaluate(() => document.documentElement.scrollHeight);
+            const finalHeight = Math.max(scrollHeight, 1); // Ensure at least 1px
+            await page.setViewport({
+                width: task.viewportWidth,
+                height: finalHeight,
+                deviceScaleFactor: task.scaleFactor
+            });
+            task.viewportHeight = finalHeight;
+        }
 
         // 2. Force Lazy Images (Stability Fix)
         // Helps prevent white boxes where images should be
@@ -109,7 +124,7 @@ async function processQueue() {
         // for the entire scrollable page, which causes "ProtocolError: Timed out"
         const imageBuffer = await page.screenshot({
             type: 'png',
-            omitBackground: false,
+            omitBackground: true,
             encoding: 'binary',
             captureBeyondViewport: false,
             clip: { x: 0, y: 0, width: task.viewportWidth, height: task.viewportHeight }

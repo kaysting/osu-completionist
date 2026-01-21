@@ -8,11 +8,14 @@ const { rateLimit } = require('express-rate-limit');
 const { marked } = require('marked');
 const dayjs = require('dayjs');
 dayjs.extend(require('dayjs/plugin/relativeTime'));
+dayjs.extend(require('dayjs/plugin/utc'));
+dayjs.extend(require('dayjs/plugin/advancedFormat'));
 
 const { log, logError } = require('./helpers/utils');
 const db = require('./helpers/db');
 const { getAuthenticatedUser, updateLastUrl } = require('./helpers/middleware');
 const path = require('path');
+const utils = require('./helpers/utils');
 
 const app = express();
 
@@ -24,7 +27,8 @@ app.use((req, res, next) => {
         res.render('layout', {
             ...data,
             page,
-            me: req.me
+            me: req.me,
+            query: req.query
         });
     };
     res.renderPartial = (partial, data = {}) => {
@@ -100,6 +104,7 @@ try {
 
 // Add functions for use within EJS
 app.locals.dayjs = dayjs;
+app.locals.utils = utils;
 app.locals.includeMarkdown = (filePath) => marked.parse(fs.readFileSync(filePath, 'utf-8'));
 app.locals.asset = (pathRel) => {
     const fullPath = path.join(__dirname, 'public', pathRel);

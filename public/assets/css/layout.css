@@ -5,7 +5,7 @@
     width: 100%;
     height: 100%;
     height: 54px;
-    background: var(--bg);
+    background: var(--c-base-10);
     transition: 0.1s ease-in-out;
     border-bottom: 1px solid transparent;
     z-index: 1000;
@@ -25,10 +25,10 @@
 
 #topbar .top .title {
     display: none;
-    color: var(--text);
+    color: var(--c-base-90);
     font-weight: 600;
     font-size: 16px;
-    border-left: 1px solid var(--text-dim);
+    border-left: 1px solid var(--c-base-65);
     padding: 4px 0px 4px 16px;
 }
 
@@ -90,7 +90,7 @@
 }
 
 #logo .green {
-    color: var(--accent);
+    color: var(--c-accent-60);
 }
 
 #topbar .left {
@@ -156,7 +156,7 @@ main {
 }
 
 .card {
-    background: var(--card-bg);
+    background: var(--c-base-15);
     border-radius: 16px;
     box-shadow: 0px 2px 4px var(--shadow-sm);
     padding: 8px;
@@ -178,7 +178,7 @@ main {
 }
 
 .card.lighter {
-    background: var(--card-lighter);
+    background: var(--c-base-18);
     border-radius: 8px;
 }
 
@@ -220,10 +220,11 @@ main {
     color: inherit;
 }
 
-.card .header {
+.card .header,
+.popup .body .header {
     font-size: 16px;
     padding-bottom: 4px;
-    border-bottom: 2px solid var(--accent);
+    border-bottom: 2px solid var(--c-accent-60);
     font-size: 16px;
     font-weight: 600;
     color: white;
@@ -231,7 +232,7 @@ main {
 }
 
 #footer * {
-    color: var(--text-very-dim);
+    color: var(--c-base-40);
     font-size: 13px;
     text-align: center;
     margin-top: 20px;
@@ -265,7 +266,7 @@ main {
     width: 100%;
     height: 100%;
     z-index: -1;
-    background: var(--bg);
+    background: var(--c-base-10);
 }
 
 img {

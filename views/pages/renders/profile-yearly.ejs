@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Render</title>
+    <link rel="stylesheet" href="/assets/css/theme.css">
+    <link rel="stylesheet" href="/assets/css/utils.css">
+</head>
+
+<body>
+    <div id="card" class="flex col gap-16 rounded-16">
+        <div id="header" class="flex row gap-16 align-center">
+            <span class="title flex-grow flex-no-shrink">Completion by Year</span>
+            <span class="category overflow-hidden nowrap text-ellipsis"><%= categoryName %></span>
+        </div>
+        <div class="yearlyStatsContainer flex-grow">
+            <% for (const yearData of yearly) { %>
+            <%- include('../../partials/statsYearEntryLine', { ...yearData, yearlyType: 'maps' }) %>
+            <% } %>
+        </div>
+        <div id="footer" class="flex row gap-16 align-end">
+            <span class="user flex gap-12 align-center flex-grow">
+                <img src="<%= user.avatar_url %>" class="avatar rounded-8">
+                <span class="name"><%= user.name %></span>
+            </span>
+            <div class="flex col gap-2 text-right">
+                <span class="timestamp"><%= dayjs().utc().format('YYYY-MM-DD HH:mm:ss [UTC]') %></span>
+                <span>Powered by osucomplete.org</span>
+            </div>
+        </div>
+    </div>
+</body>
+
+<%- query.base_hue ? `<style>body { --base-hue: ${parseInt(query.base_hue)}; }</style>` : '' %>
+<%- query.base_sat ? `<style>body { --base-sat: ${parseInt(query.base_sat)}%; }</style>` : '' %>
+
+<style>
+    body {
+        background: transparent;
+    }
+
+    #card {
+        padding: 16px;
+        background: var(--c-base-18);
+    }
+
+    #header {
+        font-size: 18px;
+        line-height: 1.2;
+    }
+
+    #header .title {
+        color: white;
+        font-weight: 600;
+    }
+
+    #header .category {
+        color: var(--c-base-90);
+    }
+
+    #footer .avatar {
+        height: 36px;
+    }
+
+    #footer {
+        font-size: 16px;
+        color: var(--c-base-60);
+    }
+
+    #footer .name {
+        font-size: 18px;
+        font-weight: bold;
+        color: white;
+    }
+
+    #footer .timestamp {
+        font-size: 12px;
+    }
+</style>
+
+</html>

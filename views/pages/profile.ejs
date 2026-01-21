@@ -9,10 +9,25 @@
                     title="View profile on osu! website">
                     <span class="icon">open_in_new</span>
                 </a>
-                <button class="btn translucent" onClick="copyText(`<%= copyable %>`)">
-                    <span class="icon">content_copy</span>
-                    <span>copy stats</span>
+                <button class="btn translucent" onClick="document.getElementById('sharePopup').showModal();">
+                    <span class="icon">share</span>
+                    <span>share & embed...</span>
                 </button>
+                <!-- Popup for share and embed -->
+                <dialog id="sharePopup" class="popup" style="--width: 900px; --height: 9000px">
+                    <div class="title">Share profile</div>
+                    <%- include('../partials/profile/sharePopupBody') %>
+                    <div class="actions">
+                        <button class="btn medium" id="sharePopupClose">Close</button>
+                    </div>
+                </dialog>
+                <!-- Basic JS for showing share popup -->
+                <script>
+                    document.getElementById('sharePopupClose').addEventListener('click', () => {
+                        const elSharePopup = document.getElementById('sharePopup');
+                        elSharePopup.close();
+                    });
+                </script>
             </div>
         </div>
         <div class="basics overflow-hidden flex gap-16 align-center">

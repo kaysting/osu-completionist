@@ -34,11 +34,11 @@ main {
 }
 
 #home .logo .green {
-    color: var(--accent);
+    color: var(--c-accent-60);
 }
 
 #home .slogan {
-    color: var(--text-dim);
+    color: var(--c-base-65);
     font-size: 20px;
     font-weight: 400;
     line-height: 1.2;
@@ -50,7 +50,7 @@ main {
 
 #home .actions .or {
     font-size: 18px;
-    color: var(--text-dim);
+    color: var(--c-base-65);
     line-height: 1.2;
 }
 
@@ -70,13 +70,13 @@ main {
 #home .stats .card .value {
     font-size: 36px;
     font-weight: 400;
-    color: var(--accent);
+    color: var(--c-accent-60);
 }
 
 #home .stats .card .label {
     font-size: 18px;
     font-weight: 600;
-    color: var(--text);
+    color: var(--c-base-90);
 }
 
 @media (max-width: 500px) {

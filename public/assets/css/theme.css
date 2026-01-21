@@ -47,67 +47,59 @@
 }
 
 body {
-    /* Base Colors (lightness from 10% to 30%) */
-    --bg-darkest: hsl(220, 20%, 8%);
-    --bg: hsl(220, 20%, 10%);
-    --bg-darker: hsl(220, 20%, 12%);
-    --bg-dark: hsl(220, 20%, 15%);
-    --bg-medium-dark: hsl(220, 20%, 20%);
-    --bg-medium: hsl(220, 20%, 25%);
-    --bg-light: hsl(220, 20%, 30%);
+    /* Color settings */
+    --base-hue: 220;
+    --base-sat: 20%;
+    --accent-hue: 150;
+    --accent-sat: 90%;
 
-    /* Card & Component Backgrounds */
-    --card-bg: hsl(220, 20%, 15%);
-    --card-lighter: hsl(220, 20%, 18%);
-    --card-hover: hsl(220, 20%, 35%);
-    --beatmap-bg: hsl(220, 20%, 22%);
+    /* Base colors */
+    --c-base-08: hsl(var(--base-hue), var(--base-sat), 8%);
+    --c-base-10: hsl(var(--base-hue), var(--base-sat), 10%);
+    --c-base-12: hsl(var(--base-hue), var(--base-sat), 12%);
+    --c-base-15: hsl(var(--base-hue), var(--base-sat), 15%);
+    --c-base-18: hsl(var(--base-hue), var(--base-sat), 18%);
+    --c-base-20: hsl(var(--base-hue), var(--base-sat), 20%);
+    --c-base-22: hsl(var(--base-hue), var(--base-sat), 22%);
+    --c-base-25: hsl(var(--base-hue), var(--base-sat), 25%);
+    --c-base-30: hsl(var(--base-hue), var(--base-sat), 30%);
+    --c-base-35: hsl(var(--base-hue), var(--base-sat), 35%);
+    --c-base-40: hsl(var(--base-hue), var(--base-sat), 40%);
+    --c-base-60: hsl(var(--base-hue), var(--base-sat), 60%);
+    --c-base-65: hsl(var(--base-hue), var(--base-sat), 65%);
+    --c-base-75: hsl(var(--base-hue), var(--base-sat), 75%);
+    --c-base-90: hsl(var(--base-hue), var(--base-sat), 90%);
+    --c-base-100: white;
 
-    /* Text Colors (lightness from 40% to 100%) */
-    --text-very-dim: hsl(220, 20%, 40%);
-    --text-muted: hsl(220, 20%, 60%);
-    --text-dim: hsl(220, 20%, 65%);
-    --text-light: hsl(220, 20%, 75%);
-    --text: hsl(220, 20%, 90%);
-    --text-bright: white;
+    /* Accent colors */
+    --c-accent-60: hsl(var(--accent-hue), var(--accent-sat), 60%);
+    --c-accent-75: hsl(var(--accent-hue), var(--accent-sat), 75%);
+    --c-accent-80: hsl(var(--accent-hue), var(--accent-sat), 80%);
 
-    /* Accent & Interactive */
-    --accent: hsl(150, 90%, 60%);
-    --accent-hover: hsl(150, 90%, 75%);
-    --accent-light: hsl(150, 90%, 80%);
-    --accent-focus: hsl(150, 90%, 80%);
-
-    /* Status Colors */
+    /* Map status colors */
     --status-ranked: hsl(130, 80%, 70%);
     --status-loved: hsl(340, 80%, 70%);
     --status-pending: hsl(40, 80%, 70%);
     --status-qualified: hsl(190, 80%, 70%);
     --status-graveyard: hsl(0, 0%, 70%);
 
-    /* Warning & Alert */
+    /* Warning colors */
     --warning-bg: hsl(40, 90%, 70%);
     --warning-text: hsl(40, 90%, 20%);
 
-    /* Danger */
+    /* Danger colors */
     --danger: hsl(340, 80%, 70%);
 
     /* Shadows */
     --shadow-sm: rgba(0, 0, 0, 0.2);
     --shadow-md: rgba(0, 0, 0, 0.3);
     --shadow-lg: rgba(0, 0, 0, 0.5);
-    --shadow-overlay: hsla(220, 20%, 50%, 0.2);
-    --shadow-dimming: hsla(220, 20%, 12%, 60%);
-
-    /* Borders & Dividers */
-    --border: hsl(220, 20%, 30%);
-
-    /* Tooltips */
-    --tooltip-bg: var(--bg-darkest);
-    --tooltip-text: var(--text);
-    --arrow-size: 6px;
-    --tooltip-distance: 8px;
+    --shadow-overlay: hsla(var(--base-hue), var(--base-sat), 50%, 0.2);
+    --shadow-dimming: hsla(var(--base-hue), var(--base-sat), 12%, 60%);
 
     /* Syntax Highlighting */
     --c-syntax-comment: #8b949e;
+    --c-syntax-namespace: #8b949e;
     --c-syntax-constant: #79c0ff;
     --c-syntax-entity: #d2a8ff;
     --c-syntax-storage-modifier-import: #c9d1d9;
@@ -116,9 +108,15 @@ body {
     --c-syntax-string: #a5d6ff;
     --c-syntax-variable: #ffa657;
 
+    /* Tooltips */
+    --tooltip-bg: var(--c-base-08);
+    --tooltip-text: var(--c-base-90);
+    --arrow-size: 6px;
+    --tooltip-distance: 8px;
+
     --globalWidth: 1200px;
-    background: var(--bg);
-    color: var(--text);
+    background: var(--c-base-10);
+    color: var(--c-base-90);
     font-family: 'Torus', sans-serif;
     font-size: 15px;
     line-height: 1;
@@ -181,7 +179,7 @@ p,
 li {
     font-size: 16px;
     line-height: 1.5;
-    color: var(--text);
+    color: var(--c-base-90);
 }
 
 b,
@@ -200,7 +198,7 @@ td,
 th {
     padding: 8px 12px;
     line-height: 1.4;
-    border: 1px solid var(--border);
+    border: 1px solid var(--c-base-30);
     font-size: 16px;
 }
 
@@ -224,27 +222,27 @@ tr:nth-child(even) {
 }
 
 td {
-    color: var(--text);
+    color: var(--c-base-90);
 }
 
 code:not(pre code) {
-    background: var(--bg-medium);
+    background: var(--c-base-25);
     padding: 2px 4px;
     border-radius: 4px;
     font-family: monospace;
     font-size: 0.9em;
-    color: var(--text);
+    color: var(--c-base-90);
 }
 
 pre code {
     width: fit-content;
-    background: var(--bg-medium-dark);
-    border: 1px solid var(--bg-medium);
+    background: var(--c-base-20);
+    border: 1px solid var(--c-base-25);
     padding: 8px 12px;
     border-radius: 8px;
     font-family: monospace;
     font-size: 1em;
-    color: var(--text);
+    color: var(--c-base-90);
     display: block;
     overflow: auto;
     margin-bottom: 1em;
@@ -360,7 +358,7 @@ ol:not(:last-child):not(li>ol) {
 }
 
 a {
-    color: var(--accent);
+    color: var(--c-accent-60);
     text-decoration: none;
 }
 
@@ -372,8 +370,13 @@ a:hover {
 small {
     display: block;
     font-size: 14px;
-    color: var(--text-dim);
+    color: var(--c-base-65);
     line-height: 1.4;
+}
+
+label {
+    font-size: 14px;
+    color: var(--c-base-75);
 }
 
 hr {
@@ -392,14 +395,14 @@ img {
 }
 
 *:focus-visible {
-    outline: 2px solid var(--accent-focus);
+    outline: 2px solid var(--c-accent-80);
     outline-offset: 2px;
     border-radius: 2px;
 }
 
 .btn {
-    --btnBg: var(--bg-medium);
-    --btnBgHover: var(--card-hover);
+    --btnBg: var(--c-base-25);
+    --btnBgHover: var(--c-base-35);
     --btnFg: hsl(220, 20%, 85%);
     --btnFgHover: white;
     height: 32px;
@@ -442,10 +445,10 @@ img {
 }
 
 .btn.primary {
-    --btnBg: var(--accent);
-    --btnBgHover: var(--accent-hover);
-    --btnFg: var(--bg);
-    --btnFgHover: var(--bg-darker);
+    --btnBg: var(--c-accent-60);
+    --btnBgHover: var(--c-accent-75);
+    --btnFg: var(--c-base-10);
+    --btnFgHover: var(--c-base-12);
 }
 
 .btn.translucent {
@@ -467,11 +470,11 @@ img {
 }
 
 .btn.text.muted {
-    --btnFg: var(--text-muted);
+    --btnFg: var(--c-base-60);
 }
 
 .btn.text.accent {
-    --btnFg: var(--accent);
+    --btnFg: var(--c-accent-60);
 }
 
 .btn.text.danger {
@@ -560,7 +563,7 @@ img {
 .textbox {
     height: 32px;
     border-radius: 8px;
-    background: var(--bg-medium);
+    background: var(--c-base-25);
     transition: 0.1s ease-in-out;
     position: relative;
     overflow: hidden;
@@ -576,15 +579,15 @@ img {
     -webkit-appearance: none;
     -moz-appearance: none;
     background-color: transparent;
-    background: var(--bg-medium);
+    background: var(--c-base-25);
     font-family: 'Torus', sans-serif;
     font-size: 14px;
     line-height: 1.4;
-    color: var(--text);
+    color: var(--c-base-90);
 }
 
 .textbox>.input::placeholder {
-    color: var(--text-dim);
+    color: var(--c-base-65);
 }
 
 .textbox>.icon,
@@ -592,7 +595,7 @@ img {
     font-family: 'Material Symbols Rounded';
     font-size: 20px;
     padding: 0px 12px;
-    color: var(--text-dim);
+    color: var(--c-base-65);
     flex-shrink: 0;
     position: absolute;
     left: 0px;
@@ -615,7 +618,7 @@ img {
 }
 
 .textbox:focus-within {
-    box-shadow: 0 0 0 2px var(--accent);
+    box-shadow: 0 0 0 2px var(--c-accent-60);
 }
 
 .textbox.medium {
@@ -698,7 +701,7 @@ img {
     margin: auto;
     display: flex;
     border: none;
-    background: var(--bg-dark);
+    background: var(--c-base-15);
     border-radius: 16px;
     box-shadow: 0px 8px 16px var(--shadow-lg);
     flex-direction: column;
@@ -727,7 +730,7 @@ img {
     font-size: 16px;
     line-height: 1.5;
     overflow: auto;
-    scrollbar-color: var(--bg-light) transparent;
+    scrollbar-color: var(--c-base-30) transparent;
 }
 
 .popup>.actions {
@@ -821,7 +824,7 @@ img {
 }
 
 .beatmap .map .set .artist {
-    color: var(--text-dim);
+    color: var(--c-base-65);
     font-size: 12px;
     margin-left: 2px;
 }
@@ -845,7 +848,7 @@ img {
 
 .beatmap .time {
     font-size: 14px;
-    color: var(--text-dim);
+    color: var(--c-base-65);
 }
 
 .beatmap .buttons {
@@ -853,7 +856,7 @@ img {
 }
 
 .beatmap .buttons .btn {
-    --btnBgHover: var(--bg-light);
+    --btnBgHover: var(--c-base-30);
 }
 
 @media (max-width: 600px) {
@@ -869,7 +872,7 @@ img {
 }
 
 .beatmapCard {
-    background: var(--card-bg);
+    background: var(--c-base-15);
     user-select: none;
 }
 
@@ -891,7 +894,7 @@ img {
     --btnBg: hsla(220, 20%, 15%, 0.5);
     --btnBgHover: hsla(220, 20%, 15%, 0.75);
     --btnFg: white;
-    --btnFgHover: var(--accent);
+    --btnFgHover: var(--c-accent-60);
 }
 
 .beatmapCard .left .controls .icon {
@@ -949,7 +952,7 @@ img {
 .beatmapCard .stats {
     font-size: 14px;
     font-weight: 600;
-    color: var(--text-light);
+    color: var(--c-base-75);
 }
 
 .beatmapCard .time {
@@ -1006,7 +1009,7 @@ img {
 }
 
 .userCard {
-    background: var(--card-bg);
+    background: var(--c-base-15);
     padding: 8px;
 }
 
@@ -1066,7 +1069,7 @@ img {
 .yearlyStatsEntry,
 .yearlyStatsEntryRound {
     padding: 8px;
-    background: var(--beatmap-bg);
+    background: var(--c-base-22);
 }
 
 .yearlyStatsEntry .year {
@@ -1089,20 +1092,20 @@ img {
 
 .yearlyStatsEntry .content .count {
     font-size: 14px;
-    color: var(--text-dim);
+    color: var(--c-base-65);
     text-align: right;
 }
 
 .yearlyStatsEntry .content .bar {
     height: 4px;
-    background: var(--bg-dark);
+    background: var(--c-base-15);
 }
 
 .yearlyStatsEntry .content .bar .filling {
     top: 0px;
     left: 0px;
     height: 100%;
-    background: var(--accent);
+    background: var(--c-accent-60);
 }
 
 .yearlyStatsEntryRound .speedometer {
@@ -1128,7 +1131,7 @@ img {
 }
 
 .yearlyStatsEntryRound .speedometer .track {
-    stroke: var(--bg-dark);
+    stroke: var(--c-base-15);
     stroke-dashoffset: 94.5;
 }
 
@@ -1163,12 +1166,12 @@ img {
 .yearlyStatsEntryRound .year {
     font-size: 15px;
     font-weight: 600;
-    color: var(--text);
+    color: var(--c-base-90);
 }
 
 .yearlyStatsEntryRound .progress {
     font-size: 14px;
-    color: var(--text-dim);
+    color: var(--c-base-65);
 }
 
 #custom-tooltip {

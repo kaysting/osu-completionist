@@ -5,11 +5,13 @@
         let unit = 'maps';
         let completed = count_completed;
         let total = count_total;
+        let color = map_completed_color;
         if (yearlyType == 'xp') {
             percent = time_percentage_completed;
             unit = 'cxp';
             completed = xp;
             total = xp_total;
+            color = time_completed_color;
         }
     %>
     <div class="content flex col gap-4 flex-grow">
@@ -22,7 +24,8 @@
             </div>
         </div>
         <div class="bar w-full relative rounded-4 overflow-hidden">
-            <div class="filling absolute h-full rounded-4" style="width: <%= percent %>%; background: <%= color %>">
+            <div class="filling absolute h-full rounded-4"
+                style="width: <%= utils.clamp(utils.ceilToNearest(percent, 1), 2, 100) %>%; background: <%= color %>">
             </div>
         </div>
     </div>

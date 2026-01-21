@@ -8,5 +8,5 @@
 
 #search .results .empty {
     font-size: 16px;
-    color: var(--text-dim);
+    color: var(--c-base-65);
 }

@@ -22,7 +22,7 @@
 #profile .basics .avatar {
     width: 96px;
     height: 96px;
-    background: var(--bg-medium);
+    background: var(--c-base-25);
 }
 
 #profile .basics .text {}
@@ -52,7 +52,7 @@
 }
 
 #profile .stats .stat .key {
-    color: var(--text-dim);
+    color: var(--c-base-65);
     font-size: 14px;
     font-weight: 600;
 }

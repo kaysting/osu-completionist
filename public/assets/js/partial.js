@@ -185,7 +185,7 @@ const initLiveForms = () => {
 
         let timeout;
         form.addEventListener('input', (e) => {
-            if (e.target.matches('input[type="text"], input[type="search"], textarea')) {
+            if (e.target.matches('input[type="text"], input[type="number"], input[type="search"], textarea')) {
                 // Visual feedback immediately
                 selectors.forEach(s => {
                     const el = document.querySelector(s);

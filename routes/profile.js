@@ -53,14 +53,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     };
 
     const getYearlyStats = () => {
-        const yearly = dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
-        // Get completion colors for each year
-        for (const yearData of yearly) {
-            const completed = yearlyType == 'xp' ? yearData.xp : yearData.count_completed;
-            const total = yearlyType == 'xp' ? yearData.xp_total : yearData.count_total;
-            yearData.color = utils.percentageToColor(completed / total);
-        }
-        return yearly;
+        return dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
     };
 
     const getStats = () => {
@@ -152,7 +145,8 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         return recentPasses;
     };
 
-    const getCopyableStats = (stats, yearly) => {
+    const getShareData = (stats, yearly) => {
+        const data = {};
         const categoryName = statCategories.getCategoryName(category);
         const statsText = [
             `${user.name}'s ${categoryName.toLowerCase()} completion stats:\n`
@@ -162,7 +156,21 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
             statsText.push(`${checkbox} ${year.year}: ${year.count_completed.toLocaleString()} / ${year.count_total.toLocaleString()} (${year.map_percentage_completed.toFixed(2)}%)`);
         }
         statsText.push(`\nTotal: ${stats.count_completed.toLocaleString()} / ${stats.count_total.toLocaleString()} (${stats.percentage_completed.toFixed(2)}%)`);
-        return statsText.join('\n');
+        data.plainText = statsText.join('\n');
+        const yearlyParams = new URLSearchParams({
+            user_id: user.id,
+            category: category
+        });
+        if (req.query.share_base_hue) {
+            yearlyParams.set('base_hue', req.query.share_base_hue);
+        }
+        if (req.query.share_base_sat) {
+            yearlyParams.set('base_sat', req.query.share_base_sat);
+        }
+        data.baseUrl = `${req.protocol}://${req.get('host')}/u/${user.id}/${category}`;
+        data.yearlyRenderUrl = `${req.protocol}://${req.get('host')}/renders/profile-yearly?${yearlyParams.toString()}`;
+        data.yearlyRenderBbcode = `[url=${data.baseUrl}][img]${data.yearlyRenderUrl}[/img][/url]`;
+        return data;
     };
 
     const getDailyHistory = () => {
@@ -199,7 +207,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     const updateStatus = getUpdateStatus();
     const historyDaily = getDailyHistory();
     const historyMonthly = getMonthlyHistory();
-    const statsText = getCopyableStats(stats, yearly);
+    const share = getShareData(stats, yearly);
     const categoryName = statCategories.getCategoryName(category);
     res.renderPage('profile', {
         title: req.user.name,
@@ -214,7 +222,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         },
         stats, yearly, recentPasses, updateStatus,
         recommended, recommendedQuery, yearlyType, historyDaily, historyMonthly,
-        copyable: statsText,
+        share,
         category,
         category_navigation: statCategories.getCategoryNavPaths(`/u/${req.user.id}`, category),
     });

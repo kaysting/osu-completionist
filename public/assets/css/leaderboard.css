@@ -3,7 +3,7 @@
 }
 
 #leaderboard .entry {
-    background: var(--bg);
+    background: var(--c-base-10);
     color: inherit;
     user-select: none;
     text-shadow: 0px 1px 2px var(--shadow-md);
@@ -37,7 +37,7 @@
 }
 
 #leaderboard .entry .content {
-    background: var(--bg-medium-dark);
+    background: var(--c-base-20);
 }
 
 #leaderboard .entry .profile {
@@ -54,13 +54,13 @@
     top: 0px;
     left: 0px;
     z-index: 0;
-    background: linear-gradient(to right, var(--shadow-dimming), var(--bg-darker));
+    background: linear-gradient(to right, var(--shadow-dimming), var(--c-base-12));
 }
 
 #leaderboard .entry .profile .avatar {
     width: 48px;
     height: 48px;
-    background: var(--bg-medium);
+    background: var(--c-base-25);
 }
 
 #leaderboard .entry .profile .name {
@@ -90,13 +90,13 @@
 }
 
 #leaderboard .entry .stat .name {
-    color: var(--text-dim);
+    color: var(--c-base-65);
     font-size: 14px;
     font-weight: 600
 }
 
 #leaderboard .entry .stat .value {
-    color: var(--text-light);
+    color: var(--c-base-75);
     font-size: 20px;
     font-weight: 400;
 }
@@ -108,7 +108,7 @@
 
 #leaderboard .entry .content .bar {
     height: 2px;
-    background: var(--bg-darker);
+    background: var(--c-base-12);
     margin-top: 6px;
 }
 
@@ -162,5 +162,5 @@
 
 #leaderboard .pages .dots {
     height: 32px;
-    color: var(--text-dim);
+    color: var(--c-base-65);
 }

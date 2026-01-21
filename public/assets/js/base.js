@@ -7,7 +7,12 @@ const copyText = async text => {
             console.error('Error copying to clipboard:', err);
         }
     } else {
-        alert('Clipboard API is not supported in this browser.');
+        showPopup(
+            'Clipboard copy failed',
+            `<p>We couldn't copy the text for you, so you'll have to do it yourself:</p>
+            <pre><code>${text}</code></pre>`,
+            [{ label: 'Close' }]
+        );
     }
 };
 

@@ -83,7 +83,7 @@ const utils = {
         key = utils.rulesetNameToKey(key) || key.toLowerCase();
         switch (key) {
             case 'osu':
-                return full ? 'osu!' : 'osu';
+                return full ? 'osu!standard' : 'osu';
             case 'taiko':
                 return full ? 'osu!taiko' : 'taiko';
             case 'fruits':
@@ -367,6 +367,18 @@ const utils = {
 
     sha256: data => {
         return crypto.createHash('sha256').update(data).digest('hex');
+    },
+
+    ceilToNearest: (num, nearest) => {
+        return Math.ceil(num / nearest) * nearest;
+    },
+
+    floorToNearest: (num, nearest) => {
+        return Math.floor(num / nearest) * nearest;
+    },
+
+    roundToNearest: (num, nearest) => {
+        return Math.round(num / nearest) * nearest;
     }
 
 };

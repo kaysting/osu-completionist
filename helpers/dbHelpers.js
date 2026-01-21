@@ -309,6 +309,8 @@ const getBulkUserYearlyCompletionStats = (userIds, categoryId) => {
             const count_completed = completed?.count || 0;
             const map_percentage_completed = count_total > 0 ? ((count_completed / count_total) * 100) : 0;
             const time_percentage_completed = secs_total > 0 ? ((completed?.seconds || 0) / secs_total) * 100 : 0;
+            const time_completed_color = utils.percentageToColor(time_percentage_completed / 100);
+            const map_completed_color = utils.percentageToColor(map_percentage_completed / 100);
             // Build object
             entry.push({
                 year: parseInt(year),
@@ -318,7 +320,9 @@ const getBulkUserYearlyCompletionStats = (userIds, categoryId) => {
                 xp_total,
                 secs_total,
                 map_percentage_completed,
-                time_percentage_completed
+                time_percentage_completed,
+                time_completed_color,
+                map_completed_color
             });
         }
         entries.push(entry);
