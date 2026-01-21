@@ -60,7 +60,7 @@
                 </button>
                 <% } %>
                 <% if (render.urls.image) { %>
-                <button class="btn" onClick="copyText(`<%= render.urls.image %>`)" title="For sending anywhere">
+                <button class="btn" onClick="copyText(`<%= render.urls.image %>`)">
                     <span class="icon">content_copy</span>
                     <span>Copy image URL</span>
                 </button>
@@ -70,6 +70,13 @@
                     title="Suitable for use as an OBS browser source or similar web-based widget.">
                     <span class="icon">content_copy</span>
                     <span>Copy HTML URL</span>
+                </button>
+                <% } %>
+                <% if (render.urls.image) { %>
+                <button class="btn"
+                    onClick="downloadFile(`<%= render.urls.image %>`, `<%= renderId %>-<%= new Date().toISOString() %>.png`)">
+                    <span class="icon">download</span>
+                    <span>Download image</span>
                 </button>
                 <% } %>
             </div>

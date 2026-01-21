@@ -180,7 +180,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         }
         data.renders = {};
         data.renders.yearly = {
-            name: `By-year category stats`,
+            name: `Category completion by year`,
             description: `Perfect for your osu me! section, this image embed dynamically updates to show your per-year completion stats for the selected category.`,
             urls: {
                 html: getHtmlUrl('profile-yearly', yearlyParams),

@@ -18,6 +18,38 @@ const copyText = async text => {
     }
 };
 
+const copyImage = async (imageUrl) => {
+    try {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        await navigator.clipboard.write([
+            new ClipboardItem({ [blob.type]: blob })
+        ]);
+        showPopup(
+            'Image copied!',
+            `<p>The image has been copied to your clipboard.</p>`,
+            [{ label: 'Okay' }]
+        );
+    } catch (err) {
+        showPopup(
+            'Clipboard copy failed',
+            `<p>We couldn't copy the image for you, so you'll have to do it yourself:</p>
+        <pre><code>${imageUrl}</code></pre>`,
+            [{ label: 'Close' }]
+        );
+        console.error('Error copying image to clipboard:', err);
+    }
+};
+
+const downloadFile = (fileUrl, filename) => {
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
+
 const showPopup = (title, body, actions, closedby = 'none') => {
     // Build base dialog element
     const dialog = document.createElement('dialog');
