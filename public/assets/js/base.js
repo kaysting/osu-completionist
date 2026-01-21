@@ -1,18 +1,21 @@
 // Use the sharing api or clipboard write to share text
 const copyText = async text => {
-    if (navigator.clipboard) {
-        try {
-            await navigator.clipboard.writeText(text);
-        } catch (err) {
-            console.error('Error copying to clipboard:', err);
-        }
-    } else {
+    try {
+        await navigator.clipboard.writeText(text);
+        showPopup(
+            'Text copied',
+            `<p>The following text has been copied to your clipboard:</p>
+            <pre><code>${text}</code></pre>`,
+            [{ label: 'Okay' }]
+        );
+    } catch (err) {
         showPopup(
             'Clipboard copy failed',
             `<p>We couldn't copy the text for you, so you'll have to do it yourself:</p>
-            <pre><code>${text}</code></pre>`,
+        <pre><code>${text}</code></pre>`,
             [{ label: 'Close' }]
         );
+        console.error('Error copying to clipboard:', err);
     }
 };
 
