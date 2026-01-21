@@ -26,7 +26,7 @@
                 desaturated (gray) and 100 is fully saturated (vivid color). Set this to 10% if you're putting the image
                 on the osu! website.</li>
         </ul>
-        <form class="flex gap-12 flex-wrap" data-reload-selectors="#yearlyRender">
+        <form class="flex gap-12 flex-wrap" data-reload-selectors="#render-yearly">
             <div class="flex col gap-4">
                 <label>Hue</label>
                 <div class="textbox" style="width: 100px">
@@ -43,24 +43,36 @@
             </div>
         </form>
     </div>
+    <% for (const [renderId, render] of Object.entries(share.renders)) { %>
     <div>
-        <span class="header">Per-year stats render</span>
+        <span class="header"><%= render.name %></span>
     </div>
     <div>
-        <p>Perfect for adding to your osu me! section, this image embed dynamically updates to show relatively
-            up-to-date stats for each year of a category.</p>
-        <div id="yearlyRender" class="flex col gap-8">
-            <img src="<%= share.yearlyRenderUrl %>" style="max-width: 600px">
+        <p><%= render.description %></p>
+        <div id="render-<%= renderId %>" class="flex col gap-8">
+            <img src="<%= render.urls.image %>" style="max-width: 600px">
             <div class="flex gap-8 flex-wrap">
-                <button class="btn primary" onClick="copyText(`<%= share.yearlyRenderBbcode %>`)">
+                <% if (render.embeds.bbcode) { %>
+                <button class="btn primary" onClick="copyText(`<%= render.embeds.bbcode %>`)">
                     <span class="icon">content_copy</span>
                     <span>Copy osu! BBCode</span>
                 </button>
-                <button class="btn" onClick="copyText(`<%= share.yearlyRenderUrl %>`)">
+                <% } %>
+                <% if (render.urls.image) { %>
+                <button class="btn" onClick="copyText(`<%= render.urls.image %>`)">
                     <span class="icon">content_copy</span>
                     <span>Copy image URL</span>
                 </button>
+                <% } %>
+                <% if (render.urls.html) { %>
+                <button class="btn" onClick="copyText(`<%= render.urls.html %>`)"
+                    title="Suitable for use as an OBS browser source or similar web-based widget.">
+                    <span class="icon">content_copy</span>
+                    <span>Copy HTML URL</span>
+                </button>
+                <% } %>
             </div>
         </div>
     </div>
+    <% } %>
 </div>

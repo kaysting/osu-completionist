@@ -70,12 +70,18 @@ const showPopup = (title, body, actions, closedby = 'none') => {
 const initCustomTooltips = () => {
     const tooltip = document.createElement('div');
     tooltip.id = 'custom-tooltip';
+
+    // 1. PROMOTE TO TOP LAYER
+    // This allows the tooltip to float above native <dialog> elements
+    tooltip.popover = "manual";
+    tooltip.style.margin = '0'; // Prevent default user-agent margins from affecting math
+
     document.body.appendChild(tooltip);
 
     let currentTarget = null;
 
     const showTooltip = (target, text) => {
-        // 1. RESET to defaults (Single line mode)
+        // RESET to defaults (Single line mode)
         tooltip.style.whiteSpace = 'nowrap';
         tooltip.style.width = 'auto';
         tooltip.style.top = '0px';
@@ -83,29 +89,30 @@ const initCustomTooltips = () => {
         tooltip.style.removeProperty('--arrow-x');
         tooltip.style.removeProperty('--arrow-y');
 
-        // Set text and show
+        // Set text
         tooltip.textContent = text;
+
+        // 2. SHOW POPOVER (Renders it to DOM so we can measure it)
+        tooltip.showPopover();
         tooltip.classList.add('visible');
 
-        // 2. MEASURE natural width
+        // MEASURE natural width
         let tooltipRect = tooltip.getBoundingClientRect();
 
-        // 3. CONDITIONAL WRAPPING
-        // If the single line is wider than 300px, force wrapping
+        // CONDITIONAL WRAPPING
         const maxWidth = 350;
         if (tooltipRect.width > maxWidth) {
             tooltip.style.whiteSpace = 'normal';
-            tooltip.style.width = `${maxWidth}px`; // Lock width to max
-            tooltipRect = tooltip.getBoundingClientRect(); // Re-measure height with wrapping
+            tooltip.style.width = `${maxWidth}px`;
+            tooltipRect = tooltip.getBoundingClientRect(); // Re-measure height
         }
 
-        // ... (Rest of your positioning logic remains the same) ...
         const targetRect = target.getBoundingClientRect();
         const arrowSize = 6;
         const gap = 6;
         const padding = 10;
 
-        // 4. DETERMINE PLACEMENT
+        // DETERMINE PLACEMENT
         const spaceTop = targetRect.top;
         const spaceBottom = window.innerHeight - targetRect.bottom;
         const spaceLeft = targetRect.left;
@@ -123,7 +130,7 @@ const initCustomTooltips = () => {
 
         let top, left;
 
-        // 5. CALCULATE COORDINATES
+        // CALCULATE COORDINATES
         if (placement === 'top' || placement === 'bottom') {
             top = (placement === 'top')
                 ? targetRect.top - tooltipRect.height - gap
@@ -173,7 +180,7 @@ const initCustomTooltips = () => {
         if (!target) return;
         if (currentTarget === target) return;
 
-        // 1. Swap title to data-tooltip
+        // Swap title to data-tooltip
         if (target.hasAttribute('title')) {
             const text = target.getAttribute('title');
             if (!text.trim()) return;
@@ -181,7 +188,7 @@ const initCustomTooltips = () => {
             target.removeAttribute('title');
         }
 
-        // 2. CHECK: Overflow Logic (The "Range" Method)
+        // Overflow Logic
         if (target.hasAttribute('data-tooltip-overflow')) {
             const range = document.createRange();
             range.selectNodeContents(target);
@@ -192,7 +199,7 @@ const initCustomTooltips = () => {
             if (textWidth <= contentWidth + 1) return;
         }
 
-        // 3. Show Tooltip
+        // Show Tooltip
         const text = target.getAttribute('data-tooltip');
         if (text) {
             currentTarget = target;
@@ -204,6 +211,15 @@ const initCustomTooltips = () => {
         const target = e.target.closest('[data-tooltip]');
         if (target && target === currentTarget) {
             tooltip.classList.remove('visible');
+
+            // 3. CLEAN UP POPOVER
+            // Wait for CSS transition (opacity) to finish before removing from DOM
+            setTimeout(() => {
+                if (!tooltip.classList.contains('visible')) {
+                    tooltip.hidePopover();
+                }
+            }, 200);
+
             currentTarget = null;
         }
     });
@@ -211,6 +227,7 @@ const initCustomTooltips = () => {
     window.addEventListener('scroll', () => {
         if (tooltip.classList.contains('visible')) {
             tooltip.classList.remove('visible');
+            tooltip.hidePopover();
             currentTarget = null;
         }
     }, { capture: true, passive: true });

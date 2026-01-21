@@ -1178,6 +1178,10 @@ img {
     position: fixed;
     top: 0;
     left: 0;
+    right: auto;
+    bottom: auto;
+    border: none;
+    margin: 0;
     z-index: 10000;
     padding: 8px 12px;
     background: var(--tooltip-bg);
@@ -1191,6 +1195,8 @@ img {
     white-space: nowrap;
     text-align: center;
     word-break: break-word;
+    scrollbar-width: none;
+    overflow: hidden;
 }
 
 #custom-tooltip.visible {
