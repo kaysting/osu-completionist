@@ -1196,7 +1196,7 @@ img {
     text-align: center;
     word-break: break-word;
     scrollbar-width: none;
-    overflow: hidden;
+    overflow: visible;
 }
 
 #custom-tooltip.visible {
