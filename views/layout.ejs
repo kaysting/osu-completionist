@@ -134,6 +134,13 @@
         </div>
     </main>
     <script src="<%= asset('/assets/js/index.js') %>"></script>
+    <script id="data-changelog" type="application/json">
+        <% const changelogHtml = includeMarkdown('views/markdown/changelog.md') %>
+        <%- JSON.stringify(changelogHtml) %>
+    </script>
+    <script id="data-notice" type="application/json">
+        <%- JSON.stringify(includeMarkdown('views/markdown/notice.md')) %>
+    </script>
     <script>
 
         // We do this stuff inline so there isn't a delay on load
@@ -173,12 +180,18 @@
             }
         });
 
-        // Show notice if not seen
+        // Collect info for dev notice and changelog
         const devMsgVersion = 2;
-        const seenVersion = parseInt(localStorage.getItem('devNoticeVersion') || '0');
-        if (seenVersion < devMsgVersion) {
-            const devNoticeText = `<%- includeMarkdown('views/markdown/notice.md') %>`;
-            const dialog = showPopup('Welcome to the osu!complete beta!', devNoticeText, [
+        const seenDevMsgVersion = parseInt(localStorage.getItem('devNoticeVersion') || '0');
+        const hasSeenDevNotice = seenDevMsgVersion >= devMsgVersion;
+        const changelogHtml = JSON.parse(document.getElementById('data-changelog').textContent);
+        const currentChangelogVersion = `<%= utils.sha256(changelogHtml) %>`;
+        const seenChangelogVersion = localStorage.getItem('changelogVersion');
+
+        // Show dev notice if we haven't seen it yet
+        if (!hasSeenDevNotice) {
+            const devNoticeHtml = JSON.parse(document.getElementById('data-notice').textContent);
+            const dialog = showPopup('Welcome to the osu!complete beta!', devNoticeHtml, [
                 {
                     label: 'Join the Discord server',
                     href: '/discord',
@@ -189,6 +202,19 @@
             ]);
             dialog.addEventListener('close', () => {
                 localStorage.setItem('devNoticeVersion', devMsgVersion.toString());
+                localStorage.setItem('changelogVersion', currentChangelogVersion);
+            });
+        }
+
+        // Show changelog if it's new and we've seen the dev notice already
+        if (hasSeenDevNotice && seenChangelogVersion !== currentChangelogVersion) {
+            const dialog = showPopup('Changelog', changelogHtml, [
+                { label: 'Close' }
+            ]);
+            dialog.style.setProperty('--width', '800px');
+            dialog.style.setProperty('--height', '900px');
+            dialog.addEventListener('close', () => {
+                localStorage.setItem('changelogVersion', currentChangelogVersion);
             });
         }
 
