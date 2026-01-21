@@ -3,9 +3,8 @@ const copyText = async text => {
     try {
         await navigator.clipboard.writeText(text);
         showPopup(
-            'Text copied',
-            `<p>The following text has been copied to your clipboard:</p>
-            <pre><code>${text}</code></pre>`,
+            'Text copied!',
+            `<pre><code>${text}</code></pre>`,
             [{ label: 'Okay' }]
         );
     } catch (err) {
