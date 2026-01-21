@@ -175,12 +175,12 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
 
     // Render import progress partial if requested
     if (selectors.match(/#importProgressCard/)) {
-        return res.renderPartial('profileImportProgressCard', { updateStatus: getUpdateStatus() });
+        return res.renderPartial('profile/cardImportProgress', { updateStatus: getUpdateStatus() });
     }
 
     // Render yearly stats partial if requested
     if (selectors.match(/#yearlyStats/)) {
-        return res.renderPartial('profileYearlyStats', { yearly: getYearlyStats(), yearlyType });
+        return res.renderPartial('profile/yearlyStats', { yearly: getYearlyStats(), yearlyType });
     }
 
     // Render play next partial if requested
@@ -188,7 +188,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         const recentPasses = getRecentPasses();
         const { recommended, recommendedQuery } = getRecommended(recentPasses);
         console.log(`playnext`);
-        return res.renderPartial('profilePlayNextCard', { recommended, recommendedQuery, category });
+        return res.renderPartial('profile/playNext', { recommended, recommendedQuery, category });
     }
 
     // Render full page

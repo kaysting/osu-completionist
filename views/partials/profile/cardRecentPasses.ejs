@@ -9,7 +9,7 @@
         </div>
         <% } %>
         <% for (const pass of recentPasses) { %>
-        <%- include('../partials/beatmapNarrow', { beatmap: pass.beatmap, time: `Passed ${pass.timeSincePass} for ${pass.beatmap.xp.toLocaleString()} cxp` }) %>
+        <%- include('../beatmap/narrow', { beatmap: pass.beatmap, time: `Passed ${pass.timeSincePass} for ${pass.beatmap.xp.toLocaleString()} cxp` }) %>
         <% } %>
     </div>
 </div>

@@ -1,7 +1,7 @@
 <link rel="stylesheet" href="/assets/css/profile.css">
 <div id="profile" class="flex col gap-16">
     <%- include('../partials/statSettings') %>
-    <%- include('../partials/profileImportProgressCard', { updateStatus }) %>
+    <%- include('../partials/profile/cardImportProgress', { updateStatus }) %>
     <div id="profileContent" class="card flex col gap-8">
         <div class="banner relative rounded-8 w-full" style="background-image: url('<%= user.banner_url %>')">
             <div class="buttons absolute flex row-rev gap-8 flex-wrap">
@@ -32,12 +32,12 @@
                     <% } %>
                 </div>
             </div>
-            <%- include('../partials/profileBasicStats', { stats }) %>
+            <%- include('../partials/profile/basicStats', { stats }) %>
         </div>
-        <%- include('../partials/profileCompletionProgressCard', { user, stats, historyDaily, yearly, yearlyType, updateStatus }) %>
+        <%- include('../partials/profile/cardCompletionProgress', { user, stats, historyDaily, yearly, yearlyType, updateStatus }) %>
         <% if (recommended) { %>
-        <%- include('../partials/profilePlayNextCard', { recommended, recommendedQuery, category }) %>
+        <%- include('../partials/profile/cardPlayNext', { recommended, recommendedQuery, category }) %>
         <% } %>
-        <%- include('../partials/profileRecentPassesCard', { recentPasses }) %>
+        <%- include('../partials/profile/cardRecentPasses', { recentPasses }) %>
     </div>
 </div>
