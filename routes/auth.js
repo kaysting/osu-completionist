@@ -46,7 +46,7 @@ router.get('/callback', async (req, res) => {
         // Save/update user data to db
         const userEntry = await updaterHelpers.updateUserProfile(user.data.id);
         if (!userEntry) {
-            return res.redirect('/auth/login');
+            return res.renderError(401, 'Failed to sign in', `Your osu! sign in attempt failed. This might be because you cancelled it, or your account is banned, preventing us from fetching your account info. Please try again.`);
         }
         if (!existingUserEntry) {
             // Queue user if they're new
