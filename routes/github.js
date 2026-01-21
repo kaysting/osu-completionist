@@ -49,12 +49,18 @@ router.post('/webhook', async (req, res) => {
             for (const commit of req.body.commits) {
                 const files = [
                     ...commit.added.map(f => ({ path: f, type: 'a' })),
-                    ...commit.removed.map(f => ({ path: f, type: 'r' })),
-                    ...commit.modified.map(f => ({ path: f, type: 'm' }))
+                    ...commit.modified.map(f => ({ path: f, type: 'm' })),
+                    ...commit.removed.map(f => ({ path: f, type: 'r' }))
                 ];
-                const extraFiles = files.splice(10);
-                if (extraFiles.length > 0) {
-                    files.push({ path: `... and ${extraFiles.length} more`, type: 'm' });
+                const changeLines = [];
+                if (files.length == 0) changeLines.push(`No files changed.`);
+                while (files.length > 0) {
+                    const f = files.shift();
+                    changeLines.push(`-# - ${{ a: '🟢', r: '🔴', m: '🟡' }[f.type]} \`${f.path}\``);
+                    if (changeLines.join('\n').length > 1000) {
+                        changeLines.pop();
+                        changeLines.push(`... and ${files.length + 1} more ...`);
+                    }
                 }
                 await utils.sendDiscordMessage(env.GITHUB_FEED_DISCORD_CHANNEL_ID, {
                     embeds: [{
@@ -67,7 +73,7 @@ router.post('/webhook', async (req, res) => {
                         description: commit.message.split('\n').slice(1).join('\n'),
                         fields: [{
                             name: 'Changes',
-                            value: files.map(f => `-# - ${{ a: '🟢', r: '🔴', m: '🟡' }[f.type]} \`${f.path}\``).join('\n') || 'No files changed'
+                            value: changeLines.join('\n')
                         }],
                         url: commit.url,
                         timestamp: new Date(commit.timestamp).toISOString(),
