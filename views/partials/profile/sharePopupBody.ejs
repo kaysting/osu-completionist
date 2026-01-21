@@ -53,13 +53,14 @@
             <img src="<%= render.urls.image %>" style="max-width: 600px">
             <div class="flex gap-8 flex-wrap">
                 <% if (render.embeds.bbcode) { %>
-                <button class="btn primary" onClick="copyText(`<%= render.embeds.bbcode %>`)">
+                <button class="btn primary" onClick="copyText(`<%= render.embeds.bbcode %>`)"
+                    title="Paste directly into osu!">
                     <span class="icon">content_copy</span>
                     <span>Copy osu! BBCode</span>
                 </button>
                 <% } %>
                 <% if (render.urls.image) { %>
-                <button class="btn" onClick="copyText(`<%= render.urls.image %>`)">
+                <button class="btn" onClick="copyText(`<%= render.urls.image %>`)" title="For sending anywhere">
                     <span class="icon">content_copy</span>
                     <span>Copy image URL</span>
                 </button>
