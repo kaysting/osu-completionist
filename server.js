@@ -157,6 +157,16 @@ app.use('/faq', (req, res) => {
         }
     });
 });
+app.use('/changelog', (req, res) => {
+    res.renderPage('raw', {
+        html: marked.parse(`# Changelog\n\n${fs.readFileSync('views/markdown/changelog.md', 'utf-8')}`),
+        title: 'Changelog',
+        meta: {
+            title: 'Changelog',
+            description: 'Check out the changelog to learn about recent, significant changes.'
+        }
+    });
+});
 
 app.use((req, res) => {
     res.renderError(404, '404 not found', `The requested resource couldn't be found.`);
