@@ -157,6 +157,17 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         }
         statsText.push(`\nTotal: ${stats.count_completed.toLocaleString()} / ${stats.count_total.toLocaleString()} (${stats.percentage_completed.toFixed(2)}%)`);
         data.plainText = statsText.join('\n');
+        data.profileUrl = `${req.protocol}://${req.get('host')}/u/${user.id}/${category}`;
+        const getImageUrl = (template, params) => {
+            return `${req.protocol}://${req.get('host')}/renders/${template}?${params.toString()}`;
+        };
+        const getHtmlUrl = (template, params) => {
+            return `${req.protocol}://${req.get('host')}/renders/${template}/html?${params.toString()}`;
+        };
+        const getBbcode = (template) => {
+            const imageUrl = getImageUrl(template, yearlyParams);
+            return `[url=${data.profileUrl}][img]${imageUrl}[/img][/url]`;
+        };
         const yearlyParams = new URLSearchParams({
             user_id: user.id,
             category: category
@@ -167,9 +178,16 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         if (req.query.share_base_sat) {
             yearlyParams.set('base_sat', req.query.share_base_sat);
         }
-        data.baseUrl = `${req.protocol}://${req.get('host')}/u/${user.id}/${category}`;
-        data.yearlyRenderUrl = `${req.protocol}://${req.get('host')}/renders/profile-yearly?${yearlyParams.toString()}`;
-        data.yearlyRenderBbcode = `[url=${data.baseUrl}][img]${data.yearlyRenderUrl}[/img][/url]`;
+        data.renders = {};
+        data.renders.yearly = {
+            urls: {
+                html: getHtmlUrl('profile-yearly', yearlyParams),
+                image: getImageUrl('profile-yearly', yearlyParams)
+            },
+            embeds: {
+                bbcode: getBbcode('profile-yearly')
+            }
+        };
         return data;
     };
 
@@ -196,7 +214,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         const recentPasses = getRecentPasses();
         const { recommended, recommendedQuery } = getRecommended(recentPasses);
         console.log(`playnext`);
-        return res.renderPartial('profile/playNext', { recommended, recommendedQuery, category });
+        return res.renderPartial('profile/cardPlayNext', { recommended, recommendedQuery, category });
     }
 
     // Render full page
