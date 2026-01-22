@@ -1,3 +1,7 @@
+body {
+    background: transparent;
+}
+
 #card {
     padding: 16px;
     background: var(--c-base-18);
