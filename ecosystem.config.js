@@ -1,3 +1,6 @@
+const globalWatch = [
+    'lib', 'config', '.env'
+];
 module.exports = {
     apps: [
         {
@@ -6,7 +9,7 @@ module.exports = {
             args: 'run webserver',
             cwd: './',
             watch: [
-                'helpers', 'routes', 'webserver.js', '.env'
+                ...globalWatch, 'apps/web/index.js', 'apps/web/routes'
             ],
             max_memory_restart: '1G'
         },
@@ -16,7 +19,7 @@ module.exports = {
             args: 'run updater',
             cwd: './',
             watch: [
-                'helpers', 'updater.js', '.env'
+                ...globalWatch, 'apps/updater'
             ]
         }
     ]
