@@ -1,4 +1,4 @@
-<div id="recentPassesCard" class="card lighter passes flex col gap-16" data-reload-interval="15">
+<div id="recentPassesCard" class="card lighter padded passes flex col gap-16" data-reload-interval="15">
     <div>
         <span class="header">monthly progress</span>
     </div>
@@ -40,9 +40,7 @@
     </div>
     <div class="beatmapNarrowContainer flex col gap-2">
         <% if (recentPasses.length === 0) { %>
-        <div class="empty">
-            <p>No passes found.</p>
-        </div>
+        <div class="empty">No passes found.</div>
         <% } %>
         <% for (const pass of recentPasses) { %>
         <%- include('../beatmap/narrow', { beatmap: pass.beatmap, time: `Passed ${pass.timeSincePass} for ${pass.beatmap.xp.toLocaleString()} cxp` }) %>

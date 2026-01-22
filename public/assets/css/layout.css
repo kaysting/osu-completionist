@@ -173,7 +173,7 @@ main {
     }
 
     .card {
-        padding: 8px 2px 8px 2px;
+        padding: 8px 2px;
     }
 }
 
@@ -281,4 +281,10 @@ img.noFade {
 
 img.loaded {
     opacity: 1;
+}
+
+.empty {
+    font-size: 16px;
+    color: var(--c-base-65);
+    margin: 0.5em 0px;
 }
