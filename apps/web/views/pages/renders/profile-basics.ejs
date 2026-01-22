@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Render</title>
+    <link rel="stylesheet" href="/assets/css/theme.css">
+    <link rel="stylesheet" href="/assets/css/utils.css">
+    <link rel="stylesheet" href="/assets/css/render-embeds.css">
+</head>
+
+<body>
+    <div id="card" class="flex col gap-24 rounded-16">
+        <div id="header" class="flex row gap-16 align-center">
+            <span class="title flex-grow flex-no-shrink">Category Completion</span>
+            <span class="category overflow-hidden nowrap text-ellipsis"><%= categoryName %></span>
+        </div>
+        <div class="flex col gap-16">
+            <div id="bar" class="flex gap-32 justify-center">
+                <div class="filling"
+                    style="width: <%= stats.percentage_completed %>%; background: <%= stats.percentage_completed_color %>">
+                </div>
+                <div class="stat big">
+                    <span class="key">category rank</span>
+                    <span class="value">#<%= stats.rank == 0 ? '-' : stats.rank %></span>
+                </div>
+                <div class="stat big">
+                    <span class="key">percent completed</span>
+                    <span class="value"><%= stats.percentage_completed.toFixed(2) %>%</span>
+                </div>
+                <div class="stat big">
+                    <span class="key">maps passed</span>
+                    <span class="value"><%= stats.count_completed.toLocaleString() %></span>
+                </div>
+                <div class="stat big">
+                    <span class="key">hours spent (nomod)</span>
+                    <span class="value"><%= Math.round(stats.secs_spent / 60 / 60).toLocaleString() %></span>
+                </div>
+            </div>
+            <div class="flex gap-24 align-center justify-center">
+                <div class="flex gap-24">
+                    <div class="stat">
+                        <span class="key">% maps completed</span>
+                        <span class="value"><%= (stats.count_completed / stats.count_total * 100).toFixed(2) %>%</span>
+                    </div>
+                    <div class="stat">
+                        <span class="key">maps left</span>
+                        <span class="value"><%= (stats.count_total - stats.count_completed).toLocaleString() %></span>
+                    </div>
+                    <div class="stat">
+                        <span class="key">nomod playtime left</span>
+                        <span class="value"><%= Math.round((stats.secs_remaining) / 60 / 60).toLocaleString() %>
+                            hours</span>
+                    </div>
+                </div>
+                <div class="sep"></div>
+                <div class="flex gap-24">
+                    <div class="stat">
+                        <span class="key">total maps</span>
+                        <span class="value"><%= stats.count_total.toLocaleString() %></span>
+                    </div>
+                    <div class="stat">
+                        <span class="key">total nomod playtime</span>
+                        <span class="value"><%= Math.round(stats.secs_total / 60 / 60).toLocaleString() %> hours</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="footer" class="flex row gap-16 align-end">
+            <span class="user flex gap-12 align-center flex-grow">
+                <img src="<%= user.avatar_url %>" class="avatar rounded-8">
+                <span class="name"><%= user.name %></span>
+            </span>
+            <div class="flex col gap-2 text-right">
+                <span class="timestamp"><%= dayjs().utc().format('YYYY-MM-DD HH:mm:ss [UTC]') %></span>
+                <span>Powered by osucomplete.org</span>
+            </div>
+        </div>
+    </div>
+    <style>
+        #bar {
+            position: relative;
+            padding: 16px;
+            background: var(--c-base-12);
+            border-radius: 100px;
+            overflow: hidden;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+            /* border: 2px solid var(--c-base-12); */
+        }
+
+        #bar .filling {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            border-radius: 16px;
+            opacity: 0.5;
+        }
+
+        .sep {
+            height: 32px;
+            width: 2px;
+            background: var(--c-base-30);
+            border-radius: 2px;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .stat.left {
+            align-items: flex-start;
+        }
+
+        .stat.right {
+            align-items: flex-end;
+        }
+
+        .stat {
+            gap: 1px;
+        }
+
+        .stat .key {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--c-base-60);
+        }
+
+        .stat .value {
+            font-size: 26px;
+            color: var(--c-base-90);
+        }
+
+        .stat.big {
+            gap: 2px;
+        }
+
+        .stat.big .key {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--c-base-75);
+        }
+
+        .stat.big .value {
+            font-size: 36px;
+            font-weight: 600;
+            color: white;
+        }
+    </style>
+    <%- query.base_hue ? `<style>body { --base-hue: ${parseInt(query.base_hue)}; }</style>` : '' %>
+    <%- query.base_sat ? `<style>body { --base-sat: ${parseInt(query.base_sat)}%; }</style>` : '' %>
+</body>
+
+</html>

@@ -21,6 +21,11 @@ const renders = {
         params: ['category', 'user_id'],
         data: ['yearly'],
         size: { width: 900, height: 'auto' }
+    },
+    'profile-basics': {
+        params: ['category', 'user_id'],
+        data: ['stats'],
+        size: { width: 900, height: 'auto' }
     }
 };
 
@@ -75,15 +80,18 @@ router.get('/:template/html', async (req, res) => {
         data.user = dbHelpers.getUserProfile(req.query.user_id);
         data.stats = dbHelpers.getUserCompletionStats(req.query.user_id, req.query.category);
         data.percentageColor = utils.percentageToColor(data.stats.percentage_completed / 100);
+        if (requiredData.includes('yearly')) {
+            data.yearly = dbHelpers.getUserYearlyCompletionStats(req.query.user_id, req.query.category);
+        }
+        if (requiredData.includes('stats')) {
+            data.stats = dbHelpers.getUserCompletionStats(req.query.user_id, req.query.category);
+        }
     }
     if (requiredParams.includes('category')) {
         data.categoryName = statsCategories.getCategoryName(req.query.category);
     }
     if (requiredData.includes('leaderboard')) {
         data.leaderboard = dbHelpers.getLeaderboard(req.query.category, 10);
-    }
-    if (requiredData.includes('yearly')) {
-        data.yearly = dbHelpers.getUserYearlyCompletionStats(req.query.user_id, req.query.category);
     }
     res.render(`pages/renders/${template}`, data);
 });

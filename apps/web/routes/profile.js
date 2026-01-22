@@ -165,26 +165,37 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
             return `${req.protocol}://${req.get('host')}/renders/${template}/html?${params.toString()}`;
         };
         const getBbcode = (template) => {
-            const imageUrl = getImageUrl(template, yearlyParams);
+            const imageUrl = getImageUrl(template, renderParams);
             return `[url=${data.profileUrl}][img]${imageUrl}[/img][/url]`;
         };
-        const yearlyParams = new URLSearchParams({
+        const renderParams = new URLSearchParams({
             user_id: user.id,
             category: category
         });
         if (req.query.share_base_hue) {
-            yearlyParams.set('base_hue', req.query.share_base_hue);
+            renderParams.set('base_hue', req.query.share_base_hue);
         }
         if (req.query.share_base_sat) {
-            yearlyParams.set('base_sat', req.query.share_base_sat);
+            renderParams.set('base_sat', req.query.share_base_sat);
         }
         data.renders = {};
+        data.renders.basics = {
+            name: `Category completion basics`,
+            description: `Perfect for your osu me! section, this image embed shows your primary completion stats (and totals) for the selected category.`,
+            urls: {
+                html: getHtmlUrl('profile-basics', renderParams),
+                image: getImageUrl('profile-basics', renderParams)
+            },
+            embeds: {
+                bbcode: getBbcode('profile-basics')
+            }
+        };
         data.renders.yearly = {
             name: `Category completion by year`,
-            description: `Perfect for your osu me! section, this image embed dynamically updates to show your per-year completion stats for the selected category.`,
+            description: `Another excellent osu! me! addition, this image embed shows your per-year completion stats for the selected category.`,
             urls: {
-                html: getHtmlUrl('profile-yearly', yearlyParams),
-                image: getImageUrl('profile-yearly', yearlyParams)
+                html: getHtmlUrl('profile-yearly', renderParams),
+                image: getImageUrl('profile-yearly', renderParams)
             },
             embeds: {
                 bbcode: getBbcode('profile-yearly')
