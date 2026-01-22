@@ -25,11 +25,6 @@ router.get('/:category', (req, res) => {
     req.session.category = category;
     // Get leaderboard data
     const { leaderboard, total_players } = getLeaderboard(category, limit, offset);
-    // Get colors for completion progress bars
-    for (const entry of leaderboard) {
-        const percentage = parseFloat(entry.stats.percentage_completed) / 100;
-        entry.color = utils.percentageToColor(percentage);
-    }
     // Calculate total page count
     const maxPages = Math.ceil(total_players / limit);
     const pagesToShow = [];

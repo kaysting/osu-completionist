@@ -110,6 +110,7 @@ const getBulkUserCompletionStats = (userIds, categoryId) => {
         stats.secs_spent = row.seconds;
         stats.secs_remaining = totals.seconds - row.seconds;
         stats.percentage_completed = row.seconds > 0 ? ((row.seconds / totals.seconds) * 100) : 0;
+        stats.percentage_completed_color = utils.percentageToColor(stats.percentage_completed / 100);
         stats.rank = row.rank;
         stats.best_rank = row.best_rank;
         stats.best_rank_time = row.best_rank_time;
