@@ -4,6 +4,7 @@ const utils = require('#utils');
 const marked = require('marked');
 const fs = require('fs');
 const statCategories = require('#config/statCategories.js');
+const path = require('path');
 
 const router = express.Router();
 
@@ -66,7 +67,7 @@ router.get('/:category', (req, res) => {
         },
         placeholder,
         results,
-        filterHelpHtml: marked.parse(fs.readFileSync('./views/markdown/filterHelp.md', 'utf-8')),
+        filterHelpHtml: marked.parse(fs.readFileSync(path.join(__dirname, '../views/markdown/filterHelp.md'), 'utf-8')),
         me: req.me
     });
 });
