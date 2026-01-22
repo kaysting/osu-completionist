@@ -1,0 +1,37 @@
+#card {
+    padding: 16px;
+    background: var(--c-base-18);
+}
+
+#header {
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+#header .title {
+    color: white;
+    font-weight: 600;
+}
+
+#header .category {
+    color: var(--c-base-90);
+}
+
+#footer .avatar {
+    height: 36px;
+}
+
+#footer {
+    font-size: 16px;
+    color: var(--c-base-60);
+}
+
+#footer .name {
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+}
+
+#footer .timestamp {
+    font-size: 12px;
+}

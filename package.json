@@ -2,10 +2,10 @@
   "name": "osu-completionist",
   "version": "1.0.0",
   "description": "A live completionist tracker and leaderboard for osu! players.",
-  "main": "server.js",
+  "main": "webserver.js",
   "scripts": {
     "updater": "node updater.js",
-    "webserver": "node server.js",
+    "webserver": "node webserver.js",
     "maintain": "node maintain.js"
   },
   "keywords": [],

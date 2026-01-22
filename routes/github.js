@@ -97,8 +97,9 @@ router.post('/webhook', async (req, res) => {
                 // Gracefully restart webserver
                 // Note that we don't restart the updater here - not only can we not control it from here,
                 // but restarting it has a decent likelihood to interrupt an ongoing import
-                utils.log(`Restarting server to apply updates...`);
-                process.kill(process.pid, 'SIGTERM');
+                //utils.log(`Restarting server to apply updates...`);
+                //process.kill(process.pid, 'SIGTERM');
+                // This is commented out since the new PM2 config should handle it
 
             } catch (error) {
                 utils.logError(`Error updating from GitHub: ${error.message}`);

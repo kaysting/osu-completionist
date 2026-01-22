@@ -174,7 +174,7 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
     logError(err);
-    res.renderError(500, '500 internal server error', `An internal server error occurred. Please try again later, and join the Discord server (link in the top bar) and let us know if the issue persists.`);
+    res.renderError(500, '500 internal server error', `An internal server error occurred. Please try again later, and join the Discord server linked in the top bar to let us know if the issue persists.`);
 });
 
 app.listen(env.WEBSERVER_PORT, () => {
