@@ -4,6 +4,7 @@ const utils = require('#utils');
 const { marked } = require('marked');
 const ejs = require('ejs');
 const fs = require('fs');
+const path = require('path');
 
 const router = express.Router();
 
@@ -91,7 +92,7 @@ const structs = [
 
 router.get('/', async (req, res) => {
     let key = db.prepare(`SELECT api_key FROM users WHERE id = ?`).get(req?.me?.id)?.api_key;
-    const text = fs.readFileSync('views/markdown/apiDocs.md', 'utf-8');
+    const text = fs.readFileSync(path.join(__dirname, '../views/markdown/apiDocs.md'), 'utf-8');
     const md = ejs.render(text, { key, endpoints, structs });
     const html = await marked.parse(md);
     res.renderPage('raw', {
