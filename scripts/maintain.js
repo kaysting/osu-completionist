@@ -9,13 +9,13 @@ const tar = require('tar');
 const bz2 = require('unbzip2-stream');
 const SqlDumpParser = require('#lib/SqlDumpParser.js');
 const db = require('#db');
-const updateHelpers = require('#api/write.js');
+const apiWrite = require('#api/write.js');
 const utils = require('#utils');
 
 const importBeatmapsets = async (dumpFolder) => {
 
     if (!dumpFolder)
-        dumpFolder = path.resolve(__dirname, 'temp', `dump_${dayjs().set('date', 1).format('YYYY-MM-DD')}`);
+        dumpFolder = path.resolve(env.ROOT, 'temp', `dump_${dayjs().set('date', 1).format('YYYY-MM-DD')}`);
     const dumpFileName = 'osu_beatmapsets.sql';
     const dumpFilePath = path.resolve(dumpFolder, dumpFileName);
     if (!fs.existsSync(dumpFilePath)) {
@@ -40,7 +40,7 @@ const importBeatmapsets = async (dumpFolder) => {
     if (mapsetIdsToSave.length > 0) {
         console.log(`Importing ${mapsetIdsToSave.length} missing beatmapsets...`);
         for (const mapsetId of mapsetIdsToSave) {
-            await updateHelpers.saveMapset(mapsetId);
+            await apiWrite.saveMapset(mapsetId);
             newMapsetCount++;
         }
     } else {
@@ -66,7 +66,7 @@ const importBeatmapsets = async (dumpFolder) => {
         ).all()
     ];
     for (const row of rows) {
-        await updateHelpers.saveMapset(row.mapset_id, false);
+        await apiWrite.saveMapset(row.mapset_id, false);
         newMapsetCount++;
     }
 
@@ -104,11 +104,11 @@ const importBeatmapsets = async (dumpFolder) => {
 
     // Recalculate beatmap stats
     console.log('Updating beatmap stats...');
-    updateHelpers.updateUserCategoryStats(0); // id 0 stores totals
+    apiWrite.updateUserCategoryStats(0); // id 0 stores totals
 
 };
 
-const schemaPath = path.resolve(__dirname, './schema.sql');
+const schemaPath = path.resolve(env.ROOT, 'database/schema.sql');
 
 const readSchema = () => {
     cp.execSync(`sqlite3 "${env.DB_PATH}" .read "${schemaPath}"`);
@@ -123,7 +123,7 @@ const downloadDump = async () => {
 
         // Determine path and create output directory
         const date = dayjs().set('date', 1);
-        const outputDir = path.resolve(__dirname, 'temp', `dump_${date.format('YYYY-MM-DD')}`);
+        const outputDir = path.resolve(env.ROOT, 'temp', `dump_${date.format('YYYY-MM-DD')}`);
         if (fs.existsSync(outputDir))
             fs.rmSync(outputDir, { recursive: true, force: true });
         fs.mkdirSync(outputDir, { recursive: true });
@@ -174,7 +174,7 @@ const options = [
         description: `Create/update the database using schema.sql.`
     },
     {
-        f: updateHelpers.backupDatabase,
+        f: apiWrite.backupDatabase,
         name: `backupdb`,
         description: `Create a backup of the current database. Consider stopping the updater first.`
     },
@@ -197,7 +197,7 @@ const options = [
         ]
     },
     {
-        f: updateHelpers.updateAllUserCategoryStats,
+        f: apiWrite.updateAllUserCategoryStats,
         name: `updatestats`,
         description: `Recalculate category stats for all users, including totals.`
     },
@@ -208,8 +208,8 @@ const options = [
     },
     {
         f: async (userId, full = false) => {
-            await updateHelpers.updateUserProfile(userId);
-            await updateHelpers.queueUserForImport(userId, full);
+            await apiWrite.updateUserProfile(userId);
+            await apiWrite.queueUserForImport(userId, full);
         },
         name: `queueuser`,
         description: `Add a user to the import queue.`,
@@ -219,7 +219,7 @@ const options = [
         ]
     },
     {
-        f: updateHelpers.unqueueUser,
+        f: apiWrite.unqueueUser,
         name: `unqueueuser`,
         description: `Remove a user from the import queue.`,
         args: [
