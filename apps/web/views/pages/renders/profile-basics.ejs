@@ -34,14 +34,14 @@
                     <span class="value"><%= stats.count_completed.toLocaleString() %></span>
                 </div>
                 <div class="stat big">
-                    <span class="key">hours spent (nomod)</span>
-                    <span class="value"><%= Math.round(stats.secs_spent / 60 / 60).toLocaleString() %></span>
+                    <span class="key">nomod playtime</span>
+                    <span class="value"><%= Math.round(stats.secs_spent / 60 / 60).toLocaleString() %> hrs</span>
                 </div>
             </div>
             <div class="flex gap-24 align-center justify-center">
                 <div class="flex gap-24">
                     <div class="stat">
-                        <span class="key">% maps completed</span>
+                        <span class="key">% maps passed</span>
                         <span class="value"><%= (stats.count_completed / stats.count_total * 100).toFixed(2) %>%</span>
                     </div>
                     <div class="stat">
@@ -134,6 +134,7 @@
         .stat .value {
             font-size: 26px;
             color: var(--c-base-90);
+            font-weight: 200;
         }
 
         .stat.big {

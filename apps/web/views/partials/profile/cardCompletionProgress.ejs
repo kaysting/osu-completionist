@@ -39,21 +39,25 @@
         <div id="progressStatsRow" class="flex gap-16">
             <div class="stats flex-grow flex flex-wrap">
                 <div class="stat flex col gap-2">
+                    <div class="key">% maps passed</div>
+                    <div class="value"><%= (stats.count_completed / stats.count_total * 100).toFixed(2) %>%</div>
+                </div>
+                <div class="stat flex col gap-2">
                     <div class="key">maps passed</div>
                     <div class="value"><%= stats.count_completed.toLocaleString() %></div>
                 </div>
                 <div class="stat flex col gap-2">
-                    <div class="key">maps remaining</div>
+                    <div class="key">maps left</div>
                     <div class="value">
                         <%= (stats.count_total - stats.count_completed).toLocaleString() %>
                     </div>
                 </div>
                 <div class="stat flex col gap-2">
-                    <div class="key">cxp remaining</div>
+                    <div class="key">cxp left</div>
                     <div class="value"><%= stats.xp_remaining.toLocaleString() %></div>
                 </div>
                 <div class="stat flex col gap-2">
-                    <div class="key">nomod playtime remaining</div>
+                    <div class="key">nomod playtime left</div>
                     <div class="value" title="<%= Math.round(stats.secs_remaining / 60 / 60).toLocaleString() %> hours">
                         <%= stats.timeRemaining %></div>
                 </div>
