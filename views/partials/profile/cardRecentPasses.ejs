@@ -7,7 +7,7 @@
         <script>
             function loadMonthlyGraph() {
                 // Prepare data
-                const data = JSON.parse('<%- JSON.stringify(historyMonthly) %>');
+                const data = JSON.parse('<%- JSON.stringify(historyMonthly.map(m => ({ month: m.month, delta: Math.max(0, m.delta.count_completed) }))) %>');
                 if (data.length == 0) {
                     data.push({
                         month: 'now',
@@ -22,7 +22,7 @@
                     labels: data.map(dp => dp.month),
                     datasets: [
                         {
-                            values: data.map(dp => dp.delta.count_completed)
+                            values: data.map(dp => dp.delta)
                         }
                     ],
                     tooltipCallbacks: {
