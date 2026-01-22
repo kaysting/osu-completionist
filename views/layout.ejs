@@ -27,6 +27,7 @@
     <script src="<%= asset('/assets/js/base.js') %>"></script>
     <script src="<%= asset('/assets/js/partial.js') %>"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+    <script src="<%= asset('/assets/js/index.js') %>"></script>
 </head>
 
 <body data-page="<%= page %>">
@@ -133,7 +134,6 @@
             </p>
         </div>
     </main>
-    <script src="<%= asset('/assets/js/index.js') %>"></script>
     <script id="data-changelog" type="application/json">
         <% const changelogHtml = includeMarkdown('views/markdown/changelog.md') %>
         <%- JSON.stringify(changelogHtml) %>

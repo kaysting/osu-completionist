@@ -11,75 +11,23 @@
                     const data = JSON.parse('<%- JSON.stringify(historyDaily) %>');
                     const datapointNow = {
                         date: 'now',
-                        percentage_completed: '<%= stats.percentage_completed %>'
+                        percentage_completed: '<%= stats.percentage_completed %>',
+                        rank: '<%= stats.rank %>'
                     };
                     data.push(datapointNow);
                     if (data.length < 2) {
                         data.push(datapointNow);
                     }
-                    // Get context and create chart
-                    const ctx = document.getElementById('progressGraph').getContext('2d');
-                    const gradient = ctx.createLinearGradient(0, 0, 0, 100);
-                    gradient.addColorStop(0, 'hsla(150, 90%, 60%, 20%)');
-                    gradient.addColorStop(1, 'hsla(150, 90%, 60%, 0%)');
-                    const chart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: data.map(entry => entry.date),
-                            datasets: [{
-                                data: data.map(entry => entry.percentage_completed),
-                                backgroundColor: gradient,
-                                borderColor: 'hsl(150, 90%, 60%)',
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                fill: true,
-                                tension: 0.3
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            // Disable the load animation but keep tooltip animations
-                            animation: {
-                                duration: 0
-                            },
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-                                tooltip: {
-                                    mode: 'index',
-                                    intersect: false,
-                                    displayColors: false,
-                                    cornerRadius: 8,
-                                    padding: 8,
-                                    titleMarginBottom: 2,
-                                    backgroundColor: 'hsl(220, 20%, 8%)',
-                                    titleFont: {
-                                        size: 12,
-                                        weight: 600,
-                                        family: 'Torus'
-                                    },
-                                    bodyFont: {
-                                        size: 16,
-                                        weight: 'normal',
-                                        family: 'Torus'
-                                    },
-                                    titleColor: `hsl(220, 20%, 65%)`,
-                                    bodyColor: `hsl(220, 20%, 90%)`,
-                                    callbacks: {
-                                        label: context => `${context.parsed.y.toFixed(4)}% completed`,
-                                        title: context => `${context[0].label}`
-                                    }
-                                }
-                            },
-                            scales: {
-                                x: { display: false },
-                                y: { display: false }
-                            },
-                            layout: {
-                                padding: 0
+                    // Render graph
+                    renderLineGraph(document.getElementById('progressGraph'), {
+                        labels: data.map(dp => dp.date),
+                        datasets: [
+                            {
+                                values: data.map(dp => dp.percentage_completed)
                             }
+                        ],
+                        tooltipCallbacks: {
+                            label: context => `${context.parsed.y.toFixed(4)}% completed`
                         }
                     });
                 }
