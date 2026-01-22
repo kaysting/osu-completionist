@@ -8,6 +8,15 @@
             function loadMonthlyGraph() {
                 // Prepare data
                 const data = JSON.parse('<%- JSON.stringify(historyMonthly) %>');
+                if (data.length == 0) {
+                    data.push({
+                        month: 'now',
+                        delta: { count_completed: 0 }
+                    });
+                }
+                if (data.length < 2) {
+                    data.push(data[data.length - 1]);
+                }
                 // Render graph
                 renderGraph(document.getElementById('monthlyGraph'), {
                     labels: data.map(dp => dp.month),
