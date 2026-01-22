@@ -1,11 +1,38 @@
 <div id="recentPassesCard" class="card lighter passes flex col gap-16" data-reload-interval="15">
     <div>
-        <span class="header">recent passes (<%= recentPasses.length.toLocaleString() %>)</span>
+        <span class="header">monthly progress</span>
+    </div>
+    <div>
+        <canvas id="monthlyGraph"></canvas>
+        <script>
+            function loadMonthlyGraph() {
+                // Prepare data
+                const data = JSON.parse('<%- JSON.stringify(historyMonthly) %>');
+                // Render graph
+                renderGraph(document.getElementById('monthlyGraph'), {
+                    labels: data.map(dp => dp.month),
+                    datasets: [
+                        {
+                            values: data.map(dp => dp.delta.count_completed)
+                        }
+                    ],
+                    tooltipCallbacks: {
+                        label: context => `${context.parsed.y.toLocaleString()} new passes`
+                    },
+                    showX: true, showY: true, showGrid: true,
+                    height: 250
+                });
+            }
+            loadMonthlyGraph();
+        </script>
+    </div>
+    <div>
+        <span class="header">recent passes (<%= recentPasses.length.toLocaleString() %> in the past 24 hours)</span>
     </div>
     <div class="beatmapNarrowContainer flex col gap-2">
         <% if (recentPasses.length === 0) { %>
         <div class="empty">
-            <p>No new passes in the past 24 hours (or since import)</p>
+            <p>No passes found.</p>
         </div>
         <% } %>
         <% for (const pass of recentPasses) { %>

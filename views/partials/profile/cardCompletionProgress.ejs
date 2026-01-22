@@ -3,7 +3,7 @@
         <div>
             <span class="header">completion progress</span>
         </div>
-        <div style="height: 100px">
+        <div>
             <canvas id="progressGraph"></canvas>
             <script>
                 function loadProgressGraph() {
@@ -28,7 +28,9 @@
                         ],
                         tooltipCallbacks: {
                             label: context => `${context.parsed.y.toFixed(4)}% completed`
-                        }
+                        },
+                        showAxisLabels: true,
+                        height: 100
                     });
                 }
                 loadProgressGraph();
