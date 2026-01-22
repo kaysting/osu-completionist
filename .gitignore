@@ -1,7 +1,7 @@
 /node_modules
-/backups
-/*.db*
+/database/backups
+/apps/web/cache
+*.db*
 .*
 !.env.example
 !.gitignore
-/cache

@@ -1,6 +1,6 @@
-const env = require('./env');
+const env = require('#env');
 const Database = require('better-sqlite3');
-const utils = require('./utils');
+const utils = require('#utils');
 
 utils.log(`Using database ${env.DB_PATH}`);
 const db = new Database(env.DB_PATH);

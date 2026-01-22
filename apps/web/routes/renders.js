@@ -1,11 +1,11 @@
-const env = require('../helpers/env');
+const env = require('#env');
 const path = require('path');
 const fs = require('fs');
 const express = require('express');
-const dbHelpers = require('../helpers/dbHelpers');
-const statsCategories = require('../helpers/statCategories');
-const utils = require('../helpers/utils');
-const imageRenderer = require('../helpers/imageRenderer');
+const dbHelpers = require('#api/read.js');
+const statsCategories = require('#config/statCategories.js');
+const utils = require('#utils');
+const imageRenderer = require('#lib/ImageRenderer.js');
 
 const renders = {
     'profile-meta': {

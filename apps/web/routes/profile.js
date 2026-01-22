@@ -1,9 +1,9 @@
 const express = require('express');
-const statCategories = require('../helpers/statCategories.js');
-const { ensureUserExists } = require('../helpers/middleware.js');
-const utils = require('../helpers/utils.js');
-const updater = require('../helpers/updaterHelpers.js');
-const dbHelpers = require('../helpers/dbHelpers.js');
+const statCategories = require('#config/statCategories.js');
+const { ensureUserExists } = require('../middleware.js');
+const utils = require('#utils');
+const updater = require('#api/write.js');
+const dbHelpers = require('#api/read.js');
 
 const router = express.Router();
 

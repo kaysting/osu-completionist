@@ -1,6 +1,6 @@
 const express = require('express');
-const db = require('../helpers/db');
-const utils = require('../helpers/utils');
+const db = require('#db');
+const utils = require('#utils');
 const { marked } = require('marked');
 const ejs = require('ejs');
 const fs = require('fs');

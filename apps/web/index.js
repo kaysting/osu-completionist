@@ -1,21 +1,20 @@
-const env = require('./helpers/env');
+const env = require('#env');
 const fs = require('fs');
 const cp = require('child_process');
+const path = require('path');
 const express = require('express');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const { rateLimit } = require('express-rate-limit');
 const { marked } = require('marked');
 const dayjs = require('dayjs');
+const utils = require('#utils');
+const db = require('#db');
+const { getAuthenticatedUser, updateLastUrl } = require('./middleware');
+
 dayjs.extend(require('dayjs/plugin/relativeTime'));
 dayjs.extend(require('dayjs/plugin/utc'));
 dayjs.extend(require('dayjs/plugin/advancedFormat'));
-
-const { log, logError } = require('./helpers/utils');
-const db = require('./helpers/db');
-const { getAuthenticatedUser, updateLastUrl } = require('./helpers/middleware');
-const path = require('path');
-const utils = require('./helpers/utils');
 
 const app = express();
 
@@ -49,7 +48,7 @@ app.use((req, res, next) => {
     const logParts = [ip, req.method, req.url];
     const reloadSelectors = req.headers['x-reload-selectors'];
     if (reloadSelectors) logParts.push(JSON.stringify(reloadSelectors.split(',')));
-    log(...logParts);
+    utils.log(...logParts);
     // Move to next middleware
     next();
 });
@@ -68,7 +67,8 @@ app.use('/github', require('./routes/github'));
 
 // Register static files and view engine
 app.set('view engine', 'ejs');
-app.use(express.static('public', { dotfiles: 'allow' }));
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public'), { dotfiles: 'allow' }));
 
 // Register webapp middleware
 app.use(cookieParser());
@@ -105,7 +105,7 @@ try {
 // Add functions for use within EJS
 app.locals.dayjs = dayjs;
 app.locals.utils = utils;
-app.locals.includeMarkdown = (filePath) => marked.parse(fs.readFileSync(filePath, 'utf-8'));
+app.locals.includeMarkdown = (filePath) => marked.parse(fs.readFileSync(path.join(__dirname, filePath), 'utf-8'));
 app.locals.asset = (pathRel) => {
     const fullPath = path.join(__dirname, 'public', pathRel);
     try {
@@ -129,7 +129,7 @@ app.use('/renders', require('./routes/renders'));
 app.use('/api', require('./routes/apiDocs'));
 app.use('/tos', (req, res) => {
     res.renderPage('raw', {
-        html: marked.parse(fs.readFileSync('views/markdown/tos.md', 'utf-8')),
+        html: marked.parse(fs.readFileSync(path.join(__dirname, 'views/markdown/tos.md'), 'utf-8')),
         title: 'Terms of Service',
         meta: {
             title: 'Terms of Service',
@@ -139,7 +139,7 @@ app.use('/tos', (req, res) => {
 });
 app.use('/privacy', (req, res) => {
     res.renderPage('raw', {
-        html: marked.parse(fs.readFileSync('views/markdown/privacy.md', 'utf-8')),
+        html: marked.parse(fs.readFileSync(path.join(__dirname, 'views/markdown/privacy.md'), 'utf-8')),
         title: 'Privacy Policy',
         meta: {
             title: 'Privacy Policy',
@@ -149,7 +149,7 @@ app.use('/privacy', (req, res) => {
 });
 app.use('/faq', (req, res) => {
     res.renderPage('raw', {
-        html: marked.parse(fs.readFileSync('views/markdown/faq.md', 'utf-8')),
+        html: marked.parse(fs.readFileSync(path.join(__dirname, 'views/markdown/faq.md'), 'utf-8')),
         title: 'FAQ',
         meta: {
             title: 'osu!complete FAQ',
@@ -159,7 +159,7 @@ app.use('/faq', (req, res) => {
 });
 app.use('/changelog', (req, res) => {
     res.renderPage('raw', {
-        html: marked.parse(`# Changelog\n\n${fs.readFileSync('views/markdown/changelog.md', 'utf-8')}`),
+        html: marked.parse(`# Changelog\n\n${fs.readFileSync(path.join(__dirname, 'views/markdown/changelog.md'), 'utf-8')}`),
         title: 'Changelog',
         meta: {
             title: 'Changelog',
@@ -173,12 +173,12 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-    logError(err);
+    utils.logError(err);
     res.renderError(500, '500 internal server error', `An internal server error occurred. Please try again later, and join the Discord server linked in the top bar to let us know if the issue persists.`);
 });
 
 app.listen(env.WEBSERVER_PORT, () => {
-    log(`Server is running on port ${env.WEBSERVER_PORT}`);
+    utils.log(`Server is running on port ${env.WEBSERVER_PORT}`);
 });
 
 let shuttingDown = false;
@@ -190,20 +190,20 @@ const shutDown = () => {
 };
 
 process.on('unhandledRejection', (reason, promise) => {
-    logError('Unhandled Rejection at:', promise, 'reason:', reason);
+    utils.logError('Unhandled Rejection at:', promise, 'reason:', reason);
     shutDown();
 });
 
 process.on('uncaughtException', (err) => {
-    logError('Uncaught Exception thrown:', err);
+    utils.logError('Uncaught Exception thrown:', err);
 });
 
 process.on('SIGINT', () => {
-    log('Received SIGINT');
+    utils.log('Received SIGINT');
     shutDown();
 });
 
 process.on('SIGTERM', () => {
-    log('Received SIGTERM');
+    utils.log('Received SIGTERM');
     shutDown();
 });

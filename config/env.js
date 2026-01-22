@@ -4,9 +4,11 @@ const fs = require('fs');
 
 const env = {};
 
+env.ROOT = path.resolve(__dirname, '..');
+
 // Database
-env.DB_PATH = path.resolve(process.env.DB_PATH || path.resolve(__dirname, '../storage.db'));
-env.DB_BACKUPS_DIR = path.resolve(process.env.DB_BACKUPS_DIR || path.resolve(__dirname, '../backups'));
+env.DB_PATH = path.resolve(process.env.DB_PATH || path.resolve(env.ROOT, 'database/storage.db'));
+env.DB_BACKUPS_DIR = path.resolve(process.env.DB_BACKUPS_DIR || path.resolve(env.ROOT, 'database/backups'));
 env.DB_BACKUP_INTERVAL_HOURS = Number(process.env.DB_BACKUP_INTERVAL_HOURS || 6);
 env.DB_KEEP_BACKUPS_COUNT = Number(process.env.DB_KEEP_BACKUPS_COUNT || 12);
 

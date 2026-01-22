@@ -1,5 +1,5 @@
 const express = require('express');
-const { searchUsers, searchBeatmaps } = require('../helpers/dbHelpers');
+const { searchUsers, searchBeatmaps } = require('#api/read.js');
 
 const router = express.Router();
 

@@ -1,6 +1,6 @@
 const express = require('express');
-const db = require('../helpers/db');
-const dbHelpers = require('../helpers/dbHelpers');
+const db = require('#db');
+const dbHelpers = require('#api/read.js');
 
 const router = express.Router();
 

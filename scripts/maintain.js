@@ -1,4 +1,4 @@
-const env = require('./helpers/env');
+const env = require('#env');
 const fs = require('fs');
 const cp = require('child_process');
 const path = require('path');
@@ -7,10 +7,10 @@ const dayjs = require('dayjs');
 const axios = require('axios');
 const tar = require('tar');
 const bz2 = require('unbzip2-stream');
-const SqlDumpParser = require('./helpers/SqlDumpParser');
-const db = require('./helpers/db');
-const updateHelpers = require('./helpers/updaterHelpers');
-const utils = require('./helpers/utils');
+const SqlDumpParser = require('#lib/SqlDumpParser.js');
+const db = require('#db');
+const updateHelpers = require('#api/write.js');
+const utils = require('#utils');
 
 const importBeatmapsets = async (dumpFolder) => {
 

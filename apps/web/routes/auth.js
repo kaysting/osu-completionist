@@ -1,10 +1,10 @@
-const env = require('../helpers/env');
+const env = require('#env');
 const express = require('express');
 const axios = require('axios');
-const utils = require('../helpers/utils');
-const updaterHelpers = require('../helpers/updaterHelpers');
+const utils = require('#utils');
+const updaterHelpers = require('#api/write.js');
 const { log } = utils;
-const db = require('../helpers/db');
+const db = require('#db');
 
 const router = express.Router();
 

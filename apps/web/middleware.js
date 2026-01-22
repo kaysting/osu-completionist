@@ -1,7 +1,6 @@
-const db = require('./db');
-const fs = require('fs');
-const utils = require('./utils');
-const { getUserProfile } = require('./dbHelpers');
+const db = require('#db');
+const utils = require('#utils');
+const { getUserProfile } = require('#api/read.js');
 
 const middleware = {
 

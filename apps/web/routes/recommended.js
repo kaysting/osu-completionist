@@ -1,9 +1,9 @@
 const express = require('express');
-const { searchBeatmaps } = require('../helpers/dbHelpers');
-const utils = require('../helpers/utils');
+const { searchBeatmaps } = require('#api/read.js');
+const utils = require('#utils');
 const marked = require('marked');
 const fs = require('fs');
-const statCategories = require('../helpers/statCategories');
+const statCategories = require('#config/statCategories.js');
 
 const router = express.Router();
 

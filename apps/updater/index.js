@@ -1,6 +1,6 @@
-const { log } = require('./helpers/utils');
-const osu = require('./helpers/osu');
-const updaterHelpers = require('./helpers/updaterHelpers');
+const { log } = require('#utils');
+const osu = require('#lib/osu.js');
+const updaterHelpers = require('#api/write.js');
 const dayjs = require('dayjs');
 
 const runGlobalRecentsUpdate = async () => {

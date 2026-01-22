@@ -4,9 +4,20 @@
   "description": "A live completionist tracker and leaderboard for osu! players.",
   "main": "webserver.js",
   "scripts": {
-    "updater": "node updater.js",
-    "webserver": "node webserver.js",
-    "maintain": "node maintain.js"
+    "updater": "node apps/updater/index.js",
+    "webserver": "node apps/web/index.js",
+    "maintain": "node scripts/maintain.js",
+    "test": "node scripts/.test.js"
+  },
+  "imports": {
+    "#env": "./config/env.js",
+    "#db": "./database/db.js",
+    "#utils": "./lib/utils.js",
+    "#api/*": "./lib/api/*",
+    "#config/*": "./config/*",
+    "#lib/*": "./lib/*",
+    "#apps/*": "./apps/*",
+    "#database/*": "./database/*"
   },
   "keywords": [],
   "author": "Kayla Kersting (kaysting@github)",

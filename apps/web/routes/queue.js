@@ -1,5 +1,5 @@
 const express = require('express');
-const { getQueuedUsers } = require('../helpers/dbHelpers');
+const { getQueuedUsers } = require('#api/read.js');
 
 const router = express.Router();
 
