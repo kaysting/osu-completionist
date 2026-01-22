@@ -19,7 +19,7 @@
                         data.push(datapointNow);
                     }
                     // Render graph
-                    renderLineGraph(document.getElementById('progressGraph'), {
+                    renderGraph(document.getElementById('progressGraph'), {
                         labels: data.map(dp => dp.date),
                         datasets: [
                             {

@@ -56,7 +56,7 @@ const audioVolumeUp = () => {
     audioVolumeSet(volume + 0.1);
 };
 
-const renderLineGraph = (canvasElement, opts) => {
+const renderGraph = (canvasElement, opts) => {
     const ctx = canvasElement.getContext('2d');
     const datasets = [];
     for (const dataset of opts.datasets) {
