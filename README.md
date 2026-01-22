@@ -3,7 +3,7 @@ A modern, feature-rich osu! completionist tracker and leaderboard.
 
 Currently available at https://osucomplete.org
 
-![Promo](/public/assets/images/promo.png)
+![Promo](/apps/web/public/assets/images/promo.png)
 
 ## Features
 - **Easy import process:** Just sign in with your osu account and get added to the import queue. Soon enough, your stats will be visible.
