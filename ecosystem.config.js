@@ -1,5 +1,8 @@
 const globalWatch = [
-    'lib', 'config', '.env'
+    'lib', 'config', '.env',
+    'database/db.js',
+    'database/schema.sql',
+    'database/migrations/*.sql'
 ];
 module.exports = {
     apps: [

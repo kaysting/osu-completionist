@@ -115,6 +115,7 @@ const readSchema = () => {
 };
 
 const dumpSchema = () => {
+    console.log(`Dumping database schema to ${schemaPath}...`);
     cp.execSync(`sqlite3 "${env.DB_PATH}" .schema > "${schemaPath}"`);
 };
 

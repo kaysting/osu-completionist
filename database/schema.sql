@@ -193,3 +193,6 @@ CREATE TABLE
 	);
 
 CREATE INDEX idx_full_completions_user ON user_full_completions (user_id);
+
+CREATE TABLE
+	misc (key text NOT NULL, VALUE text);
