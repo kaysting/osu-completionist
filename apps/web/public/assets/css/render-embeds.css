@@ -49,3 +49,9 @@ body {
     height: 16px;
     border-radius: 4px;
 }
+
+#footer .rankCont {
+    font-size: 14px;
+    color: var(--c-base-90);
+    font-weight: 400;
+}

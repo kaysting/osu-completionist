@@ -24,10 +24,14 @@
         <div id="footer" class="flex row gap-16 align-end">
             <span class="user flex gap-12 align-center flex-grow">
                 <img src="<%= user.avatar_url %>" class="avatar rounded-8">
-                <div class="flex row gap-8 align-center">
-                    <span class="name"><%= user.name %></span>
-                    <img src="<%= user.country.flag_url %>" class="flag country">
-                    <img src="<%= user.team.flag_url %>" class="flag team">
+                <div class="flex col gap-4">
+                    <div class="flex row gap-8 align-center">
+                        <span class="name"><%= user.name %></span>
+                        <img src="<%= user.country.flag_url %>" class="flag country">
+                        <img src="<%= user.team.flag_url %>" class="flag team">
+                    </div>
+                    <span class="rankCont">Category rank <span
+                            class="rank">#<%= stats.rank == 0 ? '-' : stats.rank %></span></span>
                 </div>
             </span>
             <div class="flex col gap-2 text-right">
