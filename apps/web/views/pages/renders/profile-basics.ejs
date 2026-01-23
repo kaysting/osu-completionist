@@ -19,7 +19,7 @@
             <span class="category overflow-hidden nowrap text-ellipsis"><%= categoryName %></span>
         </div>
         <div class="flex col gap-16">
-            <div class="flex gap-32 align-center justify-center">
+            <div class="flex gap-64 align-center justify-center">
                 <div class="flex gap-24">
                     <div class="stat">
                         <span class="key">maps passed</span>
@@ -27,12 +27,10 @@
                             <%= stats.count_total.toLocaleString() %></span>
                     </div>
                 </div>
-                <div class="sep"></div>
                 <div class="stat big">
                     <span class="value"><%= stats.percentage_completed.toFixed(2) %>%</span>
                     <span class="key">complete</span>
                 </div>
-                <div class="sep"></div>
                 <div class="flex gap-24">
                     <div class="stat">
                         <span class="key">nomod hours</span>
@@ -99,6 +97,7 @@
         }
 
         .sep {
+            position: relative;
             height: 32px;
             width: 2px;
             background: var(--c-base-30);
@@ -157,8 +156,8 @@
     <script>
         initTriangleBackground(document.getElementById('bg'), {
             triColor: '<%= stats.percentage_completed_color %>',
-            bgColor1: 'hsl(<%= query.base_hue || 200 %>, <%= query.base_sat || 20 %>%, 18%)',
-            bgColor2: 'hsl(<%= query.base_hue || 200 %>, <%= query.base_sat || 20 %>%, 18%)',
+            bgColor1: 'transparent',
+            bgColor2: 'transparent',
             density: 10000,
             speed: 0.25,
             strokeWidth: 2,
