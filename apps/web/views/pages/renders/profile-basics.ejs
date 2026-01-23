@@ -11,20 +11,14 @@
 </head>
 
 <body>
-    <div id="card" class="flex col gap-24 rounded-16">
+    <div id="card" class="flex col gap-24 rounded-16"
+        style="--color: <%= stats.percentage_completed_color %>; --percentage: <%= stats.percentage_completed %>%;">
+        <canvas id="bg"></canvas>
         <div id="header" class="flex row gap-16 align-center">
             <span class="title flex-grow flex-no-shrink">Category Completion</span>
             <span class="category overflow-hidden nowrap text-ellipsis"><%= categoryName %></span>
         </div>
         <div class="flex col gap-16">
-            <div id="bar" class="flex gap-32 justify-center">
-                <div class="filling"
-                    style="width: <%= stats.percentage_completed %>%; background: <%= stats.percentage_completed_color %>">
-                </div>
-                <div class="stat big">
-                    <span class="value"><%= stats.percentage_completed.toFixed(2) %>% complete</span>
-                </div>
-            </div>
             <div class="flex gap-32 align-center justify-center">
                 <div class="flex gap-24">
                     <div class="stat">
@@ -34,12 +28,21 @@
                     </div>
                 </div>
                 <div class="sep"></div>
+                <div class="stat big">
+                    <span class="value"><%= stats.percentage_completed.toFixed(2) %>%</span>
+                    <span class="key">complete</span>
+                </div>
+                <div class="sep"></div>
                 <div class="flex gap-24">
                     <div class="stat">
-                        <span class="key">nomod playtime</span>
+                        <span class="key">nomod hours</span>
                         <span class="value"><%= Math.round(stats.secs_spent / 60 / 60).toLocaleString() %> /
-                            <%= Math.round(stats.secs_total / 60 / 60).toLocaleString() %> hours</span>
+                            <%= Math.round(stats.secs_total / 60 / 60).toLocaleString() %></span>
                     </div>
+                </div>
+            </div>
+            <div id="bar" class="flex gap-32 justify-center">
+                <div class="filling">
                 </div>
             </div>
         </div>
@@ -63,24 +66,36 @@
         </div>
     </div>
     <style>
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #card {
+            position: relative;
+            overflow: hidden;
+        }
+
         #bar {
             position: relative;
-            padding: 16px;
+            height: 12px;
             background: var(--c-base-12);
             border-radius: 100px;
             overflow: hidden;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
-            /* border: 2px solid var(--c-base-12); */
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         #bar .filling {
             position: absolute;
             top: 0;
             left: 0;
+            background: var(--color);
+            width: var(--percentage);
             height: 100%;
             border-radius: 16px;
-            opacity: 0.5;
         }
 
         .sep {
@@ -116,7 +131,7 @@
         }
 
         .stat .value {
-            font-size: 26px;
+            font-size: 28px;
             color: var(--c-base-90);
         }
 
@@ -125,19 +140,32 @@
         }
 
         .stat.big .key {
-            font-size: 18px;
+            font-size: 24px;
             font-weight: 600;
-            color: var(--c-base-75);
+            color: hsl(from var(--color) h 40% 70%);
         }
 
         .stat.big .value {
-            font-size: 32px;
+            font-size: 48px;
             font-weight: 600;
-            color: white;
+            color: hsl(from var(--color) h 90% 85%);
         }
     </style>
     <%- query.base_hue ? `<style>body { --base-hue: ${parseInt(query.base_hue)}; }</style>` : '' %>
     <%- query.base_sat ? `<style>body { --base-sat: ${parseInt(query.base_sat)}%; }</style>` : '' %>
+    <script src="/assets/js/triangles-bg.js"></script>
+    <script>
+        initTriangleBackground(document.getElementById('bg'), {
+            triColor: '<%= stats.percentage_completed_color %>',
+            bgColor1: 'hsl(<%= query.base_hue || 200 %>, <%= query.base_sat || 20 %>%, 18%)',
+            bgColor2: 'hsl(<%= query.base_hue || 200 %>, <%= query.base_sat || 20 %>%, 18%)',
+            density: 10000,
+            speed: 0.25,
+            strokeWidth: 2,
+            maxSize: 150,
+            opacity: 0.3
+        });
+    </script>
 </body>
 
 </html>

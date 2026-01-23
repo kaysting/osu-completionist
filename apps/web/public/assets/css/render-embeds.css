@@ -9,6 +9,7 @@ body {
 
 #header {
     font-size: 18px;
+    position: relative;
     line-height: 1.2;
 }
 
@@ -28,6 +29,7 @@ body {
 #footer {
     font-size: 16px;
     color: var(--c-base-60);
+    position: relative;
 }
 
 #footer .name {

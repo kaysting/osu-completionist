@@ -95,6 +95,10 @@
     gap: 32px;
 }
 
+.gap-48 {
+    gap: 48px;
+}
+
 .flex-grow {
     flex-grow: 1;
 }
