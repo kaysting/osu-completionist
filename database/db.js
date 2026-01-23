@@ -34,21 +34,29 @@ if (!allowMigrationsIn.includes(env.ENTRYPOINT)) {
 } else if (fs.existsSync(migrationsDir)) {
     try {
         utils.log(`Applying database migrations from ${migrationsDir}...`);
+        // Get list of migration files
         const fileNames = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
+        // Create misc table if needed
         db.prepare(`CREATE TABLE IF NOT EXISTS misc (key TEXT PRIMARY KEY, value TEXT);`).run();
+        // Check if we have a saved last applied migration
         const latestAppliedMigration = db.prepare(`SELECT value FROM misc WHERE key = 'latest_applied_migration'`).get()?.value || '';
         if (!latestAppliedMigration) {
+            // Assume all migrations have been applied up to the latest one or a placeholder value
             const latestMigration = fileNames[fileNames.length - 1] || '0000.sql';
             db.prepare(`INSERT OR REPLACE INTO misc (key, value) VALUES ('latest_applied_migration', ?);`)
                 .run(latestMigration);
             utils.log(`No saved database migration state found, assuming all migrations through ${latestMigration} have been applied.`);
         } else {
+            // Process pending migrations inside transaction
             db.transaction(() => {
                 for (const fileName of fileNames) {
+                    // Skip migrations with names "less than" the latest applied migration
                     if (fileName <= latestAppliedMigration) continue;
                     utils.log(`Applying database migration: ${fileName}`);
+                    // Read and apply migration SQL
                     const sql = fs.readFileSync(path.join(migrationsDir, fileName), 'utf8');
                     db.exec(sql);
+                    // Update latest applied migration immediately to prevent reapplication on failure
                     db.prepare(`UPDATE misc SET value = ? WHERE key = 'latest_applied_migration'`).run(fileName);
                 }
             })();
