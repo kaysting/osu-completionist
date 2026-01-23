@@ -196,3 +196,11 @@ CREATE INDEX idx_full_completions_user ON user_full_completions (user_id);
 
 CREATE TABLE
 	misc (key TEXT PRIMARY KEY, value TEXT);
+
+CREATE TABLE
+	teams (
+		id INTEGER PRIMARY KEY,
+		name TEXT NOT NULL,
+		name_short TEXT NOT NULL,
+		flag_url TEXT
+	);
