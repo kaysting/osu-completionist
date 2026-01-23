@@ -39,3 +39,13 @@ body {
 #footer .timestamp {
     font-size: 12px;
 }
+
+#footer .rank {
+    color: var(--c-base-100);
+    font-weight: 600;
+}
+
+#footer .flag {
+    height: 16px;
+    border-radius: 4px;
+}

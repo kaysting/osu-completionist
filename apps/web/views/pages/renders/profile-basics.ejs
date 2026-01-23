@@ -22,47 +22,23 @@
                     style="width: <%= stats.percentage_completed %>%; background: <%= stats.percentage_completed_color %>">
                 </div>
                 <div class="stat big">
-                    <span class="key">category rank</span>
-                    <span class="value">#<%= stats.rank == 0 ? '-' : stats.rank %></span>
-                </div>
-                <div class="stat big">
-                    <span class="key">percent completed</span>
-                    <span class="value"><%= stats.percentage_completed.toFixed(2) %>%</span>
-                </div>
-                <div class="stat big">
-                    <span class="key">maps passed</span>
-                    <span class="value"><%= stats.count_completed.toLocaleString() %></span>
-                </div>
-                <div class="stat big">
-                    <span class="key">nomod playtime</span>
-                    <span class="value"><%= Math.round(stats.secs_spent / 60 / 60).toLocaleString() %> hrs</span>
+                    <span class="value"><%= stats.percentage_completed.toFixed(2) %>% complete</span>
                 </div>
             </div>
-            <div class="flex gap-24 align-center justify-center">
+            <div class="flex gap-32 align-center justify-center">
                 <div class="flex gap-24">
                     <div class="stat">
-                        <span class="key">% maps passed</span>
-                        <span class="value"><%= (stats.count_completed / stats.count_total * 100).toFixed(2) %>%</span>
-                    </div>
-                    <div class="stat">
-                        <span class="key">maps left</span>
-                        <span class="value"><%= (stats.count_total - stats.count_completed).toLocaleString() %></span>
-                    </div>
-                    <div class="stat">
-                        <span class="key">nomod playtime left</span>
-                        <span class="value"><%= Math.round((stats.secs_remaining) / 60 / 60).toLocaleString() %>
-                            hours</span>
+                        <span class="key">maps passed</span>
+                        <span class="value"><%= stats.count_completed.toLocaleString() %> /
+                            <%= stats.count_total.toLocaleString() %></span>
                     </div>
                 </div>
                 <div class="sep"></div>
                 <div class="flex gap-24">
                     <div class="stat">
-                        <span class="key">total maps</span>
-                        <span class="value"><%= stats.count_total.toLocaleString() %></span>
-                    </div>
-                    <div class="stat">
-                        <span class="key">total nomod playtime</span>
-                        <span class="value"><%= Math.round(stats.secs_total / 60 / 60).toLocaleString() %> hours</span>
+                        <span class="key">nomod playtime</span>
+                        <span class="value"><%= Math.round(stats.secs_spent / 60 / 60).toLocaleString() %> /
+                            <%= Math.round(stats.secs_total / 60 / 60).toLocaleString() %> hours</span>
                     </div>
                 </div>
             </div>
@@ -70,7 +46,15 @@
         <div id="footer" class="flex row gap-16 align-end">
             <span class="user flex gap-12 align-center flex-grow">
                 <img src="<%= user.avatar_url %>" class="avatar rounded-8">
-                <span class="name"><%= user.name %></span>
+                <div class="flex col gap-4">
+                    <div class="flex row gap-8 align-center">
+                        <span class="name"><%= user.name %></span>
+                        <img src="<%= user.country.flag_url %>" class="flag country">
+                        <img src="<%= user.team.flag_url %>" class="flag team">
+                    </div>
+                    <span class="rankCont">Category rank <span
+                            class="rank">#<%= stats.rank == 0 ? '-' : stats.rank %></span></span>
+                </div>
             </span>
             <div class="flex col gap-2 text-right">
                 <span class="timestamp"><%= dayjs().utc().format('YYYY-MM-DD HH:mm:ss [UTC]') %></span>
@@ -150,6 +134,12 @@
             font-size: 32px;
             font-weight: 600;
             color: white;
+        }
+
+        #footer .rankCont {
+            font-size: 14px;
+            color: var(--c-base-90);
+            font-weight: 400;
         }
     </style>
     <%- query.base_hue ? `<style>body { --base-hue: ${parseInt(query.base_hue)}; }</style>` : '' %>

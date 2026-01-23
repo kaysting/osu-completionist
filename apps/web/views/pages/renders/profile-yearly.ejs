@@ -24,7 +24,11 @@
         <div id="footer" class="flex row gap-16 align-end">
             <span class="user flex gap-12 align-center flex-grow">
                 <img src="<%= user.avatar_url %>" class="avatar rounded-8">
-                <span class="name"><%= user.name %></span>
+                <div class="flex row gap-8 align-center">
+                    <span class="name"><%= user.name %></span>
+                    <img src="<%= user.country.flag_url %>" class="flag country">
+                    <img src="<%= user.team.flag_url %>" class="flag team">
+                </div>
             </span>
             <div class="flex col gap-2 text-right">
                 <span class="timestamp"><%= dayjs().utc().format('YYYY-MM-DD HH:mm:ss [UTC]') %></span>
