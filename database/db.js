@@ -26,8 +26,14 @@ if (fs.existsSync(schemaFile) && !tables.find(t => t.name === 'users')) {
 
 // Perform migrations
 const migrationsDir = path.join(__dirname, 'migrations');
-if (fs.existsSync(migrationsDir) && env.ENTRYPOINT === 'apps/web/index.js') {
+const allowMigrationsIn = [
+    'apps/web/index.js'
+];
+if (!allowMigrationsIn.includes(env.ENTRYPOINT)) {
+    utils.log(`Database migrations aren't allowed from ${env.ENTRYPOINT}.`);
+} else if (fs.existsSync(migrationsDir)) {
     try {
+        utils.log(`Applying database migrations from ${migrationsDir}...`);
         const fileNames = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
         db.prepare(`CREATE TABLE IF NOT EXISTS misc (key TEXT PRIMARY KEY, value TEXT);`).run();
         const latestAppliedMigration = db.prepare(`SELECT value FROM misc WHERE key = 'latest_applied_migration'`).get()?.value || '';
@@ -40,7 +46,7 @@ if (fs.existsSync(migrationsDir) && env.ENTRYPOINT === 'apps/web/index.js') {
             db.transaction(() => {
                 for (const fileName of fileNames) {
                     if (fileName <= latestAppliedMigration) continue;
-                    utils.log(`Applying database migration ${fileName}...`);
+                    utils.log(`Applying database migration: ${fileName}`);
                     const sql = fs.readFileSync(path.join(migrationsDir, fileName), 'utf8');
                     db.exec(sql);
                     db.prepare(`UPDATE misc SET value = ? WHERE key = 'latest_applied_migration'`).run(fileName);
@@ -51,6 +57,8 @@ if (fs.existsSync(migrationsDir) && env.ENTRYPOINT === 'apps/web/index.js') {
         utils.logError(`Failed to apply database migrations:`, error);
         process.exit(1);
     }
+} else {
+    utils.log(`Database migrations directory doesn't exist: ${migrationsDir}`);
 }
 
 module.exports = db;
