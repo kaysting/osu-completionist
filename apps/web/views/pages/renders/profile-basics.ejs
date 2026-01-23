@@ -19,24 +19,20 @@
             <span class="category overflow-hidden nowrap text-ellipsis"><%= categoryName %></span>
         </div>
         <div class="flex col gap-16">
-            <div class="flex gap-64 align-center justify-center">
-                <div class="flex gap-24">
-                    <div class="stat">
-                        <span class="key">maps passed</span>
-                        <span class="value"><%= stats.count_completed.toLocaleString() %> /
-                            <%= stats.count_total.toLocaleString() %></span>
-                    </div>
+            <div class="flex gap-24 align-center justify-center">
+                <div class="stat">
+                    <span class="key">maps passed</span>
+                    <span class="value"><%= stats.count_completed.toLocaleString() %> /
+                        <%= stats.count_total.toLocaleString() %></span>
                 </div>
                 <div class="stat big">
                     <span class="value"><%= stats.percentage_completed.toFixed(2) %>%</span>
                     <span class="key">complete</span>
                 </div>
-                <div class="flex gap-24">
-                    <div class="stat">
-                        <span class="key">nomod hours completed</span>
-                        <span class="value"><%= Math.round(stats.secs_spent / 60 / 60).toLocaleString() %> /
-                            <%= Math.round(stats.secs_total / 60 / 60).toLocaleString() %></span>
-                    </div>
+                <div class="stat">
+                    <span class="key">nomod hours completed</span>
+                    <span class="value"><%= Math.round(stats.secs_spent / 60 / 60).toLocaleString() %> /
+                        <%= Math.round(stats.secs_total / 60 / 60).toLocaleString() %></span>
                 </div>
             </div>
             <div id="bar" class="flex gap-32 justify-center">
@@ -109,6 +105,10 @@
             flex-direction: column;
             align-items: center;
             position: relative;
+        }
+
+        .stat:not(.big) {
+            width: 250px;
         }
 
         .stat.left {
