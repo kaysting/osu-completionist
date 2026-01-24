@@ -9,15 +9,8 @@
                 function loadProgressGraph() {
                     // Prepare data
                     const data = JSON.parse('<%- JSON.stringify(historyDaily) %>');
-                    const datapointNow = {
-                        date: 'now',
-                        percentage_completed: '<%= stats.percentage_completed %>',
-                        rank: '<%= stats.rank %>'
-                    };
-                    data.push(datapointNow);
-                    if (data.length < 2) {
-                        data.push(datapointNow);
-                    }
+                    if (data.length < 2)
+                        data.push(data[0]);
                     // Render graph
                     renderGraph(document.getElementById('progressGraph'), {
                         labels: data.map(dp => dp.date),
