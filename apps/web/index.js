@@ -105,15 +105,17 @@ try {
 // Add functions for use within EJS
 app.locals.dayjs = dayjs;
 app.locals.utils = utils;
+app.locals.env = env;
 app.locals.includeMarkdown = (filePath) => marked.parse(fs.readFileSync(path.join(__dirname, filePath), 'utf-8'));
 app.locals.asset = (pathRel) => {
+    pathRel = pathRel.replace(/^\/+/g, ''); // remove leading slash for append
     const fullPath = path.join(__dirname, 'public', pathRel);
     try {
         const stats = fs.statSync(fullPath);
         const mtime = stats.mtime.getTime();
-        return `${pathRel}?v=${mtime}`;
+        return `${env.BASE_URL}/${pathRel}?v=${mtime}`;
     } catch (error) {
-        return pathRel;
+        return `${env.BASE_URL}/${pathRel}`;
     }
 };
 

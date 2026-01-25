@@ -245,7 +245,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         meta: {
             title: `${req.user.name}'s ${categoryName.toLowerCase()} completionist profile`,
             description: `${req.user.name} has passed ${stats.percentage_completed.toFixed(2)}% of beatmaps in this category. Click to view more of their completionist stats!`,
-            image: `/renders/profile-meta?category=${category}&user_id=${req.user.id}`
+            image: `${env.BASE_URL}/renders/profile-meta?category=${category}&user_id=${req.user.id}`
         },
         user: {
             ...user,

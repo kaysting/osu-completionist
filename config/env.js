@@ -20,6 +20,7 @@ env.JWT_SECRET = process.env.JWT_SECRET;
 env.SESSION_SECRET = process.env.SESSION_SECRET;
 env.HOST = process.env.HOST || `localhost:${env.WEBSERVER_PORT}`;
 env.HTTPS = process.env.HTTPS !== 'false';
+env.BASE_URL = `${env.HTTPS ? 'https' : 'http'}://${env.HOST}`;
 
 // Webserver rate limits
 env.CLIENT_RATE_LIMIT_LIMIT = Number(process.env.CLIENT_RATE_LIMIT_LIMIT || 120);
