@@ -241,10 +241,11 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     const historyMonthly = getMonthlyHistory();
     const share = getShareData(stats, yearly);
     const categoryName = statCategories.getCategoryName(category);
+    const title = `${req.user.name}'s ${categoryName} completionist profile`;
     res.renderPage('profile', {
-        title: req.user.name,
+        title,
         meta: {
-            title: `${req.user.name}'s ${categoryName.toLowerCase()} completionist profile`,
+            title,
             description: `${req.user.name} has passed ${stats.percentage_completed.toFixed(2)}% of beatmaps in this category. Click to view more of their completionist stats!`,
             image: `${env.BASE_URL}/renders/profile-meta?category=${category}&user_id=${req.user.id}`
         },

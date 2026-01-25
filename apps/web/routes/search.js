@@ -14,7 +14,7 @@ router.get('/', (req, res) => {
     );
     res.render('layout', {
         page: 'search',
-        title: 'Search',
+        title: 'Search tracked completionists and maps',
         meta: {
             title: `Search tracked completionists and maps`,
             description: `Find who or what you're looking for using natural text or filtered searches.`

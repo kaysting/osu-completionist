@@ -36,14 +36,11 @@ router.get('/:category', (req, res) => {
         }
     }
     // Render
-    const mode = category.split('-')[0];
-    const modeKey = rulesetNameToKey(mode);
-    const modeName = mode == 'global' ? 'Global' : rulesetKeyToName(modeKey, true);
+    const title = `${statCategories.getCategoryName(category)} completionist leaderboard`;
     res.render('layout', {
-        title: `${modeName} leaderboard`,
+        title,
         meta: {
-            title: `${modeName} completionist leaderboard`,
-            description: `View the players who have passed the most${mode == 'global' ? '' : ` ${modeName}`} beatmaps!`
+            title, description: `View the players who have the highest completion in this category!`
         },
         page: 'leaderboard',
         category,

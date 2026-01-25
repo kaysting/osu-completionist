@@ -159,8 +159,8 @@ app.use('/faq', (req, res) => {
         html: marked.parse(fs.readFileSync(path.join(__dirname, 'views/markdown/faq.md'), 'utf-8')),
         title: 'FAQ',
         meta: {
-            title: 'osu!complete FAQ',
-            description: 'View frequently asked questions.'
+            title: 'FAQ',
+            description: 'View our frequently asked questions.'
         }
     });
 });
@@ -170,7 +170,7 @@ app.use('/changelog', (req, res) => {
         title: 'Changelog',
         meta: {
             title: 'Changelog',
-            description: 'Check out the changelog to learn about recent, significant changes.'
+            description: 'Check out the changelog to learn about recent significant changes.'
         }
     });
 });
