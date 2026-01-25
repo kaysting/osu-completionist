@@ -132,7 +132,7 @@
                 <br>Running commit <a
                     href="https://github.com/kaysting/osu-completionist/commit/<%= locals?.git?.hash %>" target="_blank"
                     rel="noopener noreferrer"><%= locals?.git?.hash %></a> deployed
-                <%= dayjs(locals?.git?.date).fromNow() %>
+                <%= dayjs(locals?.git?.date).utc().format('YYYY-MM-DD HH:mm:ss [UTC]') %>
             </p>
         </div>
     </main>
