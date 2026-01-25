@@ -226,6 +226,12 @@ const options = [
         args: [
             { name: 'user_id', required: true }
         ]
+    },
+    {
+        f: apiWrite.generateSitemap,
+        name: `makesitemap`,
+        description: `Generate and save an updated sitemap.xml.`,
+        args: []
     }
 ];
 

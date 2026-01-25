@@ -10,11 +10,16 @@ const { marked } = require('marked');
 const dayjs = require('dayjs');
 const utils = require('#utils');
 const db = require('#db');
+const apiWrite = require('#api/write.js');
 const { getAuthenticatedUser, updateLastUrl } = require('./middleware');
 
+// Extend dayjs
 dayjs.extend(require('dayjs/plugin/relativeTime'));
 dayjs.extend(require('dayjs/plugin/utc'));
 dayjs.extend(require('dayjs/plugin/advancedFormat'));
+
+// Update robots.txt
+apiWrite.generateRobotsTxt();
 
 const app = express();
 

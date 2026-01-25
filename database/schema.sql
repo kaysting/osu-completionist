@@ -29,7 +29,6 @@ CREATE TABLE
 		last_profile_update_time integer not null default 0,
 		last_login_time integer not null default 0,
 		api_key text,
-		osu_join_date integer default 0,
 		has_full_import integer default 0,
 		PRIMARY KEY ("id")
 	);

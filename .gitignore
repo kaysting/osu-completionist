@@ -1,6 +1,8 @@
 /node_modules
 /database/backups
 /apps/web/cache
+/apps/web/public/robots.txt
+/apps/web/public/sitemap.xml
 *.db*
 .*
 !.env.example

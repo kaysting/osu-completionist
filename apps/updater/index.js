@@ -44,6 +44,11 @@ const runAnalyticsSave = async () => {
     setTimeout(runAnalyticsSave, 1000 * 60 * 15);
 };
 
+const runGenerateSitemap = async () => {
+    await updaterHelpers.generateSitemap();
+    setTimeout(runGenerateSitemap, 1000 * 60 * 60 * 24);
+};
+
 async function main() {
 
     // Get osu API token
@@ -60,6 +65,9 @@ async function main() {
     runFetchNewMaps();
     runSaveHistory();
     runAnalyticsSave();
+    runGenerateSitemap();
+
+    // Delay this one so it only runs after the updater has been going for an hour
     setTimeout(runUpdateMapStatuses, 1000 * 60 * 60);
 
 }

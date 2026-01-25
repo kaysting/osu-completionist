@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <% for (const cat of categoryIds) { %>
+    <url>
+        <loc><%= baseUrl %>/leaderboard/<%= cat %></loc>
+        <lastmod><%= dayjs().format('YYYY-MM-DD') %></lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <% for (const user of users) { %>
+    <url>
+        <loc><%= baseUrl %>/u/<%= user.id %>/<%= cat %></loc>
+        <lastmod><%= dayjs(Math.max(user.time_created, user.last_pass_time)).format('YYYY-MM-DD') %></lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <% } %>
+    <% } %>
+    <% for (const path of staticPaths) { %>
+    <url>
+        <loc><%= baseUrl %>/<%= path %></loc>
+        <lastmod><%= dayjs().format('YYYY-MM-DD') %></lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+    <% } %>
+</urlset>
