@@ -5,18 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= `${locals.title ? locals.title + ' - ' : ''}` %>osu!complete</title>
-    <meta name="description" content="<%= locals?.meta?.description || '' %>">
     <meta property="og:site_name" content="osu!complete">
     <meta property="og:title" content="<%= locals?.meta?.title || 'osu! completionist tracker and leaderboard' %>">
-    <meta property="og:description"
-        content="<%= locals?.meta?.description || 'Track your osu! completionist progress across all game modes, ranked, loved, and convert maps, and compare your progress with others!' %>">
+    <%
+        const defaultDescription = 'Track your osu! completionist progress across all game modes, ranked, loved, and convert maps, and compare your progress with others!';
+    %>
+    <meta name="description" content="<%= locals?.meta?.description || defaultDescription %>">
+    <meta property="og:description" content="<%= locals?.meta?.description || defaultDescription %>">
     <meta property="og:image"
         content="<%= locals?.meta?.image || locals?.meta?.thumbnail || asset('/assets/images/promo.png') %>">
     <meta name="twitter:image"
         content="<%= locals?.meta?.image || locals?.meta?.thumbnail || asset('/assets/images/promo.png') %>">
     <% if (!locals?.meta?.thumbnail) { %>
     <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="628" />
+    <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image">
     <% } %>
     <meta name="theme-color" content="#6EF79C">
@@ -200,6 +202,7 @@
                 },
                 { label: 'Got it!', class: 'primary' }
             ]);
+            dialog.setAttribute('data-nosnippet', '');
             dialog.addEventListener('close', () => {
                 localStorage.setItem('devNoticeVersion', devMsgVersion.toString());
                 localStorage.setItem('changelogVersion', currentChangelogVersion);
@@ -211,7 +214,7 @@
             const dialog = showPopup('Changelog', changelogHtml, [
                 { label: 'Close' }
             ]);
-            dialog.style.setProperty('--width', '800px');
+            dialog.setAttribute('data-nosnippet', '');
             dialog.style.setProperty('--height', '900px');
             dialog.addEventListener('close', () => {
                 localStorage.setItem('changelogVersion', currentChangelogVersion);
