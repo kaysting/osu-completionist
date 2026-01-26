@@ -1,22 +1,38 @@
+const env = require('#env');
 const { log } = require('#utils');
 const osu = require('#lib/osu.js');
-const updaterHelpers = require('#api/write.js');
+const dbWrite = require('#api/write.js');
 const dayjs = require('dayjs');
+const { io } = require('socket.io-client');
+const utils = require('#utils');
 
-const runGlobalRecentsUpdate = async () => {
-    await updaterHelpers.savePassesFromGlobalRecents();
-    setTimeout(runGlobalRecentsUpdate, 1000 * 60);
+let isScoreSaveRunning = false;
+const runSaveNewScores = async () => {
+    if (isScoreSaveRunning) return;
+    isScoreSaveRunning = true;
+    try {
+        while (true) {
+            const countScoresFetched = await dbWrite.savePassesFromScoreCache();
+            // Break if we hit the end
+            if (countScoresFetched < 1000) break;
+            // Give time for the osc rate limit
+            await utils.sleep(1000);
+        }
+    } catch (error) {
+        utils.logError(error);
+    }
+    isScoreSaveRunning = false;
 };
 
 const runBackupDatabase = async () => {
-    await updaterHelpers.backupDatabaseClean();
+    await dbWrite.backupDatabaseClean();
     setTimeout(runBackupDatabase, 1000 * 60);
 };
 
 const runSaveHistory = async () => {
     if (dayjs().hour() === 0) {
         log('Saving user history snapshot for the day...');
-        updaterHelpers.snapshotCategoryStats();
+        dbWrite.snapshotCategoryStats();
         setTimeout(runSaveHistory, 1000 * 60 * 60);
     } else {
         setTimeout(runSaveHistory, 1000 * 60);
@@ -24,28 +40,28 @@ const runSaveHistory = async () => {
 };
 
 const runImportQueue = async () => {
-    await updaterHelpers.startQueuedImports();
+    await dbWrite.startQueuedImports();
     setTimeout(runImportQueue, 5000);
 };
 
 const runFetchNewMaps = async () => {
-    await updaterHelpers.fetchNewMapData();
+    await dbWrite.fetchNewMapData();
     setTimeout(runFetchNewMaps, 1000 * 60 * 5);
 };
 
 const runUpdateMapStatuses = async () => {
-    await updaterHelpers.updateMapStatuses();
-    updaterHelpers.updateAllUserCategoryStats();
+    await dbWrite.updateMapStatuses();
+    dbWrite.updateAllUserCategoryStats();
     setTimeout(runUpdateMapStatuses, 1000 * 60 * 60 * 24);
 };
 
 const runAnalyticsSave = async () => {
-    await updaterHelpers.saveAnalytics();
+    await dbWrite.saveAnalytics();
     setTimeout(runAnalyticsSave, 1000 * 60 * 15);
 };
 
 const runGenerateSitemap = async () => {
-    await updaterHelpers.generateSitemap();
+    await dbWrite.generateSitemap();
     setTimeout(runGenerateSitemap, 1000 * 60 * 60 * 24);
 };
 
@@ -59,7 +75,7 @@ async function main() {
 
     // Start update processes
     log(`Starting update processes...`);
-    runGlobalRecentsUpdate();
+    runSaveNewScores();
     runBackupDatabase();
     runImportQueue();
     runFetchNewMaps();
@@ -69,6 +85,21 @@ async function main() {
 
     // Delay this one so it only runs after the updater has been going for an hour
     setTimeout(runUpdateMapStatuses, 1000 * 60 * 60);
+
+    // Connect to oSC websocket
+    const socket = io(env.OSU_SCORE_CACHE_BASE_URL, {
+        path: '/ws',
+        transports: ['websocket'],
+    });
+    socket.on('connect', () => {
+        socket.emit('subscribe', 'updates');
+        utils.log(`Connected to and listening for updates on osu! score cache websocket`);
+    });
+
+    // Listen for update events
+    socket.on('update', info => {
+        runSaveNewScores();
+    });
 
 }
 main();

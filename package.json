@@ -37,6 +37,7 @@
     "jsonwebtoken": "^9.0.2",
     "marked": "^17.0.1",
     "puppeteer": "^24.34.0",
+    "socket.io-client": "^4.8.3",
     "tar": "^7.5.2",
     "unbzip2-stream": "^1.4.3"
   }
