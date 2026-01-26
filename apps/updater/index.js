@@ -24,6 +24,11 @@ const runSaveNewScores = async () => {
     isScoreSaveRunning = false;
 };
 
+const runUpdateGlobalRecents = async () => {
+    await dbWrite.savePassesFromGlobalRecents();
+    setTimeout(runUpdateGlobalRecents, 1000 * 30);
+};
+
 const runBackupDatabase = async () => {
     await dbWrite.backupDatabaseClean();
     setTimeout(runBackupDatabase, 1000 * 60);
@@ -75,16 +80,20 @@ async function main() {
 
     // Start update processes
     log(`Starting update processes...`);
-    runSaveNewScores();
     runBackupDatabase();
     runImportQueue();
     runFetchNewMaps();
     runSaveHistory();
     runAnalyticsSave();
     runGenerateSitemap();
+    runUpdateGlobalRecents();
 
     // Delay this one so it only runs after the updater has been going for an hour
     setTimeout(runUpdateMapStatuses, 1000 * 60 * 60);
+
+    /*
+    // Initial run to save new scores from osc api
+    runSaveNewScores();
 
     // Connect to oSC websocket
     const socket = io(env.OSU_SCORE_CACHE_BASE_URL, {
@@ -100,6 +109,7 @@ async function main() {
     socket.on('update', info => {
         runSaveNewScores();
     });
+    */
 
 }
 main();
