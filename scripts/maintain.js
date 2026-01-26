@@ -203,6 +203,11 @@ const options = [
         description: `Recalculate category stats for all users, including totals.`
     },
     {
+        f: apiWrite.savePassesFromAllUserRecents,
+        name: `saverecentpasses`,
+        description: `Save the past 24 hours of user passes using per-user recent scores.`
+    },
+    {
         f: () => console.log(`Here's a cryptographically securely random secret:\n${utils.generateSecretKey(32)}`),
         name: `getsecret`,
         description: `Generate a cryptographically securely random secret key for use in configuration.`
