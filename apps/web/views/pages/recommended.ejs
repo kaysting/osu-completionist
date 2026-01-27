@@ -1,7 +1,8 @@
 <link rel="stylesheet" href="/assets/css/recommended.css">
 <div class="flex col gap-16">
     <%- include('../partials/statSettings') %>
-    <div id="recommended" class="card flex col" data-reload-socket-room="user_<%= locals?.me?.id %>">
+    <div id="recommended" class="card flex col" data-reload-socket-room="user_<%= locals?.me?.id %>"
+        data-reload-on-show="true">
         <form class="settings flex col gap-8" data-reload-selectors="#results,#searchHint">
             <div class="inputs flex gap-8">
                 <div class="textbox medium hasIcon flex-grow">

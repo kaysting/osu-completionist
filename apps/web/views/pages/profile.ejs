@@ -1,5 +1,5 @@
 <link rel="stylesheet" href="/assets/css/profile.css">
-<div id="profile" class="flex col gap-16" data-reload-socket-room="user_<%= user.id %>">
+<div id="profile" class="flex col gap-16" data-reload-socket-room="user_<%= user.id %>" data-reload-on-show="true">
     <%- include('../partials/statSettings') %>
     <%- include('../partials/profile/cardImportProgress', { updateStatus }) %>
     <div id="profileContent" class="card flex col gap-8" data-reload-socket-event="update_profile">
