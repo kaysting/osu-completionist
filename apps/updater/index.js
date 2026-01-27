@@ -1,7 +1,7 @@
 const env = require('#env');
 const { log } = require('#utils');
 const osu = require('#lib/osu.js');
-const dbWrite = require('#api/write.js');
+const writers = require('#api/write.js');
 const dayjs = require('dayjs');
 const { io } = require('socket.io-client');
 const utils = require('#utils');
@@ -10,25 +10,25 @@ const scoreBuffer = [];
 const saveFromScoreBuffer = async () => {
     if (scoreBuffer.length > 0) {
         const scoresToSave = scoreBuffer.splice(0, 1000);
-        await dbWrite.savePassesFromScores(scoresToSave);
+        await writers.savePassesFromScores(scoresToSave);
     }
     setTimeout(saveFromScoreBuffer, 200);
 };
 
 const runUpdateGlobalRecents = async () => {
-    await dbWrite.savePassesFromGlobalRecents();
+    await writers.savePassesFromGlobalRecents();
     setTimeout(runUpdateGlobalRecents, 1000 * 60 * 5);
 };
 
 const runBackupDatabase = async () => {
-    await dbWrite.backupDatabaseClean();
+    await writers.backupDatabaseClean();
     setTimeout(runBackupDatabase, 1000 * 60);
 };
 
 const runSaveHistory = async () => {
     if (dayjs().hour() === 0) {
         log('Saving user history snapshot for the day...');
-        dbWrite.snapshotCategoryStats();
+        writers.snapshotCategoryStats();
         setTimeout(runSaveHistory, 1000 * 60 * 60);
     } else {
         setTimeout(runSaveHistory, 1000 * 60);
@@ -36,28 +36,28 @@ const runSaveHistory = async () => {
 };
 
 const runImportQueue = async () => {
-    await dbWrite.startQueuedImports();
+    await writers.startQueuedImports();
     setTimeout(runImportQueue, 5000);
 };
 
 const runFetchNewMaps = async () => {
-    await dbWrite.fetchNewMapData();
+    await writers.fetchNewMapData();
     setTimeout(runFetchNewMaps, 1000 * 60 * 5);
 };
 
 const runUpdateMapStatuses = async () => {
-    await dbWrite.updateMapStatuses();
-    dbWrite.updateAllUserCategoryStats();
+    await writers.updateMapStatuses();
+    writers.updateAllUserCategoryStats();
     setTimeout(runUpdateMapStatuses, 1000 * 60 * 60 * 24);
 };
 
 const runAnalyticsSave = async () => {
-    await dbWrite.saveAnalytics();
+    await writers.saveAnalytics();
     setTimeout(runAnalyticsSave, 1000 * 60 * 15);
 };
 
 const runGenerateSitemap = async () => {
-    await dbWrite.generateSitemap();
+    await writers.generateSitemap();
     setTimeout(runGenerateSitemap, 1000 * 60 * 60 * 24);
 };
 
