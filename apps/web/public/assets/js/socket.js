@@ -13,7 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const rooms = new Set();
         document.querySelectorAll('[data-reload-socket-room]').forEach(el => {
             if (el.dataset.reloadSocketRoom) {
-                rooms.add(el.dataset.reloadSocketRoom);
+                el.dataset.reloadSocketRoom.split(',').forEach(room => {
+                    rooms.add(room.trim());
+                });
             }
         });
 
@@ -28,7 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const uniqueEvents = new Set();
     document.querySelectorAll('[data-reload-socket-event]').forEach(el => {
         if (el.dataset.reloadSocketEvent) {
-            uniqueEvents.add(el.dataset.reloadSocketEvent);
+            el.dataset.reloadSocketEvent.split(',').forEach(event => {
+                uniqueEvents.add(event.trim());
+            });
         }
     });
 
@@ -37,12 +41,17 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.on(event, () => {
             console.log(`Received socket event: ${event}`);
 
-            // Find all elements that care about this specific event
-            const targets = document.querySelectorAll(`[data-reload-socket-event="${event}"]`);
+            // Find all elements that care about this specific event (including comma-separated)
+            const targets = document.querySelectorAll(`[data-reload-socket-event]`);
             const reloadSelectors = [];
 
             targets.forEach(el => {
-                if (el.id) reloadSelectors.push(`#${el.id}`);
+                if (el.dataset.reloadSocketEvent) {
+                    const events = el.dataset.reloadSocketEvent.split(',').map(e => e.trim());
+                    if (events.includes(event) && el.id) {
+                        reloadSelectors.push(`#${el.id}`);
+                    }
+                }
             });
 
             // Reload the elements
