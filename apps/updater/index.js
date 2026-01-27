@@ -96,7 +96,7 @@ async function main() {
     // Listen for new scores
     socket.on('scores', scores => {
         scoreBuffer.push(...scores);
-        utils.log(`Received ${scores.length} new scores from oSC`);
+        //utils.log(`Received ${scores.length} new scores from oSC`);
     });
 
 }
