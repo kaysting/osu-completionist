@@ -10,6 +10,7 @@ const scoreBuffer = [];
 const saveFromScoreBuffer = async () => {
     if (scoreBuffer.length > 0) {
         const scoresToSave = scoreBuffer.splice(0, 1000);
+        utils.log(`Saving ${scoresToSave.length} buffered scores...`);
         await dbWrite.savePassesFromScores(scoresToSave);
     }
     setTimeout(saveFromScoreBuffer, 200);
