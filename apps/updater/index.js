@@ -6,22 +6,13 @@ const dayjs = require('dayjs');
 const { io } = require('socket.io-client');
 const utils = require('#utils');
 
-let isScoreSaveRunning = false;
-const runSaveNewScores = async () => {
-    if (isScoreSaveRunning) return;
-    isScoreSaveRunning = true;
-    try {
-        while (true) {
-            const countScoresFetched = await dbWrite.savePassesFromScoreCache();
-            // Break if we hit the end
-            if (countScoresFetched < 1000) break;
-            // Give time for the osc rate limit
-            await utils.sleep(1000);
-        }
-    } catch (error) {
-        utils.logError(error);
+const scoreBuffer = [];
+const saveFromScoreBuffer = async () => {
+    if (scoreBuffer.length > 0) {
+        const scoresToSave = scoreBuffer.splice(0, 1000);
+        await dbWrite.savePassesFromScores(scoresToSave);
     }
-    isScoreSaveRunning = false;
+    setTimeout(saveFromScoreBuffer, 200);
 };
 
 const runUpdateGlobalRecents = async () => {
@@ -87,12 +78,10 @@ async function main() {
     runAnalyticsSave();
     runGenerateSitemap();
     runUpdateGlobalRecents();
+    saveFromScoreBuffer();
 
     // Delay this one so it only runs after the updater has been going for an hour
     setTimeout(runUpdateMapStatuses, 1000 * 60 * 60);
-
-    // Initial run to save new scores from osc api
-    runSaveNewScores();
 
     // Connect to oSC websocket
     const socket = io(env.OSU_SCORE_CACHE_BASE_URL, {
@@ -100,13 +89,14 @@ async function main() {
         transports: ['websocket'],
     });
     socket.on('connect', () => {
-        socket.emit('subscribe', 'updates');
-        utils.log(`Connected to and listening for updates on osu! score cache websocket`);
+        socket.emit('subscribe', 'scores');
+        utils.log(`Connected to and listening for new scores on osu! score cache websocket`);
     });
 
-    // Listen for update events
-    socket.on('update', info => {
-        runSaveNewScores();
+    // Listen for new scores
+    socket.on('scores', scores => {
+        scoreBuffer.push(...scores);
+        utils.log(`Received ${scores.length} new scores from oSC`);
     });
 
 }
