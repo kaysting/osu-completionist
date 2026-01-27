@@ -1,8 +1,8 @@
 <link rel="stylesheet" href="/assets/css/profile.css">
-<div id="profile" class="flex col gap-16">
+<div id="profile" class="flex col gap-16" data-reload-socket-room="user_<%= user.id %>">
     <%- include('../partials/statSettings') %>
     <%- include('../partials/profile/cardImportProgress', { updateStatus }) %>
-    <div id="profileContent" class="card flex col gap-8">
+    <div id="profileContent" class="card flex col gap-8" data-reload-socket-event="update_profile">
         <div class="banner relative rounded-8 w-full" style="background-image: url('<%= user.banner_url %>')">
             <div class="buttons absolute flex row-rev gap-8 flex-wrap">
                 <a class="btn translucent square" href="https://osu.ppy.sh/users/<%= user.id %>" target="_blank"

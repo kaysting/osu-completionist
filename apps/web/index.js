@@ -11,6 +11,8 @@ const dayjs = require('dayjs');
 const utils = require('#utils');
 const db = require('#db');
 const apiWrite = require('#api/write.js');
+const socketIo = require('socket.io');
+const http = require('http');
 const { getAuthenticatedUser, updateLastUrl } = require('./middleware');
 
 // Extend dayjs
@@ -21,7 +23,22 @@ dayjs.extend(require('dayjs/plugin/advancedFormat'));
 // Update robots.txt
 apiWrite.generateRobotsTxt();
 
+// Create express app
 const app = express();
+
+// Create http server
+const server = http.createServer(app);
+
+// Create socket
+const io = socketIo(server, {
+    path: '/ws',
+    cors: {
+        origin: '*'
+    }
+});
+
+// Handle socket connections
+require('./socket')(io);
 
 // Register global middleware
 app.use((req, res, next) => {
@@ -134,46 +151,7 @@ app.use('/recommended', require('./routes/recommended'));
 app.use('/queue', require('./routes/queue'));
 app.use('/renders', require('./routes/renders'));
 app.use('/api', require('./routes/apiDocs'));
-app.use('/tos', (req, res) => {
-    res.renderPage('raw', {
-        html: marked.parse(fs.readFileSync(path.join(__dirname, 'views/markdown/tos.md'), 'utf-8')),
-        title: 'Terms of Service',
-        meta: {
-            title: 'Terms of Service',
-            description: 'View the osu!complete terms of service.'
-        }
-    });
-});
-app.use('/privacy', (req, res) => {
-    res.renderPage('raw', {
-        html: marked.parse(fs.readFileSync(path.join(__dirname, 'views/markdown/privacy.md'), 'utf-8')),
-        title: 'Privacy Policy',
-        meta: {
-            title: 'Privacy Policy',
-            description: 'View the osu!complete privacy policy.'
-        }
-    });
-});
-app.use('/faq', (req, res) => {
-    res.renderPage('raw', {
-        html: marked.parse(fs.readFileSync(path.join(__dirname, 'views/markdown/faq.md'), 'utf-8')),
-        title: 'FAQ',
-        meta: {
-            title: 'FAQ',
-            description: 'View our frequently asked questions.'
-        }
-    });
-});
-app.use('/changelog', (req, res) => {
-    res.renderPage('raw', {
-        html: marked.parse(`# Changelog\n\n${fs.readFileSync(path.join(__dirname, 'views/markdown/changelog.md'), 'utf-8')}`),
-        title: 'Changelog',
-        meta: {
-            title: 'Changelog',
-            description: 'Check out the changelog to learn about recent significant changes.'
-        }
-    });
-});
+app.use('/', require('./routes/misc'));
 
 app.use((req, res) => {
     res.renderError(404, '404 not found', `The requested resource couldn't be found.`);
@@ -184,7 +162,8 @@ app.use((err, req, res, next) => {
     res.renderError(500, '500 internal server error', `An internal server error occurred. Please try again later, and join the Discord server linked in the top bar to let us know if the issue persists.`);
 });
 
-app.listen(env.WEBSERVER_PORT, () => {
+// Listen with http server, not express
+server.listen(env.WEBSERVER_PORT, () => {
     utils.log(`Server is running on port ${env.WEBSERVER_PORT}`);
 });
 

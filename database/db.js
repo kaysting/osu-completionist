@@ -69,4 +69,17 @@ if (!allowMigrationsIn.includes(env.ENTRYPOINT)) {
     utils.log(`Database migrations directory doesn't exist: ${migrationsDir}`);
 }
 
+// Generate secrets if not set
+const secretNames = [
+    'trusted_socket_secret', 'session_secret', 'jwt_secret'
+];
+for (const name of secretNames) {
+    const secret = db.prepare("SELECT value FROM misc WHERE key = ?").get(name)?.value;
+    if (!secret) {
+        const secret = env[name.toUpperCase()] || utils.generateSecretKey(32);
+        db.prepare("INSERT INTO misc (key, value) VALUES (?, ?)").run(name, secret);
+        utils.log(`Generated and stored new secret: ${name}`);
+    }
+}
+
 module.exports = db;
