@@ -17,7 +17,7 @@ const saveFromScoreBuffer = async () => {
 
 const runUpdateGlobalRecents = async () => {
     await dbWrite.savePassesFromGlobalRecents();
-    setTimeout(runUpdateGlobalRecents, 1000 * 60 * 2);
+    setTimeout(runUpdateGlobalRecents, 1000 * 60 * 5);
 };
 
 const runBackupDatabase = async () => {
