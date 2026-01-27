@@ -285,3 +285,38 @@ window.addEventListener('popstate', (event) => {
         window.location.reload();
     }
 });
+
+// Track visibility state for reload-on-show functionality
+let hiddenSinceTime = null;
+const HIDDEN_THRESHOLD_MS = 60 * 1000; // 1 minute
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        hiddenSinceTime = Date.now();
+        return;
+    }
+
+    // Window is now visible. Check if it was hidden long enough
+    if (!hiddenSinceTime || Date.now() - hiddenSinceTime < HIDDEN_THRESHOLD_MS) {
+        hiddenSinceTime = null;
+        return;
+    }
+
+    hiddenSinceTime = null;
+
+    const elementsToReload = document.querySelectorAll('[data-reload-on-show]');
+    if (elementsToReload.length === 0) return;
+
+    const selectors = Array.from(elementsToReload).map((el) => {
+        if (el.id) return `#${el.id}`;
+        return el.tagName.toLowerCase() +
+            (el.className ? '.' + el.className.split(' ').join('.') : '');
+    }).filter((selector, index, arr) => arr.indexOf(selector) === index);
+
+    if (selectors.length > 0) {
+        reloadElement(selectors, {
+            url: window.location.href,
+            silent: true
+        });
+    }
+});
