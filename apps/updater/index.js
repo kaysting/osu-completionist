@@ -26,7 +26,7 @@ const runSaveNewScores = async () => {
 
 const runUpdateGlobalRecents = async () => {
     await dbWrite.savePassesFromGlobalRecents();
-    setTimeout(runUpdateGlobalRecents, 1000 * 30);
+    setTimeout(runUpdateGlobalRecents, 1000 * 60 * 2);
 };
 
 const runBackupDatabase = async () => {
@@ -91,7 +91,6 @@ async function main() {
     // Delay this one so it only runs after the updater has been going for an hour
     setTimeout(runUpdateMapStatuses, 1000 * 60 * 60);
 
-    /*
     // Initial run to save new scores from osc api
     runSaveNewScores();
 
@@ -109,7 +108,6 @@ async function main() {
     socket.on('update', info => {
         runSaveNewScores();
     });
-    */
 
 }
 main();
