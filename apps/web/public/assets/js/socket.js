@@ -49,7 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (reloadSelectors.length > 0) {
                 console.log(`Reloading elements:`, reloadSelectors);
                 if (typeof reloadElement === 'function') {
-                    reloadElement(reloadSelectors);
+                    reloadElement(reloadSelectors, {
+                        silent: true
+                    });
                 }
             }
         });
