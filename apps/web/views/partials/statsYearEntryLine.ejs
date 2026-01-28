@@ -1,28 +1,31 @@
+<%
+    let percent = map_percentage_completed;
+    let unit = 'maps';
+    let completed = count_completed;
+    let total = count_total;
+    let color = map_completed_color;
+    if (yearlyType == 'xp') {
+        percent = time_percentage_completed;
+        unit = 'cxp';
+        completed = xp;
+        total = xp_total;
+        color = time_completed_color;
+    }
+    let tooltip = [
+        `${map_percentage_completed.toFixed(2)}% maps passed (${count_completed.toLocaleString()} / ${count_total.toLocaleString()})`,
+        `${time_percentage_completed.toFixed(2)}% cxp earned (${xp.toLocaleString()} / ${xp_total.toLocaleString()})`
+    ].join('\\n')
+%>
+
 <div class="yearlyStatsEntry rounded-4 flex gap-8 align-center">
     <div class="year left flex-no-shrink"><%= year %></div>
-    <%
-        let percent = time_percentage_completed
-        let unit = 'maps';
-        let completed = count_completed;
-        let total = count_total;
-        let color = map_completed_color;
-        if (yearlyType == 'xp') {
-            unit = 'cxp';
-            completed = xp;
-            total = xp_total;
-            color = time_completed_color;
-        }
-    %>
-    <div class="content flex col gap-4 flex-grow">
+    <div class="content flex col gap-4 flex-grow" title="<%= tooltip %>">
         <div class="values flex flex-wrap align-end">
             <div class="percent">
-                <span
-                    title="<%= map_percentage_completed.toFixed(2) %>% maps passed\n<%= time_percentage_completed.toFixed(2) %>% cxp earned"><%= percent.toFixed(2) %>%</span>
+                <span><%= percent.toFixed(2) %>%</span>
             </div>
             <div class="count top">
-                <span
-                    title="<%= count_completed.toLocaleString() %> / <%= count_total.toLocaleString() %> maps passed\n<%= xp.toLocaleString() %> / <%= xp_total.toLocaleString() %> cxp earned"><%= completed.toLocaleString() %>
-                    / <%= total.toLocaleString() %> <%= unit %></span>
+                <span><%= completed.toLocaleString() %> / <%= total.toLocaleString() %> <%= unit %></span>
             </div>
         </div>
         <div class="bar w-full relative rounded-4 overflow-hidden">

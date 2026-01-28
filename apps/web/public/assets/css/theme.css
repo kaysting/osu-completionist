@@ -1198,6 +1198,7 @@ img {
     scrollbar-width: none;
     overflow: visible;
     max-width: none;
+    user-select: none;
 }
 
 #custom-tooltip[style*="white-space: pre-wrap"] {
