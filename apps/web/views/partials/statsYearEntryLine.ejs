@@ -17,7 +17,7 @@
     ].join('\\n')
 %>
 
-<div class="yearlyStatsEntry rounded-4 flex gap-8 align-center">
+<button class="btn yearlyStatsEntry rounded-4 flex gap-8 align-center" data-year="<%= year %>">
     <div class="year left flex-no-shrink"><%= year %></div>
     <div class="content flex col gap-4 flex-grow" title="<%= tooltip %>">
         <div class="values flex flex-wrap align-end">
@@ -34,4 +34,4 @@
             </div>
         </div>
     </div>
-</div>
+</button>

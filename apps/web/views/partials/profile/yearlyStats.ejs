@@ -14,4 +14,24 @@
         <%- include('../statsYearEntryLine', { ...yearData, yearlyType: yearlyType }) %>
         <% } %>
     </div>
+    <!-- Handle year button clicks -->
+    <script>
+        (() => {
+            const yearlyEls = document.querySelectorAll('.yearlyStatsEntry');
+            console.log(yearlyEls);
+            yearlyEls.forEach(el => {
+                const year = el.dataset.year;
+                el.addEventListener('click', () => {
+                    const dialog = showPopup(
+                        `${year} completion details`,
+                        '<div id="yearlyPopupBody">Loading details...</div>',
+                        [{ label: 'Close' }], 'any'
+                    );
+                    dialog.style.setProperty('--width', '900px');
+                    dialog.style.setProperty('--height', '900px');
+                    reloadElement('#yearlyPopupBody', { url: `?year=${year}`, silent: true });
+                });
+            });
+        })();
+    </script>
 </div>

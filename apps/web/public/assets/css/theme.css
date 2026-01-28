@@ -726,10 +726,11 @@ img {
 }
 
 .popup>.body {
-    padding: 0px 16px;
+    padding: 4px 16px;
     font-size: 16px;
     line-height: 1.5;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     scrollbar-color: var(--c-base-30) transparent;
 }
 
@@ -872,7 +873,7 @@ img {
 }
 
 .beatmapCard {
-    background: var(--c-base-15);
+    background: var(--c-base-12);
     user-select: none;
 }
 
@@ -1000,6 +1001,8 @@ img {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr));
     gap: 8px;
+    width: 100vw;
+    max-width: 100%;
 }
 
 .userCardContainer {
@@ -1068,8 +1071,11 @@ img {
 
 .yearlyStatsEntry,
 .yearlyStatsEntryRound {
+    height: auto;
     padding: 8px;
-    background: var(--c-base-22);
+    text-align: left;
+    --btnBg: var(--c-base-22);
+    --btnBgHover: var(--c-base-30);
 }
 
 .yearlyStatsEntry .year {

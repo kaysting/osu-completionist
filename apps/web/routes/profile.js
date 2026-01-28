@@ -31,6 +31,9 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     const category = req.params.category.toLowerCase();
     const yearlyType = utils.ensureOneOf(req.query.yearly_type || req.session.yearlyType, ['maps', 'xp'], 'maps');
     const selectors = req.headers['x-reload-selectors'] || '';
+    const year = req.query.year;
+    const month = req.query.month;
+    const sort = req.query.sort || 'date_asc';
 
     // Check category
     if (!statCategories.definitions.find(cat => cat.id === category)) {
@@ -55,6 +58,16 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
 
     const getYearlyStats = () => {
         return dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
+    };
+
+    const getYearDetails = () => {
+        const years = dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
+        const stats = years.find(e => e.year == year);
+        const query = [month ? `month=${year}-${month}` : `year=${year}`].join(' ');
+        const maps = user.id === req.me?.id ? dbHelpers.searchBeatmaps(query, category, sort, user.id, 24).beatmaps : null;
+        return {
+            stats, query, maps, category
+        };
     };
 
     const getStats = () => {
@@ -221,6 +234,11 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     // Render yearly stats partial if requested
     if (selectors.match(/#yearlyStats/)) {
         return res.renderPartial('profile/yearlyStats', { yearly: getYearlyStats(), yearlyType });
+    }
+
+    // Render year details if requested
+    if (selectors.match(/#yearlyPopupBody/)) {
+        return res.renderPartial('profile/yearlyPopupBody', getYearDetails());
     }
 
     // Render play next partial if requested

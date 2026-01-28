@@ -1,0 +1,118 @@
+<div id="yearlyPopupBody" class="body flex col gap-16" data-reload-socket-event="update_stats">
+    <div class="top flex col gap-8">
+        <div class="flex row">
+            <div class="year flex-grow"><%= stats.year %></div>
+            <div class="percent"><%= stats.time_percentage_completed.toFixed(2) %>%</div>
+        </div>
+        <div class="bar"
+            style="--percent: <%= utils.ceilToNearest(stats.time_percentage_completed, 2) %>%; --color: <%= stats.time_completed_color %>">
+            <div class="filling"></div>
+        </div>
+    </div>
+    <div class="stats flex flex-wrap justify-center">
+        <div class="stat">
+            <div class="key">maps passed</div>
+            <div class="value"><%= stats.count_completed.toLocaleString() %> /
+                <%= stats.count_total.toLocaleString() %></div>
+        </div>
+        <div class="stat">
+            <div class="key">nomod hours completed</div>
+            <div class="value"><%= Math.round(stats.secs_completed / 60 / 60).toLocaleString() %> /
+                <%= Math.round(stats.secs_total / 60 / 60).toLocaleString() %></div>
+        </div>
+        <div class="stat">
+            <div class="key">cxp earned</div>
+            <div class="value"><%= stats.xp.toLocaleString() %> / <%= stats.xp_total.toLocaleString() %></div>
+        </div>
+    </div>
+    <% if (maps) { %>
+    <div>
+        <% const countLeft = stats.count_total - stats.count_completed %>
+        <span class="header">maps remaining (<%= countLeft %>)</span>
+    </div>
+    <div class="flex col gap-8">
+        <% if (maps.length > 0) { %>
+        <div class="flex gap-8 justify-center flex-wrap">
+            <a href="/recommended/<%= category %>/surprise?dest=direct&q=<%- encodeURIComponent(query) %>"
+                class="btn primary">
+                <span class="icon filled">casino</span>
+                <span class="label">Pick for me (osu!direct)</span>
+            </a>
+            <a target="_blank" href="/recommended/<%= category %>/surprise?dest=osu&q=<%- encodeURIComponent(query) %>"
+                class="btn">
+                <span class="icon filled">casino</span>
+                <span class="label">Pick for me (osu!web)</span>
+            </a>
+        </div>
+        <% } %>
+        <div class="beatmapCardContainer">
+            <% if (maps.length === 0) { %>
+            <div class="empty">
+                <p>You've passed them all!</p>
+            </div>
+            <% } %>
+            <% for (const beatmap of maps) { %>
+            <%- include('../beatmap/card', { beatmap }) %>
+            <% } %>
+        </div>
+        <% if (maps.length > 0) { %>
+        <div class="flex justify-center">
+            <a href="/recommended/<%= category %>?<%= encodeURIComponent(query) %>" class="btn primary">
+                <span class="icon filled">cards_star</span>
+                <span class="label">More in play next...</span>
+            </a>
+        </div>
+        <% } %>
+    </div>
+    <% } %>
+    <!-- Body styling -->
+    <style>
+        #yearlyPopupBody .top {
+            font-size: 22px;
+        }
+
+        #yearlyPopupBody .top .percent {
+            font-weight: 600;
+            color: white;
+        }
+
+        #yearlyPopupBody .stats {
+            gap: 8px 32px;
+        }
+
+        #yearlyPopupBody .stats .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        #yearlyPopupBody .stats .stat .key {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--c-base-65);
+        }
+
+        #yearlyPopupBody .stats .stat .value {
+            font-size: 24px;
+            font-weight: 400;
+            color: white;
+        }
+
+        #yearlyPopupBody .bar {
+            height: 8px;
+            border-radius: 4px;
+            width: 100%;
+            background: var(--c-base-10);
+            position: relative;
+        }
+
+        #yearlyPopupBody .bar .filling {
+            position: absolute;
+            height: 100%;
+            width: var(--percent);
+            background: var(--color);
+            border-radius: 4px;
+        }
+    </style>
+</div>
