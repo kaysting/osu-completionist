@@ -25,12 +25,14 @@
             <div class="value"><%= stats.xp.toLocaleString() %> / <%= stats.xp_total.toLocaleString() %></div>
         </div>
     </div>
+
     <% if (maps) { %>
     <div>
         <% const countLeft = stats.count_total - stats.count_completed %>
         <span class="header">maps remaining (<%= countLeft %>)</span>
     </div>
     <div class="flex col gap-8">
+
         <% if (maps.length > 0) { %>
         <div class="flex gap-8 justify-center flex-wrap">
             <a href="/recommended/<%= category %>/surprise?dest=direct&q=<%- encodeURIComponent(query) %>"
@@ -44,18 +46,11 @@
                 <span class="label">Pick for me (osu!web)</span>
             </a>
         </div>
-        <% } %>
         <div class="beatmapCardContainer">
-            <% if (maps.length === 0) { %>
-            <div class="empty">
-                <p>You've passed them all!</p>
-            </div>
-            <% } %>
             <% for (const beatmap of maps) { %>
             <%- include('../beatmap/card', { beatmap }) %>
             <% } %>
         </div>
-        <% if (maps.length > 0) { %>
         <div class="flex justify-center">
             <a href="/recommended/<%= category %>?<%= encodeURIComponent(query) %>" class="btn primary">
                 <span class="icon filled">cards_star</span>
@@ -63,8 +58,16 @@
             </a>
         </div>
         <% } %>
+
+        <% if (maps.length === 0) { %>
+        <div class="empty">
+            <p>You've passed them all!</p>
+        </div>
+        <% } %>
+
     </div>
     <% } %>
+
     <!-- Body styling -->
     <style>
         #yearlyPopupBody .top {
