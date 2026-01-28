@@ -1,4 +1,5 @@
-<div id="yearlyPopupBody" class="body flex col gap-16" data-reload-socket-event="update_stats">
+<div id="yearlyPopupBody" class="body flex col gap-16" data-reload-socket-event="update_stats"
+    data-reload-on-show="true" data-reload-url="?year=<%= year %>">
     <div class="top flex col gap-8">
         <div class="flex row">
             <div class="year flex-grow"><%= stats.year %></div>
