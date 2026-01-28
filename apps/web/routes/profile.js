@@ -67,7 +67,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         const query = [month ? `month=${year}-${month}` : `year=${year}`].join(' ');
         const maps = user.id === req.me?.id ? dbHelpers.searchBeatmaps(query, category, sort, user.id, 24).beatmaps : null;
         return {
-            stats, query, maps, category
+            stats, query, maps, category, month, sort
         };
     };
 

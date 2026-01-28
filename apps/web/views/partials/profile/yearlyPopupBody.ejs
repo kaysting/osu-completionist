@@ -53,7 +53,8 @@
             <% } %>
         </div>
         <div class="flex justify-center">
-            <a href="/recommended/<%= category %>?q=<%= encodeURIComponent(query) %>" class="btn primary">
+            <a href="/recommended/<%= category %>?q=<%= encodeURIComponent(query) %>&sort=<%= encodeURIComponent(sort) %>"
+                class="btn primary">
                 <span class="icon filled">cards_star</span>
                 <span class="label">More in play next...</span>
             </a>
