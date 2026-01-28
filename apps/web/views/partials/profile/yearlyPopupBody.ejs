@@ -19,7 +19,7 @@
         <div class="stat">
             <div class="key">nomod hours completed</div>
             <div class="value"><%= Number((stats.secs_completed / 60 / 60).toFixed(1)).toLocaleString() %> /
-                <%= Math.round(stats.secs_total / 60 / 60).toLocaleString() %></div>
+                <%= Number((stats.secs_total / 60 / 60).toFixed(1)).toLocaleString() %></div>
         </div>
         <div class="stat">
             <div class="key">cxp earned</div>
