@@ -124,7 +124,8 @@ const initCustomTooltips = () => {
         tooltip.style.removeProperty('--arrow-y');
 
         // Set text
-        tooltip.textContent = text;
+        const finalText = text.replaceAll('\\n', '<br>');
+        tooltip.innerHTML = finalText;
 
         // 2. SHOW POPOVER (Renders it to DOM so we can measure it)
         tooltip.showPopover();

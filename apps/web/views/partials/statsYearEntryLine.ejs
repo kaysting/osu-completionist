@@ -1,6 +1,7 @@
 <div class="yearlyStatsEntry rounded-4 flex gap-8 align-center">
     <div class="year left flex-no-shrink"><%= year %></div>
     <%
+        let percent = time_percentage_completed
         let unit = 'maps';
         let completed = count_completed;
         let total = count_total;
@@ -16,15 +17,17 @@
         <div class="values flex flex-wrap align-end">
             <div class="percent">
                 <span
-                    title="<%= map_percentage_completed.toFixed(2) %>% maps passed"><%= time_percentage_completed.toFixed(2) %>%</span>
+                    title="<%= map_percentage_completed.toFixed(2) %>% maps passed\n<%= time_percentage_completed.toFixed(2) %>% cxp earned"><%= percent.toFixed(2) %>%</span>
             </div>
             <div class="count top">
-                <%= completed.toLocaleString() %> / <%= total.toLocaleString() %> <%= unit %>
+                <span
+                    title="<%= count_completed.toLocaleString() %> / <%= count_total.toLocaleString() %> maps passed\n<%= xp.toLocaleString() %> / <%= xp_total.toLocaleString() %> cxp earned"><%= completed.toLocaleString() %>
+                    / <%= total.toLocaleString() %> <%= unit %></span>
             </div>
         </div>
         <div class="bar w-full relative rounded-4 overflow-hidden">
             <div class="filling absolute h-full rounded-4"
-                style="width: <%= utils.clamp(utils.ceilToNearest(time_percentage_completed, 1), 2, 100) %>%; background: <%= color %>">
+                style="width: <%= utils.clamp(utils.ceilToNearest(percent, 1), 2, 100) %>%; background: <%= color %>">
             </div>
         </div>
     </div>
