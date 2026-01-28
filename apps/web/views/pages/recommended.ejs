@@ -3,7 +3,7 @@
     <%- include('../partials/statSettings') %>
     <div id="recommended" class="card flex col" data-reload-socket-room="user_<%= locals?.me?.id %>,maps"
         data-reload-on-show="true">
-        <form class="settings flex col gap-8" data-reload-selectors="#results,#searchHint">
+        <form class="settings flex col gap-8" data-reload-selectors="#results,#searchHint,#statSettings">
             <div class="inputs flex gap-8">
                 <div class="textbox medium hasIcon flex-grow">
                     <span class="icon">search</span>
