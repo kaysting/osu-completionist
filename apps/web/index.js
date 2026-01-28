@@ -55,9 +55,6 @@ app.use((req, res, next) => {
         if (reloadSelectors) logParts.push(JSON.stringify(reloadSelectors.split(',')));
         logParts.push(`[${elapsed}ms]`);
         utils.log(...logParts);
-        if (elapsed > 500) {
-            utils.logError(`Slow request: ${req.method} ${req.url} took ${elapsed}ms`);
-        }
         return originalEnd.apply(this, args);
     };
     // Define functions to easily render with required data
