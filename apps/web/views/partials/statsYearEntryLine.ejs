@@ -1,7 +1,7 @@
 <div class="yearlyStatsEntry rounded-4 flex gap-8 align-center">
     <div class="year left flex-no-shrink"><%= year %></div>
     <%
-        let percent = map_percentage_completed;
+        let percent = time_percentage_completed; // always use time-based percentage
         let unit = 'maps';
         let completed = count_completed;
         let total = count_total;
@@ -17,7 +17,7 @@
     <div class="content flex col gap-4 flex-grow">
         <div class="values flex flex-wrap align-end">
             <div class="percent">
-                <%= percent.toFixed(2) %>%
+                <span><%= percent.toFixed(2) %>%</span>
             </div>
             <div class="count top">
                 <%= completed.toLocaleString() %> / <%= total.toLocaleString() %> <%= unit %>
