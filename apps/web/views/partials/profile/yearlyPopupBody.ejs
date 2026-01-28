@@ -18,7 +18,7 @@
         </div>
         <div class="stat">
             <div class="key">nomod hours completed</div>
-            <div class="value"><%= Math.round(stats.secs_completed / 60 / 60).toLocaleString() %> /
+            <div class="value"><%= Number((stats.secs_completed / 60 / 60).toFixed(1)).toLocaleString() %> /
                 <%= Math.round(stats.secs_total / 60 / 60).toLocaleString() %></div>
         </div>
         <div class="stat">
