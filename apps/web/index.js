@@ -42,7 +42,24 @@ require('./socket')(io);
 
 // Register global middleware
 app.use((req, res, next) => {
+    // Get IP from headers or req.ip
     const ip = req.headers['cf-connecting-ip'] || req.ip;
+    // Log request including processing time
+    const START_TIME = process.hrtime.bigint();
+    const originalEnd = res.end;
+    res.end = function (...args) {
+        const elapsed = (Number(process.hrtime.bigint() - START_TIME) / 1_000_000).toFixed(2);
+        const status = res.statusCode;
+        const logParts = [ip, req.method, status, req.url];
+        const reloadSelectors = req.headers['x-reload-selectors'];
+        if (reloadSelectors) logParts.push(JSON.stringify(reloadSelectors.split(',')));
+        logParts.push(`[${elapsed}ms]`);
+        utils.log(...logParts);
+        if (elapsed > 500) {
+            utils.logError(`Slow request: ${req.method} ${req.url} took ${elapsed}ms`);
+        }
+        return originalEnd.apply(this, args);
+    };
     // Define functions to easily render with required data
     res.renderPage = (page, data = {}) => {
         res.render('layout', {
@@ -66,11 +83,6 @@ app.use((req, res, next) => {
             me: req.me
         });
     };
-    // Log request
-    const logParts = [ip, req.method, req.url];
-    const reloadSelectors = req.headers['x-reload-selectors'];
-    if (reloadSelectors) logParts.push(JSON.stringify(reloadSelectors.split(',')));
-    utils.log(...logParts);
     // Move to next middleware
     next();
 });
