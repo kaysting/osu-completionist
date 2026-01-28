@@ -29,7 +29,7 @@
     <% if (maps) { %>
     <div>
         <% const countLeft = stats.count_total - stats.count_completed %>
-        <span class="header">maps remaining (<%= countLeft %>)</span>
+        <span class="header">maps remaining (<%= countLeft.toLocaleString() %>)</span>
     </div>
     <div class="flex col gap-8">
 
