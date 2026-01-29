@@ -203,9 +203,19 @@ const options = [
         description: `Recalculate category stats for all users, including totals.`
     },
     {
-        f: apiWrite.savePassesFromAllUserRecents,
+        f: (userId) => {
+            if (!userId) {
+                return apiWrite.savePassesFromAllUserRecents;
+            }
+            const user = apiRead.getUserProfile(userId);
+            if (!user?.name) return console.log(`User ${userId} not found`);
+            apiWrite.savePassesFromUserRecents(userId);
+        },
         name: `saverecentpasses`,
-        description: `Save the past 24 hours of user passes using per-user recent scores.`
+        description: `Save the past 24 hours of user passes using per-user recent scores.`,
+        args: [
+            { name: 'user_id' }
+        ]
     },
     {
         f: () => console.log(`Here's a cryptographically securely random secret:\n${utils.generateSecretKey(32)}`),
