@@ -18,8 +18,18 @@
         </div>
         <div class="stat">
             <div class="key">nomod hours completed</div>
-            <div class="value"><%= n(stats.secs_completed / 60 / 60, 1) %> /
-                <%= n(stats.secs_total / 60 / 60, 1) %></div>
+            <%
+                const hoursCompleted = stats.secs_completed / 60 / 60;
+                const hoursTotal = stats.secs_total / 60 / 60;
+                const timeLeftTooltip = [
+                    `Playtime left (nomod): ${utils.secsToDuration(stats.secs_total - stats.secs_completed)}`,
+                    `Playtime left (DT 1.5x): ${utils.secsToDuration((stats.secs_total - stats.secs_completed) / 1.5)}`,
+                    `Playtime left (DT 2x): ${utils.secsToDuration((stats.secs_total - stats.secs_completed) / 2)}`
+                ].join('\\n');
+            %>
+            <div class="value" title="<%= timeLeftTooltip %>">
+                <%= n(hoursCompleted, 1) %> / <%= n(hoursTotal, 1) %>
+            </div>
         </div>
         <div class="stat">
             <div class="key">cxp earned</div>
