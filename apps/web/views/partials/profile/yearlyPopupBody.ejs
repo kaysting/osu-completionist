@@ -6,7 +6,7 @@
             <div class="percent"><%= n(stats.time_percentage_completed) %>%</div>
         </div>
         <div class="bar"
-            style="--percent: <%= n(Math.min(2, stats.time_percentage_completed)) %>%; --color: <%= stats.time_completed_color %>">
+            style="--percent: <%= n(Math.max(2, stats.time_percentage_completed)) %>%; --color: <%= stats.time_completed_color %>">
             <div class="filling"></div>
         </div>
     </div>
