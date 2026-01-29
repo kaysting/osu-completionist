@@ -25,19 +25,15 @@ Note that the intent of these instructions is NOT to teach you how to run your o
 5. Create an osu! application in [your account settings](https://osu.ppy.sh/home/account/edit#oauth)
 6. Set the `OSU_CLIENT_ID` and `OSU_CLIENT_SECRET` env variables to the values provided by osu!
 7. Set env `WEBSERVER_PORT` to your desired port or leave it blank to use `8080`
-8. Run `npm run maintain -- makedb` to create the database
-9. Populate the database with beatmap data
+8. Populate the database with beatmap data
    1. Run `npm run maintain -- dldump` to download the latest osu! data dump
    2. Run `npm run maintain -- importmaps` to read the dump and fetch map data from the osu! API (this will take a few hours)
-10. Run the webserver process with `npm run webserver`
-11. Run the updater process with `npm run updater`
-
-Consider using a process manager like [PM2](https://pm2.io/) if you need to keep the server and updater running in the background.
+9. Start the processes
+   * **Recommended:** Install [PM2](https://pm2.io/) with `npm i -g pm2` and then run `pm2 start` to start both the webserver and updater in the background
+   * If you choose to forgo PM2, you can start each process using `npm start webserver` or `npm start updater`
 
 **If you need user authentication working:**
 
-1. Add `http://localhost:8080` (or your webserver address) as a redirect URI in your osu! application's settings
-2. Set env `JWT_SECRET` to a secure, random value
-    * Run `npm run maintain -- getsecret` to generate a suitable value
+Add `http://localhost:8080/auth/callback` as a redirect URI in your osu! application's settings. Replace `localhost:8080` with your hostname/port and ensure it's also set as the `HOSTNAME` env variable.
 
 These instructions aren't fully tested so please [join the Discord server](https://discord.gg/fNSnMG7S3C) if you need any help.

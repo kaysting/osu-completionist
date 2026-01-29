@@ -16,8 +16,6 @@ env.DB_KEEP_BACKUPS_COUNT = Number(process.env.DB_KEEP_BACKUPS_COUNT || 12);
 
 // Webserver
 env.WEBSERVER_PORT = Number(process.env.WEBSERVER_PORT || 8080);
-env.JWT_SECRET = process.env.JWT_SECRET;
-env.SESSION_SECRET = process.env.SESSION_SECRET;
 env.HOST = process.env.HOST || `localhost:${env.WEBSERVER_PORT}`;
 env.HTTPS = process.env.HTTPS !== 'false';
 env.BASE_URL = `${env.HTTPS ? 'https' : 'http'}://${env.HOST}`;
@@ -61,7 +59,7 @@ if (!fs.existsSync(env.DB_PATH)) {
 }
 
 // Validate required env vars
-const requiredVars = ['OSU_CLIENT_ID', 'OSU_CLIENT_SECRET', 'OSU_AUTH_REDIRECT_URI', 'JWT_SECRET', 'SESSION_SECRET'];
+const requiredVars = ['OSU_CLIENT_ID', 'OSU_CLIENT_SECRET', 'OSU_AUTH_REDIRECT_URI'];
 for (const v of requiredVars) {
     if (!env[v]) {
         throw new Error(`Missing required environment variable: ${v}`);

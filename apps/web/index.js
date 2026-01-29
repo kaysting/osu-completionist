@@ -14,6 +14,7 @@ const apiWrite = require('#api/write.js');
 const socketIo = require('socket.io');
 const http = require('http');
 const { getAuthenticatedUser, updateLastUrl } = require('./middleware');
+const dbRead = require('#api/read.js');
 
 // Extend dayjs
 dayjs.extend(require('dayjs/plugin/relativeTime'));
@@ -104,7 +105,7 @@ app.use(express.static(path.join(__dirname, 'public'), { dotfiles: 'allow' }));
 // Register webapp middleware
 app.use(cookieParser());
 app.use(session({
-    secret: env.SESSION_SECRET,
+    secret: dbRead.readMiscData('session_secret'),
     name: 'osucomplete.sid',
     resave: false,
     saveUninitialized: false
