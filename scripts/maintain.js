@@ -9,6 +9,7 @@ const tar = require('tar');
 const bz2 = require('unbzip2-stream');
 const SqlDumpParser = require('#lib/SqlDumpParser.js');
 const db = require('#db');
+const apiRead = require('#api/read.js');
 const apiWrite = require('#api/write.js');
 const utils = require('#utils');
 
@@ -277,6 +278,7 @@ async function main() {
         }
         console.log();
         await option.f(...finalArgs);
+        process.exit();
     }
 }
 main();
