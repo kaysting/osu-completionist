@@ -29,14 +29,14 @@
         </script>
     </div>
     <div>
-        <span class="header">recent passes (<%= recentPasses.length.toLocaleString() %> in the past 24 hours)</span>
+        <span class="header">recent passes (<%= n(recentPasses.length) %> in the past 24 hours)</span>
     </div>
     <div class="beatmapNarrowContainer flex col gap-2">
         <% if (recentPasses.length === 0) { %>
         <div class="empty">No passes found.</div>
         <% } %>
         <% for (const pass of recentPasses) { %>
-        <%- include('../beatmap/narrow', { beatmap: pass.beatmap, time: `Passed ${pass.timeSincePass} for ${pass.beatmap.xp.toLocaleString()} cxp` }) %>
+        <%- include('../beatmap/narrow', { beatmap: pass.beatmap, time: `Passed ${pass.timeSincePass} for ${n(pass.beatmap.xp)} cxp` }) %>
         <% } %>
     </div>
 </div>

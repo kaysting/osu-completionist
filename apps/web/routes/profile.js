@@ -4,7 +4,7 @@ const statCategories = require('#config/statCategories.js');
 const { ensureUserExists } = require('../middleware.js');
 const utils = require('#utils');
 const updater = require('#api/write.js');
-const dbHelpers = require('#api/read.js');
+const apiRead = require('#api/read.js');
 
 const router = express.Router();
 
@@ -45,38 +45,33 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     req.session.yearlyType = yearlyType;
 
     const getUpdateStatus = () => {
-        const updateStatus = dbHelpers.getUserUpdateStatus(req.user.id);
+        const updateStatus = apiRead.getUserUpdateStatus(req.user.id);
         // Format time remaining and position
         if (updateStatus.updating) {
             updateStatus.details.time_remaining = utils.getRelativeTimestamp(
                 (Date.now() + (updateStatus.details.time_remaining_secs * 1000)), undefined, false
             );
-            updateStatus.details.position_ordinal = utils.ordinalSuffix(updateStatus.details.position);
         }
         return updateStatus;
     };
 
     const getYearlyStats = () => {
-        return dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
+        return apiRead.getUserYearlyCompletionStats(req.user.id, category);
     };
 
     const getYearDetails = () => {
-        const years = dbHelpers.getUserYearlyCompletionStats(req.user.id, category);
+        const years = apiRead.getUserYearlyCompletionStats(req.user.id, category);
         const stats = years.find(e => e.year == year);
         if (!stats?.year) return null;
         const query = [month ? `month=${year}-${month}` : `year=${year}`].join(' ');
-        const maps = user.id === req.me?.id ? dbHelpers.searchBeatmaps(query, category, sort, user.id, 50).beatmaps : null;
+        const maps = user.id === req.me?.id ? apiRead.searchBeatmaps(query, category, sort, user.id, 50).beatmaps : null;
         return {
             stats, query, maps, category, month, sort
         };
     };
 
     const getStats = () => {
-        const stats = dbHelpers.getUserCompletionStats(req.user.id, category);
-        // Format durations
-        stats.timeSpent = utils.secsToDuration(stats.secs_spent);
-        stats.timeRemaining = utils.secsToDuration(stats.secs_remaining);
-        stats.timeTotal = utils.secsToDuration(stats.secs_total);
+        const stats = apiRead.getUserCompletionStats(req.user.id, category);
         return stats;
     };
 
@@ -137,14 +132,14 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         // Get as many maps as we can using the recommended query
         recommended = [];
         recommended.push(
-            ...dbHelpers.searchBeatmaps(recommendedQuery, category, 'random', req.user.id, recommendedLimit).beatmaps
+            ...apiRead.searchBeatmaps(recommendedQuery, category, 'random', req.user.id, recommendedLimit).beatmaps
         );
 
         // If we don't have enough, clear the recommended query and get remainder
         if (recommended.length < recommendedLimit) {
             recommendedQuery = '';
             recommended.push(
-                ...dbHelpers.searchBeatmaps('', category, 'random', req.user.id, recommendedLimit - recommended.length).beatmaps
+                ...apiRead.searchBeatmaps('', category, 'random', req.user.id, recommendedLimit - recommended.length).beatmaps
             );
         }
         return { recommended, recommendedQuery };
@@ -152,7 +147,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
 
     const getRecentPasses = () => {
         const timeRecentsAfter = Date.now() - (1000 * 60 * 60 * 24);
-        const recentPasses = dbHelpers.getUserRecentPasses(req.user.id, category, 100, 0, timeRecentsAfter);
+        const recentPasses = apiRead.getUserRecentPasses(req.user.id, category, 100, 0, timeRecentsAfter);
         // Get relative timestamps for recent passes
         for (const pass of recentPasses) {
             pass.timeSincePass = utils.getRelativeTimestamp(pass.time_passed);
@@ -168,9 +163,9 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         ];
         for (const year of yearly) {
             const checkbox = year.count_completed === year.count_total ? '☑' : '☐';
-            statsText.push(`${checkbox} ${year.year}: ${year.count_completed.toLocaleString()} / ${year.count_total.toLocaleString()} (${year.map_percentage_completed.toFixed(2)}%)`);
+            statsText.push(`${checkbox} ${year.year}: ${utils.formatNumber(year.count_completed)} / ${utils.formatNumber(year.count_total)} (${utils.formatNumber(year.map_percentage_completed, 2)}%)`);
         }
-        statsText.push(`\nTotal: ${stats.count_completed.toLocaleString()} / ${stats.count_total.toLocaleString()} (${stats.percentage_completed.toFixed(2)}%)`);
+        statsText.push(`\nTotal: ${utils.formatNumber(stats.count_completed)} / ${utils.formatNumber(stats.count_total)} (${utils.formatNumber(stats.percentage_completed, 2)}%)`);
         data.plainText = statsText.join('\n');
         data.profileUrl = `${req.protocol}://${req.get('host')}/u/${user.id}/${category}`;
         const getImageUrl = (template, params) => {
@@ -220,11 +215,11 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     };
 
     const getDailyHistory = () => {
-        return dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'day');
+        return apiRead.getUserHistoricalCompletionStats(req.user.id, category, 'day');
     };
 
     const getMonthlyHistory = () => {
-        return dbHelpers.getUserHistoricalCompletionStats(req.user.id, category, 'month');
+        return apiRead.getUserHistoricalCompletionStats(req.user.id, category, 'month');
     };
 
     // Render import progress partial if requested
@@ -267,7 +262,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         title,
         meta: {
             title,
-            description: `${req.user.name} has passed ${stats.percentage_completed.toFixed(2)}% of beatmaps in this category. Click to view more of their completionist stats!`,
+            description: `${req.user.name} has passed ${utils.formatNumber(stats.percentage_completed, 2)}% of beatmaps in this category. Click to view more of their completionist stats!`,
             image: `${env.BASE_URL}/renders/profile-meta?category=${category}&user_id=${req.user.id}`
         },
         user: {

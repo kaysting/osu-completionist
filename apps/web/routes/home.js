@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('#db');
-const dbHelpers = require('#api/read.js');
+const apiRead = require('#api/read.js');
 
 const router = express.Router();
 
@@ -21,7 +21,7 @@ const getStats = () => {
         FROM user_category_stats
         WHERE category = 'global-ranked-loved-converts' AND user_id > 0`
     ).get();
-    stats.xp = dbHelpers.secsToXp(totalStats.secs);
+    stats.xp = apiRead.secsToXp(totalStats.secs);
     stats.passes = totalStats.passes;
     lastStatRefresh = now;
     return stats;
@@ -29,16 +29,7 @@ const getStats = () => {
 
 router.get('/', (req, res) => {
     const stats = getStats();
-    res.render('layout', {
-        page: 'home',
-        stats: {
-            users: stats.users.toLocaleString(),
-            beatmaps: stats.beatmaps.toLocaleString(),
-            passes: stats.passes.toLocaleString(),
-            xp: stats.xp.toLocaleString()
-        },
-        me: req.me
-    });
+    res.renderPage('home', { stats });
 });
 
 module.exports = router;

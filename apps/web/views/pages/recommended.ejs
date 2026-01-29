@@ -29,7 +29,7 @@
                     <span class="label">Filter help</span>
                 </button>
                 <div id="searchHint" class="status" data-reload-socket-event="update_stats,new_mapset">
-                    Found <%= results.total_matches.toLocaleString() %> un-passed maps
+                    Found <%= n(results.total_matches) %> un-passed maps
                 </div>
             </div>
         </form>

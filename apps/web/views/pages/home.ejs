@@ -41,19 +41,19 @@
     </div>
     <div class="stats flex flex-wrap justify-center align-center">
         <div class="card flex col gap-8">
-            <div class="value"><%= stats.users %></div>
+            <div class="value"><%= utils.formatNumber(stats.users) %></div>
             <div class="label">tracked players</div>
         </div>
         <div class="card flex col gap-8">
-            <div class="value"><%= stats.beatmaps %></div>
+            <div class="value"><%= utils.formatNumber(stats.beatmaps) %></div>
             <div class="label">unique beatmaps</div>
         </div>
         <div class="card flex col gap-8">
-            <div class="value"><%= stats.passes %></div>
+            <div class="value"><%= utils.formatNumber(stats.passes) %></div>
             <div class="label">total beatmap passes</div>
         </div>
         <div class="card flex col gap-8">
-            <div class="value"><%= stats.xp %></div>
+            <div class="value"><%= utils.formatNumber(stats.xp) %></div>
             <div class="label">total completion xp earned</div>
         </div>
     </div>

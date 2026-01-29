@@ -7,12 +7,12 @@
     </div>
     <div class="stat big flex col">
         <div class="key">completion xp</div>
-        <div class="value"><%= stats.xp.toLocaleString() %></div>
+        <div class="value"><%= n(stats.xp) %></div>
     </div>
     <div class="stat big flex col">
         <div class="key">% completed</div>
         <div class="value"
-            title="This percentage is time-based\nBest was <%= stats.best_percentage_completed.toFixed(2) %>% on <%= dayjs(stats.best_percentage_completed_time).format('YYYY-MM-DD') %>">
-            <%= stats.percentage_completed.toFixed(2) %>%</div>
+            title="This percentage is time-based\nBest was <%= n(stats.best_percentage_completed, 2) %>% on <%= dayjs(stats.best_percentage_completed_time).format('YYYY-MM-DD') %>">
+            <%= n(stats.percentage_completed, 2) %>%</div>
     </div>
 </div>

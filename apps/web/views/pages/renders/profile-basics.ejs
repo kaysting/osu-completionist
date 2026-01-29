@@ -22,17 +22,17 @@
             <div class="flex gap-24 align-center justify-center">
                 <div class="stat">
                     <span class="key">maps passed</span>
-                    <span class="value"><%= stats.count_completed.toLocaleString() %> /
-                        <%= stats.count_total.toLocaleString() %></span>
+                    <span class="value"><%= n(stats.count_completed) %> /
+                        <%= n(stats.count_total) %></span>
                 </div>
                 <div class="stat big">
-                    <span class="value"><%= stats.percentage_completed.toFixed(2) %>%</span>
+                    <span class="value"><%= n(stats.percentage_completed, 2) %>%</span>
                     <span class="key">complete</span>
                 </div>
                 <div class="stat">
                     <span class="key">nomod hours completed</span>
-                    <span class="value"><%= Math.round(stats.secs_spent / 60 / 60).toLocaleString() %> /
-                        <%= Math.round(stats.secs_total / 60 / 60).toLocaleString() %></span>
+                    <span class="value"><%= n(stats.secs_spent / 60 / 60) %> /
+                        <%= n(stats.secs_total / 60 / 60) %></span>
                 </div>
             </div>
             <div id="bar" class="flex gap-32 justify-center">

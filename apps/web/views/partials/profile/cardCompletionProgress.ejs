@@ -34,26 +34,27 @@
             <div class="stats flex-grow flex flex-wrap">
                 <div class="stat flex col gap-2">
                     <div class="key">% maps passed</div>
-                    <div class="value"><%= (stats.count_completed / stats.count_total * 100).toFixed(2) %>%</div>
+                    <div class="value"><%= n(stats.count_completed / stats.count_total * 100, 2) %>%
+                    </div>
                 </div>
                 <div class="stat flex col gap-2">
                     <div class="key">maps passed</div>
-                    <div class="value"><%= stats.count_completed.toLocaleString() %></div>
+                    <div class="value"><%= n(stats.count_completed) %></div>
                 </div>
                 <div class="stat flex col gap-2">
                     <div class="key">maps left</div>
                     <div class="value">
-                        <%= (stats.count_total - stats.count_completed).toLocaleString() %>
+                        <%= n(stats.count_total - stats.count_completed) %>
                     </div>
                 </div>
                 <div class="stat flex col gap-2">
                     <div class="key">cxp left</div>
-                    <div class="value"><%= stats.xp_remaining.toLocaleString() %></div>
+                    <div class="value"><%= n(stats.xp_remaining) %></div>
                 </div>
                 <div class="stat flex col gap-2">
                     <div class="key">nomod playtime left</div>
-                    <div class="value" title="<%= Math.round(stats.secs_remaining / 60 / 60).toLocaleString() %> hours">
-                        <%= stats.timeRemaining %></div>
+                    <div class="value" title="<%= n(stats.secs_remaining / 60 / 60) %> hours">
+                        <%= utils.secsToDuration(stats.secs_remaining) %></div>
                 </div>
             </div>
             <div id="categoryStatsHeader">
@@ -62,16 +63,16 @@
             <div class="stats flex flex-wrap">
                 <div class="stat flex col gap-2">
                     <div class="key">total maps</div>
-                    <div class="value"><%= stats.count_total.toLocaleString() %></div>
+                    <div class="value"><%= n(stats.count_total) %></div>
                 </div>
                 <div class="stat flex col gap-2">
                     <div class="key">total obtainable cxp</div>
-                    <div class="value"><%= stats.xp_total.toLocaleString() %></div>
+                    <div class="value"><%= n(stats.xp_total) %></div>
                 </div>
                 <div class="stat flex col gap-2">
                     <div class="key">total nomod playtime</div>
-                    <div class="value" title="<%= Math.round(stats.secs_total / 60 / 60).toLocaleString() %> hours">
-                        <%= stats.timeTotal %></div>
+                    <div class="value" title="<%= n(stats.secs_total / 60 / 60) %> hours">
+                        <%= utils.secsToDuration(stats.secs_total) %></div>
                 </div>
             </div>
         </div>

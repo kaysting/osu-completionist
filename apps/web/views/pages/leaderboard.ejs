@@ -37,15 +37,15 @@
                         <div class="stats flex row flex-wrap">
                             <div class="stat flex col gap-2">
                                 <div class="name">completion xp</div>
-                                <div class="value primary"><%= entry.stats.xp.toLocaleString() %></div>
+                                <div class="value primary"><%= n(entry.stats.xp) %></div>
                             </div>
                             <div class="stat flex col gap-2">
                                 <div class="name">% completed</div>
-                                <div class="value"><%= entry.stats.percentage_completed.toFixed(2) %>%</div>
+                                <div class="value"><%= n(entry.stats.percentage_completed, 2) %>%</div>
                             </div>
                             <div class="stat flex col gap-2">
                                 <div class="name">maps passed</div>
-                                <div class="value"><%= entry.stats.count_completed.toLocaleString() %></div>
+                                <div class="value"><%= n(entry.stats.count_completed) %></div>
                             </div>
                         </div>
                         <div class="bar relative w-full rounded-4">

@@ -12,8 +12,8 @@
         color = time_completed_color;
     }
     let tooltip = [
-        `${map_percentage_completed.toFixed(2)}% maps passed (${count_completed.toLocaleString()} / ${count_total.toLocaleString()})`,
-        `${time_percentage_completed.toFixed(2)}% cxp earned (${xp.toLocaleString()} / ${xp_total.toLocaleString()})`
+        `${n(map_percentage_completed, 2)}% maps passed (${n(count_completed)} / ${n(count_total)})`,
+        `${n(time_percentage_completed, 2)}% cxp earned (${n(xp)} / ${n(xp_total)})`
     ].join('\\n')
 %>
 
@@ -22,10 +22,10 @@
     <div class="content flex col gap-4 flex-grow" title="<%= tooltip %>">
         <div class="values flex flex-wrap align-end">
             <div class="percent">
-                <span><%= percent.toFixed(2) %>%</span>
+                <span><%= n(percent, 2) %>%</span>
             </div>
             <div class="count top">
-                <span><%= completed.toLocaleString() %> / <%= total.toLocaleString() %> <%= unit %></span>
+                <span><%= n(completed) %> / <%= n(total) %> <%= unit %></span>
             </div>
         </div>
         <div class="bar w-full relative rounded-4 overflow-hidden">

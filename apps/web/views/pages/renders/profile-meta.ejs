@@ -27,21 +27,21 @@
                 </div>
                 <div class="stat primary">
                     <div class="name">completion xp</div>
-                    <div class="value"><%= stats.xp.toLocaleString() %></div>
+                    <div class="value"><%= n(stats.xp) %></div>
                 </div>
             </div>
             <div class="flex gap-24">
                 <div class="stat">
                     <div class="name">% completed</div>
-                    <div class="value"><%= stats.percentage_completed.toFixed(2) %>%</div>
+                    <div class="value"><%= n(stats.percentage_completed) %>%</div>
                 </div>
                 <div class="stat">
                     <div class="name">maps passed</div>
-                    <div class="value"><%= stats.count_completed.toLocaleString() %></div>
+                    <div class="value"><%= n(stats.count_completed) %></div>
                 </div>
                 <div class="stat">
                     <div class="name">total maps</div>
-                    <div class="value"><%= stats.count_total.toLocaleString() %></div>
+                    <div class="value"><%= n(stats.count_total) %></div>
                 </div>
             </div>
         </div>

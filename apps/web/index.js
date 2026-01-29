@@ -136,6 +136,7 @@ try {
 // Add functions for use within EJS
 app.locals.dayjs = dayjs;
 app.locals.utils = utils;
+app.locals.n = utils.formatNumber;
 app.locals.env = env;
 app.locals.includeMarkdown = (filePath) => marked.parse(fs.readFileSync(path.join(__dirname, filePath), 'utf-8'));
 app.locals.asset = (pathRel) => {

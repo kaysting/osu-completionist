@@ -3,34 +3,34 @@
     <div class="top flex col gap-8">
         <div class="flex row">
             <div class="year flex-grow"><%= stats.year %></div>
-            <div class="percent"><%= stats.time_percentage_completed.toFixed(2) %>%</div>
+            <div class="percent"><%= n(stats.time_percentage_completed) %>%</div>
         </div>
         <div class="bar"
-            style="--percent: <%= utils.ceilToNearest(stats.time_percentage_completed, 2) %>%; --color: <%= stats.time_completed_color %>">
+            style="--percent: <%= n(Math.min(2, stats.time_percentage_completed)) %>%; --color: <%= stats.time_completed_color %>">
             <div class="filling"></div>
         </div>
     </div>
     <div class="stats flex flex-wrap justify-center">
         <div class="stat">
             <div class="key">maps passed</div>
-            <div class="value"><%= stats.count_completed.toLocaleString() %> /
-                <%= stats.count_total.toLocaleString() %></div>
+            <div class="value"><%= n(stats.count_completed) %> /
+                <%= n(stats.count_total) %></div>
         </div>
         <div class="stat">
             <div class="key">nomod hours completed</div>
-            <div class="value"><%= Number((stats.secs_completed / 60 / 60).toFixed(1)).toLocaleString() %> /
-                <%= Number((stats.secs_total / 60 / 60).toFixed(1)).toLocaleString() %></div>
+            <div class="value"><%= n(stats.secs_completed / 60 / 60, 1) %> /
+                <%= n(stats.secs_total / 60 / 60, 1) %></div>
         </div>
         <div class="stat">
             <div class="key">cxp earned</div>
-            <div class="value"><%= stats.xp.toLocaleString() %> / <%= stats.xp_total.toLocaleString() %></div>
+            <div class="value"><%= n(stats.xp) %> / <%= n(stats.xp_total) %></div>
         </div>
     </div>
 
     <% if (maps) { %>
     <div>
         <% const countLeft = stats.count_total - stats.count_completed %>
-        <span class="header">maps remaining (<%= countLeft.toLocaleString() %>)</span>
+        <span class="header">maps remaining (<%= n(countLeft) %>)</span>
     </div>
     <div class="flex col gap-8">
 

@@ -10,7 +10,7 @@
     <div id="results" class="results card lighter padded flex col gap-16">
         <div>
             <% if (query) { %>
-            <span class="header">Players (<%= user_results.total_matches.toLocaleString() %>)</span>
+            <span class="header">Players (<%= n(user_results.total_matches) %>)</span>
             <% } else { %>
             <span class="header">Recently active players</span>
             <% } %>
@@ -26,7 +26,7 @@
         <% } %>
         <div>
             <% if (query) { %>
-            <span class="header">Beatmaps (<%= map_results.total_matches.toLocaleString() %>)</span>
+            <span class="header">Beatmaps (<%= n(map_results.total_matches) %>)</span>
             <% } else { %>
             <span class="header">Recently ranked beatmaps</span>
             <% } %>
