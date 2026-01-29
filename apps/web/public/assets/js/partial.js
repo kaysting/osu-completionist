@@ -142,6 +142,16 @@ const reloadElement = async (targetSelectors, options = {}) => {
                 successCount++;
 
             } else if (oldElement && !newElement) {
+                // If we fetched a custom URL, missing content likely means a mismatch,
+                // not an intentional deletion. Only delete if we reloaded the current page.
+                if (url !== window.location.href) {
+                    if (!silent) console.warn(`[Partial] Selector "${selector}" missing in response from "${url}". Preserving existing element.`);
+                    // Remove loading style so it doesn't get stuck at 50% opacity
+                    if (!silent) removeLoadingStyle(oldElement);
+                    continue;
+                }
+
+                // Normal deletion logic (only for current page reloads)
                 oldElement.style.transition = '0.1s ease-in-out';
                 oldElement.style.opacity = '0';
                 setTimeout(() => oldElement.remove(), 200);
@@ -307,16 +317,24 @@ document.addEventListener('visibilitychange', () => {
     const elementsToReload = document.querySelectorAll('[data-reload-on-show]');
     if (elementsToReload.length === 0) return;
 
-    const selectors = Array.from(elementsToReload).map((el) => {
-        if (el.id) return `#${el.id}`;
-        return el.tagName.toLowerCase() +
-            (el.className ? '.' + el.className.split(' ').join('.') : '');
-    }).filter((selector, index, arr) => arr.indexOf(selector) === index);
+    // Group elements by their reload URL
+    const urlGroups = new Map();
+    Array.from(elementsToReload).forEach((el) => {
+        const url = el.getAttribute('data-reload-url') || window.location.href;
+        if (!urlGroups.has(url)) {
+            urlGroups.set(url, []);
+        }
 
-    if (selectors.length > 0) {
+        const selector = el.id ? `#${el.id}` : el.tagName.toLowerCase() +
+            (el.className ? '.' + el.className.split(' ').join('.') : '');
+        urlGroups.get(url).push(selector);
+    });
+
+    // Reload each group with its respective URL
+    urlGroups.forEach((selectors, url) => {
         reloadElement(selectors, {
-            url: window.location.href,
+            url: url,
             silent: true
         });
-    }
+    });
 });
