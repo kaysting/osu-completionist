@@ -3,7 +3,7 @@
     <div class="top flex col gap-8">
         <div class="flex row">
             <div class="year flex-grow"><%= stats.year %></div>
-            <div class="percent"><%= n(stats.time_percentage_completed) %>%</div>
+            <div class="percent"><%= n(stats.time_percentage_completed, 2) %>%</div>
         </div>
         <div class="bar"
             style="--percent: <%= n(Math.max(2, stats.time_percentage_completed)) %>%; --color: <%= stats.time_completed_color %>">
