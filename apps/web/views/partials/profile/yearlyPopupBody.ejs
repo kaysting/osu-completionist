@@ -52,6 +52,9 @@
             <%- include('../beatmap/card', { beatmap }) %>
             <% } %>
         </div>
+
+        <!-- Only show play next button if there are more maps than shown -->
+        <% if (countLeft > maps.length) { %>
         <div class="flex justify-center">
             <a href="/recommended/<%= category %>?q=<%= encodeURIComponent(query) %>&sort=<%= encodeURIComponent(sort) %>"
                 class="btn primary">
@@ -59,6 +62,8 @@
                 <span class="label">More in play next...</span>
             </a>
         </div>
+        <% } %>
+
         <% } %>
 
         <% if (maps.length === 0) { %>
