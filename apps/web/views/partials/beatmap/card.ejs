@@ -26,7 +26,8 @@
                         Mapped by <%= beatmap.beatmapset.mapper %>
                     </span>
                     <span>•</span>
-                    <span class="stats overflow-hidden text-ellipsis nowrap flex-no-shrink">
+                    <span class="stats overflow-hidden text-ellipsis nowrap flex-no-shrink"
+                        title="<%= utils.secsToDuration(beatmap.duration_secs) %> (nomod)\n<%= utils.secsToDuration(beatmap.duration_secs / 1.5) %> (DT 1.5x)\n<%= utils.secsToDuration(beatmap.duration_secs / 2) %> (DT 2x)">
                         <span class="cxp"><%= beatmap.xp %> cxp</span>
                     </span>
                 </div>
