@@ -64,6 +64,9 @@
         </div>
     </div>
 </div>
+<script id="data-filterHelp" type="application/json">
+    <%- JSON.stringify(filterHelpHtml) %>
+</script>
 <dialog id="filterHelpPopup" class="popup" closedby="any" style="--width: 800px">
     <div class="title">Searching and filtering help</div>
     <div class="body"><%- filterHelpHtml %></div>
@@ -72,16 +75,8 @@
     </div>
 </dialog>
 <script>
-    const btnFilterHelp = document.querySelector('#filterHelpButton');
-    const filterHelpPopup = document.querySelector('#filterHelpPopup');
-    const btnFilterHelpClose = document.querySelector('#filterHelpClose');
-    // Show filter help popup
-    btnFilterHelp.addEventListener('click', (e) => {
-        e.preventDefault();
-        filterHelpPopup.showModal();
-    });
-    // Close filter help popup
-    btnFilterHelpClose.addEventListener('click', (e) => {
-        filterHelpPopup.close();
+    document.querySelector('#filterHelpButton').addEventListener('click', () => {
+        const html = JSON.parse(document.getElementById('data-filterHelp').textContent);
+        const dialog = showPopup(`Searching and filtering help`, html, [{ label: 'Close' }], { width: 800 });
     });
 </script>

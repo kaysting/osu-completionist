@@ -1,0 +1,42 @@
+<div id="sharePopupRenderList" class="flex col gap-16">
+    <% for (const [renderId, render] of Object.entries(share.renders)) { %>
+    <div>
+        <span class="header"><%= render.name %></span>
+    </div>
+    <div>
+        <p><%= render.description %></p>
+        <div id="render-<%= renderId %>" class="flex col gap-8">
+            <img src="<%= render.urls.image %>" style="max-width: 600px">
+            <div class="flex gap-8 flex-wrap">
+                <% if (render.embeds.bbcode) { %>
+                <button class="btn primary" onClick="copyText(`<%= render.embeds.bbcode %>`)"
+                    title="Paste directly into osu!">
+                    <span class="icon">content_copy</span>
+                    <span>Copy osu! BBCode</span>
+                </button>
+                <% } %>
+                <% if (render.urls.image) { %>
+                <button class="btn" onClick="copyText(`<%= render.urls.image %>`)">
+                    <span class="icon">content_copy</span>
+                    <span>Copy image URL</span>
+                </button>
+                <% } %>
+                <% if (render.urls.html) { %>
+                <button class="btn" onClick="copyText(`<%= render.urls.html %>`)"
+                    title="Suitable for use as an OBS browser source or similar web-based widget.">
+                    <span class="icon">content_copy</span>
+                    <span>Copy HTML URL</span>
+                </button>
+                <% } %>
+                <% if (render.urls.image) { %>
+                <button class="btn"
+                    onClick="downloadFile(`<%= render.urls.image %>`, `<%= renderId %>-<%= new Date().toISOString() %>.png`)">
+                    <span class="icon">download</span>
+                    <span>Download image</span>
+                </button>
+                <% } %>
+            </div>
+        </div>
+    </div>
+    <% } %>
+</div>

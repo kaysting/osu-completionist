@@ -50,24 +50,52 @@ const downloadFile = (fileUrl, filename) => {
     document.body.removeChild(link);
 };
 
-const showPopup = (title, body, actions, closedby = 'none') => {
+const showPopup = (title, body, actions, options = {}) => {
+
+    const {
+        closedby = 'any',
+        width = '',
+        height = '',
+        onBeforeShow = () => { },
+        onClose = () => { }
+    } = options;
+
     // Build base dialog element
     const dialog = document.createElement('dialog');
-    dialog.classList.add('popup');
+    if (width) dialog.style.setProperty(`--width`, `${width}px`);
+    if (height) dialog.style.setProperty(`--height`, `${height}px`);
     dialog.innerHTML = /*html*/`
         <div class="title"></div>
         <div class="body"></div>
         <div class="actions"></div>
-    `;
+        `;
     dialog.closedby = closedby;
+    dialog.classList.add('popup');
+
+    // Function to close with animation
+    const close = async () => {
+        try {
+            await onClose();
+        } catch (error) {
+            console.error(error);
+        }
+        dialog.classList.remove('visible');
+        setTimeout(() => {
+            dialog.close();
+            document.body.removeChild(dialog);
+        }, 200);
+    };
+
     // Populate dialog
     dialog.querySelector('.title').innerText = title;
+
     // Populate body
     if (typeof body === 'string') {
         dialog.querySelector('.body').innerHTML = body;
     } else {
         dialog.querySelector('.body').appendChild(body);
     }
+
     // Populate actions
     const actionsContainer = dialog.querySelector('.actions');
     for (const action of actions) {
@@ -85,18 +113,37 @@ const showPopup = (title, body, actions, closedby = 'none') => {
         btn.addEventListener('click', event => {
             if (action.onClick) action.onClick(dialog);
             if (action.noClose) return;
-            dialog.close(event);
+            close();
         });
         actionsContainer.appendChild(btn);
     }
+
     // Show dialog
     document.body.appendChild(dialog);
     dialog.showModal();
-    // Delete on close
-    dialog.addEventListener('close', () => {
-        document.body.removeChild(dialog);
+    dialog.addEventListener('toggle', async (e) => {
+        if (!dialog.open) return; // return if closed
+        if (onBeforeShow) {
+            try {
+                const success = await onBeforeShow(dialog);
+                if (success === false) throw new Error(`Dialog's onBeforeShow function returned false, aborting`);
+            } catch (error) {
+                console.error(error);
+                dialog.remove();
+                return;
+            }
+        }
+        setTimeout(() => {
+            dialog.classList.add('visible');
+        }, 10);
     });
-    // Return
+
+    // Handle cancelling
+    dialog.addEventListener('cancel', (e) => {
+        e.preventDefault();
+        close();
+    });
+
     return dialog;
 };
 

@@ -202,12 +202,14 @@
                     newTab: true,
                     noClose: true
                 },
-                { label: 'Got it!', class: 'primary' }
-            ]);
-            dialog.setAttribute('data-nosnippet', '');
-            dialog.addEventListener('close', () => {
-                localStorage.setItem('devNoticeVersion', devMsgVersion.toString());
-                localStorage.setItem('changelogVersion', currentChangelogVersion);
+                {
+                    label: 'Got it!', class: 'primary'
+                }
+            ], {
+                onClose: () => {
+                    localStorage.setItem('devNoticeVersion', devMsgVersion.toString());
+                    localStorage.setItem('changelogVersion', currentChangelogVersion);
+                }
             });
         }
 
@@ -215,12 +217,13 @@
         if (hasSeenDevNotice && seenChangelogVersion !== currentChangelogVersion) {
             const dialog = showPopup('Changelog', changelogHtml, [
                 { label: 'Close' }
-            ]);
-            dialog.setAttribute('data-nosnippet', '');
-            dialog.style.setProperty('--height', '900px');
-            dialog.addEventListener('close', () => {
-                localStorage.setItem('changelogVersion', currentChangelogVersion);
+            ], {
+                width: 800, height: 900,
+                onClose: () => {
+                    localStorage.setItem('changelogVersion', currentChangelogVersion);
+                }
             });
+            dialog.setAttribute('data-nosnippet', '');
         }
 
     </script>

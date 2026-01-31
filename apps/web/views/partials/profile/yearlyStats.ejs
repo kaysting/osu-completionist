@@ -22,14 +22,16 @@
             yearlyEls.forEach(el => {
                 const year = el.dataset.year;
                 el.addEventListener('click', () => {
-                    const dialog = showPopup(
-                        `${year} completion details`,
-                        '<div id="yearlyPopupBody">Loading details...</div>',
-                        [{ label: 'Close' }], 'any'
+                    showPopup(
+                        `${year} completion details`, '', [{ label: 'Close' }],
+                        {
+                            closedby: 'any', width: 900, height: 900,
+                            onBeforeShow: async dialog => {
+                                dialog.querySelector('.body').id = 'yearlyPopupBody';
+                                await reloadElement('#yearlyPopupBody', { url: `?year=${year}` });
+                            }
+                        }
                     );
-                    dialog.style.setProperty('--width', '900px');
-                    dialog.style.setProperty('--height', '900px');
-                    reloadElement('#yearlyPopupBody', { url: `?year=${year}`, silent: true });
                 });
             });
         })();

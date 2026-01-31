@@ -687,12 +687,13 @@ img {
     border-bottom-right-radius: 8px;
 }
 
-.popup::backdrop {
-    background: hsla(220, 20%, 10%, 0.75);
-}
-
 .popup:not([open]) {
     display: none;
+}
+
+.popup::backdrop {
+    background: transparent;
+    transition: 0.1s ease-in-out;
 }
 
 .popup {
@@ -711,6 +712,18 @@ img {
     max-width: min(var(--width), calc(100% - 16px));
     max-height: min(var(--height), calc(100% - 16px));
     gap: 16px;
+    transform: scale(0.95);
+    opacity: 0;
+    transition: 0.2s ease-in-out;
+}
+
+.popup.visible::backdrop {
+    background: hsla(220, 20%, 10%, 0.75);
+}
+
+.popup.visible {
+    opacity: 1;
+    transform: none;
 }
 
 .popup>.title {

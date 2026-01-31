@@ -34,6 +34,27 @@ const removeLoadingStyle = (element) => {
 };
 
 /**
+ * Standalone Fetcher: Fetches the partial HTML for specific selectors.
+ * Returns a Promise<Document> containing the new elements.
+ */
+const fetchPartials = async (selectors, options = {}) => {
+    const targets = Array.isArray(selectors) ? selectors : [selectors];
+    const url = options.url || window.location.href;
+    const signal = options.signal || null;
+
+    const response = await fetch(url, {
+        headers: { 'X-Reload-Selectors': targets.join(',') },
+        signal: signal
+    });
+
+    if (!response.ok) throw new Error(`Server returned ${response.status}`);
+
+    const html = await response.text();
+    const parser = new DOMParser();
+    return parser.parseFromString(html, 'text/html');
+};
+
+/**
  * Helper: Generates a "clean" DOM Node for comparison.
  * It strips known client-side-only attributes so we can verify
  * if the underlying content actually changed.
@@ -98,16 +119,12 @@ const reloadElement = async (targetSelectors, options = {}) => {
     }
 
     try {
-        const response = await fetch(url, {
-            headers: { 'X-Reload-Selectors': targets.join(',') },
+        // --- UPDATED: USE THE NEW HELPER ---
+        const doc = await fetchPartials(targets, {
+            url: url,
             signal: controller.signal
         });
 
-        if (!response.ok) throw new Error(`Server returned ${response.status}`);
-
-        const html = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
         let successCount = 0;
 
         for (const selector of targets) {
@@ -116,16 +133,11 @@ const reloadElement = async (targetSelectors, options = {}) => {
 
             if (oldElement && newElement) {
                 // --- DIFF CHECK START ---
-                // We compare the CLEANED version of the old node
-                // against the FRESH version of the new node.
                 const cleanOldNode = getCleanNode(oldElement);
 
-                // isEqualNode is more robust than string comparison (outerHTML)
-                // because it handles attribute ordering and quote styles automatically.
                 if (cleanOldNode.isEqualNode(newElement)) {
                     if (!silent) removeLoadingStyle(oldElement);
                     successCount++;
-                    // console.log(`[Partial] Skipped ${selector} (Identical)`);
                     continue;
                 }
                 // --- DIFF CHECK END ---
@@ -142,16 +154,14 @@ const reloadElement = async (targetSelectors, options = {}) => {
                 successCount++;
 
             } else if (oldElement && !newElement) {
-                // If we fetched a custom URL, missing content likely means a mismatch,
-                // not an intentional deletion. Only delete if we reloaded the current page.
+                // Safety check for custom URLs
                 if (url !== window.location.href) {
                     if (!silent) console.warn(`[Partial] Selector "${selector}" missing in response from "${url}". Preserving existing element.`);
-                    // Remove loading style so it doesn't get stuck at 50% opacity
                     if (!silent) removeLoadingStyle(oldElement);
                     continue;
                 }
 
-                // Normal deletion logic (only for current page reloads)
+                // Normal deletion logic
                 oldElement.style.transition = '0.1s ease-in-out';
                 oldElement.style.opacity = '0';
                 setTimeout(() => oldElement.remove(), 200);

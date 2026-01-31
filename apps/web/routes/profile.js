@@ -71,8 +71,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     };
 
     const getStats = () => {
-        const stats = apiRead.getUserCompletionStats(req.user.id, category);
-        return stats;
+        return apiRead.getUserCompletionStats(req.user.id, category);
     };
 
     const getRecommended = (recentPasses) => {
@@ -234,16 +233,23 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
 
     // Render year details if requested
     if (selectors.match(/#yearlyPopupBody/)) {
-        const data = getYearDetails();
-        if (!data) return res.end('');
-        return res.renderPartial('profile/yearlyPopupBody', data);
+        const yearDetails = getYearDetails();
+        if (!yearDetails) return res.end('');
+        return res.renderPartial('profile/yearlyPopupBody', yearDetails);
+    }
+
+    // Render share popup body if requested
+    if (selectors.match(/(#sharePopupBody|#sharePopupRenderList)/)) {
+        const share = getShareData(
+            getStats(), getYearlyStats()
+        );
+        return res.renderPartial('profile/sharePopupBody', { share, query: req.query });
     }
 
     // Render play next partial if requested
     if (selectors.match(/#playNext/)) {
         const recentPasses = getRecentPasses();
         const { recommended, recommendedQuery } = getRecommended(recentPasses);
-        console.log(`playnext`);
         return res.renderPartial('profile/cardPlayNext', { recommended, recommendedQuery, category });
     }
 
@@ -255,7 +261,6 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     const updateStatus = getUpdateStatus();
     const historyDaily = getDailyHistory();
     const historyMonthly = getMonthlyHistory();
-    const share = getShareData(stats, yearly);
     const categoryName = statCategories.getCategoryName(category);
     const title = `${req.user.name}'s ${categoryName} completionist profile`;
     res.renderPage('profile', {
@@ -271,7 +276,6 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         },
         stats, yearly, recentPasses, updateStatus,
         recommended, recommendedQuery, yearlyType, historyDaily, historyMonthly,
-        share,
         category,
         category_navigation: statCategories.getCategoryNavPaths(`/u/${req.user.id}`, category),
     });
