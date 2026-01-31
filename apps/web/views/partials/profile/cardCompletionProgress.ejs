@@ -55,7 +55,7 @@
                     <div
                         class="value"
                         title="<%= utils.getPlaytimeTooltip(stats.secs_remaining, { rounded: true, include: ['h', 'm', 's'], format: `{time} left ({mod})` }) %>">
-                        <%= utils.secsToDuration(stats.secs_remaining) %>
+                        <%= utils.secsToDuration(stats.secs_remaining, false, ['d','h','m']) %>
                     </div>
                 </div>
             </div>
@@ -76,7 +76,7 @@
                     <div
                         class="value"
                         title="<%= utils.getPlaytimeTooltip(stats.secs_total, { rounded: true, include: ['h', 'm', 's'], format: `{time} total ({mod})` }) %>">
-                        <%= utils.secsToDuration(stats.secs_total) %>
+                        <%= utils.secsToDuration(stats.secs_total, false, ['d','h','m']) %>
                     </div>
                 </div>
             </div>

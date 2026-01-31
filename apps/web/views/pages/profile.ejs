@@ -16,7 +16,7 @@
                     <span class="icon">share</span>
                     <span>share & embed...</span>
                 </button>
-                <!-- Basic JS for showing share popup -->
+                <!-- Handle showing dynamic share popup -->
                 <script>
                     document.querySelector('#showSharePopup').addEventListener('click', () => {
                         const dialog = showPopup(`Share profile`, ``, [{ label: 'Close' }], {
@@ -48,11 +48,19 @@
                     <% } %>
                 </div>
             </div>
+            <!-- This is just the stats to the right of the avatar and name -->
             <%- include('../partials/profile/basicStats', { stats }) %>
         </div>
+
+        <!-- Include completion progress card -->
         <%- include('../partials/profile/cardCompletionProgress', { user, stats, historyDaily, yearly, yearlyType,
-        updateStatus }) %> <% if (recommended) { %> <%- include('../partials/profile/cardPlayNext', { recommended,
-        recommendedQuery, category }) %> <% } %> <%- include('../partials/profile/cardRecentPasses', { recentPasses })
+        updateStatus }) %>
+
+        <!-- Include play next card if we have recommendations -->
+        <%- recommended ? include('../partials/profile/cardPlayNext', { recommended, recommendedQuery, category }) : ''
         %>
+
+        <!-- Include recent passes card -->
+        <%- include('../partials/profile/cardRecentPasses', { recentPasses }) %>
     </div>
 </div>
