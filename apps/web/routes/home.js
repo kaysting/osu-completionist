@@ -14,15 +14,13 @@ const getStats = () => {
     }
     stats.users = db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
     stats.beatmaps = db.prepare('SELECT COUNT(*) AS count FROM beatmaps').get().count;
-    const totalStats = db
-        .prepare(
-            `SELECT
+    const totalStats = db.prepare(
+        `SELECT
             SUM(seconds) AS secs,
             SUM(count) AS passes
         FROM user_category_stats
         WHERE category = 'global-ranked-loved-converts' AND user_id > 0`
-        )
-        .get();
+    ).get();
     stats.xp = apiRead.secsToXp(totalStats.secs);
     stats.passes = totalStats.passes;
     lastStatRefresh = now;

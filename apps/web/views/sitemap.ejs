@@ -7,14 +7,16 @@
         <changefreq>daily</changefreq>
         <priority>0.7</priority>
     </url>
-    <% } %> <% for (const cat of categoryIds) { %>
+    <% } %>
+    <% for (const cat of categoryIds) { %>
     <url>
         <loc><%= baseUrl %>/leaderboard/<%= cat %></loc>
         <lastmod><%= dayjs().format('YYYY-MM-DD') %></lastmod>
         <changefreq>daily</changefreq>
         <priority>0.5</priority>
     </url>
-    <% } %> <% for (const path of staticPaths) { %>
+    <% } %>
+    <% for (const path of staticPaths) { %>
     <url>
         <loc><%= baseUrl %>/<%= path %></loc>
         <lastmod><%= dayjs().format('YYYY-MM-DD') %></lastmod>

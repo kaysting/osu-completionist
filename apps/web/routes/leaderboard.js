@@ -40,16 +40,13 @@ router.get('/:category', (req, res) => {
     res.render('layout', {
         title,
         meta: {
-            title,
-            description: `View the players who have the highest completion in this category!`
+            title, description: `View the players who have the highest completion in this category!`
         },
         page: 'leaderboard',
         category,
         category_navigation: statCategories.getCategoryNavPaths('/leaderboard', category),
         pagination: {
-            current: page,
-            nav: pagesToShow,
-            basePath: `/leaderboard/${category}`
+            current: page, nav: pagesToShow, basePath: `/leaderboard/${category}`
         },
         leaderboard,
         me: req.me

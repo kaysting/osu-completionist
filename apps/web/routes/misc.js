@@ -37,9 +37,7 @@ router.use('/faq', (req, res) => {
 });
 router.use('/changelog', (req, res) => {
     res.renderPage('raw', {
-        html: marked.parse(
-            `# Changelog\n\n${fs.readFileSync(path.join(__dirname, '../views/markdown/changelog.md'), 'utf-8')}`
-        ),
+        html: marked.parse(`# Changelog\n\n${fs.readFileSync(path.join(__dirname, '../views/markdown/changelog.md'), 'utf-8')}`),
         title: 'Changelog',
         meta: {
             title: 'Changelog',

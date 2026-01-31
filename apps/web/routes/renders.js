@@ -52,7 +52,7 @@ router.get('/:template', async (req, res) => {
     const cachePath = path.join(cacheDir, `${hash}.png`);
     const cacheLifetimeMs = 1000 * 60 * 15;
     const force = req.query.force === 'true';
-    if (force || !fs.existsSync(cachePath) || Date.now() - fs.statSync(cachePath).mtimeMs > cacheLifetimeMs) {
+    if (force || !fs.existsSync(cachePath) || (Date.now() - fs.statSync(cachePath).mtimeMs) > cacheLifetimeMs) {
         utils.log(`Rendering ${template} with params ${JSON.stringify(req.query)}`);
         const buffer = await imageRenderer.urlToPng(url, templateInfo.size.width, templateInfo.size.height);
         fs.writeFileSync(cachePath, buffer);

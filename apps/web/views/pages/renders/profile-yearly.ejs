@@ -1,57 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Render</title>
-        <link rel="stylesheet" href="/assets/css/theme.css" />
-        <link rel="stylesheet" href="/assets/css/utils.css" />
-        <link rel="stylesheet" href="/assets/css/render-embeds.css" />
-    </head>
 
-    <body>
-        <div id="card" class="flex col gap-16 rounded-16">
-            <div id="header" class="flex row gap-16 align-center">
-                <span class="title flex-grow flex-no-shrink">Completion by Year</span>
-                <span class="category overflow-hidden nowrap text-ellipsis"><%= categoryName %></span>
-            </div>
-            <div class="yearlyStatsContainer flex-grow">
-                <% for (const yearData of yearly) { %> <%- include('../../partials/statsYearEntryLine', { ...yearData,
-                yearlyType: 'maps' }) %> <% } %>
-            </div>
-            <div id="footer" class="flex row gap-16 align-end">
-                <span class="user flex gap-12 align-center flex-grow">
-                    <img src="<%= user.avatar_url %>" class="avatar rounded-8" />
-                    <div class="flex col gap-4">
-                        <div class="flex row gap-8 align-center">
-                            <span class="name"><%= user.name %></span>
-                            <img src="<%= user.country.flag_url %>" class="flag country" />
-                            <img src="<%= user.team.flag_url %>" class="flag team" />
-                        </div>
-                        <span class="rankCont">
-                            Category rank
-                            <span class="rank">#<%= stats.rank == 0 ? '-' : stats.rank %></span>
-                        </span>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Render</title>
+    <link rel="stylesheet" href="/assets/css/theme.css">
+    <link rel="stylesheet" href="/assets/css/utils.css">
+    <link rel="stylesheet" href="/assets/css/render-embeds.css">
+</head>
+
+<body>
+    <div id="card" class="flex col gap-16 rounded-16">
+        <div id="header" class="flex row gap-16 align-center">
+            <span class="title flex-grow flex-no-shrink">Completion by Year</span>
+            <span class="category overflow-hidden nowrap text-ellipsis"><%= categoryName %></span>
+        </div>
+        <div class="yearlyStatsContainer flex-grow">
+            <% for (const yearData of yearly) { %>
+            <%- include('../../partials/statsYearEntryLine', { ...yearData, yearlyType: 'maps' }) %>
+            <% } %>
+        </div>
+        <div id="footer" class="flex row gap-16 align-end">
+            <span class="user flex gap-12 align-center flex-grow">
+                <img src="<%= user.avatar_url %>" class="avatar rounded-8">
+                <div class="flex col gap-4">
+                    <div class="flex row gap-8 align-center">
+                        <span class="name"><%= user.name %></span>
+                        <img src="<%= user.country.flag_url %>" class="flag country">
+                        <img src="<%= user.team.flag_url %>" class="flag team">
                     </div>
-                </span>
-                <div class="flex col gap-2 text-right">
-                    <span class="timestamp"><%= dayjs().utc().format('YYYY-MM-DD HH:mm:ss [UTC]') %></span>
-                    <span>Powered by osucomplete.org</span>
+                    <span class="rankCont">Category rank <span
+                            class="rank">#<%= stats.rank == 0 ? '-' : stats.rank %></span></span>
                 </div>
+            </span>
+            <div class="flex col gap-2 text-right">
+                <span class="timestamp"><%= dayjs().utc().format('YYYY-MM-DD HH:mm:ss [UTC]') %></span>
+                <span>Powered by osucomplete.org</span>
             </div>
         </div>
-        <%- query.base_hue ? `
-        <style>
-            body {
-                --base-hue: ${parseInt(query.base_hue)};
-            }
-        </style>
-        ` : '' %> <%- query.base_sat ? `
-        <style>
-            body {
-                --base-sat: ${parseInt(query.base_sat)}%;
-            }
-        </style>
-        ` : '' %>
-    </body>
+    </div>
+    <%- query.base_hue ? `<style>body { --base-hue: ${parseInt(query.base_hue)}; }</style>` : '' %>
+    <%- query.base_sat ? `<style>body { --base-sat: ${parseInt(query.base_sat)}%; }</style>` : '' %>
+</body>
+
 </html>

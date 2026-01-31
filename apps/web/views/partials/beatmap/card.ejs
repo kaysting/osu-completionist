@@ -1,44 +1,32 @@
 <div class="beatmapCard rounded-16 overflow-hidden flex">
     <div class="left relative flex-no-shrink flex align-center justify-center">
-        <img
-            class="listImage absolute w-full h-full object-cover"
+        <img class="listImage absolute w-full h-full object-cover"
             src="https://assets.ppy.sh/beatmaps/<%= beatmap.beatmapset.id %>/covers/list.jpg"
-            onError="this.onerror=null; this.src='/assets/images/beatmap-cover-fallback.png';"
-            loading="lazy" />
-        <button
-            class="controls btn absolute w-full h-full rounded-0"
+            onError="this.onerror=null; this.src='/assets/images/beatmap-cover-fallback.png';" loading="lazy">
+        <button class="controls btn absolute w-full h-full rounded-0"
             onClick="audioButtonClick(event, `https://b.ppy.sh/preview/<%= beatmap.beatmapset.id %>.mp3`)">
             <span class="icon filled">play_arrow</span>
         </button>
     </div>
     <div class="right flex-grow flex">
         <div class="content relative rounded-16 overflow-hidden flex col gap-8 flex-grow justify-center">
-            <img
-                class="coverImage absolute w-full h-full object-cover"
+            <img class="coverImage absolute w-full h-full object-cover"
                 src="https://assets.ppy.sh/beatmaps/<%= beatmap.beatmapset.id %>/covers/cover.jpg"
-                onError="this.onerror=null; this.src='/assets/images/beatmap-cover-fallback.png';"
-                loading="lazy" />
+                onError="this.onerror=null; this.src='/assets/images/beatmap-cover-fallback.png';" loading="lazy">
             <div class="coverDimming absolute w-full h-full"></div>
             <div class="text relative">
-                <div
-                    class="title overflow-hidden text-ellipsis nowrap"
-                    title="<%= beatmap.beatmapset.title %>"
+                <div class="title overflow-hidden text-ellipsis nowrap" title="<%= beatmap.beatmapset.title %>"
                     data-tooltip-overflow="true">
-                    <%= beatmap.beatmapset.title %>
-                </div>
-                <div
-                    class="artist overflow-hidden text-ellipsis nowrap"
-                    title="<%= beatmap.beatmapset.artist %>"
+                    <%= beatmap.beatmapset.title %></div>
+                <div class="artist overflow-hidden text-ellipsis nowrap" title="<%= beatmap.beatmapset.artist %>"
                     data-tooltip-overflow="true">
-                    <%= beatmap.beatmapset.artist %>
-                </div>
+                    <%= beatmap.beatmapset.artist %></div>
                 <div class="details flex row gap-8 align-center overflow-hidden text-ellipsis nowrap">
                     <span class="mapper overflow-hidden text-ellipsis nowrap">
                         Mapped by <%= beatmap.beatmapset.mapper %>
                     </span>
                     <span>•</span>
-                    <span
-                        class="stats overflow-hidden text-ellipsis nowrap flex-no-shrink"
+                    <span class="stats overflow-hidden text-ellipsis nowrap flex-no-shrink"
                         title="<%= utils.getPlaytimeTooltip(beatmap.duration_secs) %>">
                         <span class="cxp"><%= beatmap.xp %> cxp</span>
                     </span>
@@ -46,42 +34,29 @@
             </div>
             <div class="flex gap-4 align-center">
                 <div class="beatmapStatus relative rounded-16 flex-no-shrink <%= beatmap.status %>">
-                    <%= beatmap.status.toUpperCase() %>
-                </div>
-                <div
-                    class="diff relative rounded-16 overflow-hidden flex-grow"
+                    <%= beatmap.status.toUpperCase() %></div>
+                <div class="diff relative rounded-16 overflow-hidden flex-grow"
                     style="background: <%= beatmap.difficulty_color %>">
                     <div class="diffDimming absolute w-full h-full"></div>
                     <div class="content relative flex gap-4 align-center">
-                        <span
-                            class="beatmapStars rounded-16 flex-no-shrink"
+                        <span class="beatmapStars rounded-16 flex-no-shrink"
                             style="background: <%= beatmap.difficulty_color %>; color: <%= beatmap.stars < 6.5 ? 'black' : 'hsl(40, 100%, 70%)' %>">
                             <span class="icon">star</span>
                             <span class="value"><%= beatmap.stars.toFixed(2) %></span>
                         </span>
-                        <img src="/assets/ruleset-icons/<%= beatmap.mode %>.svg" class="ruleset flex-no-shrink" />
-                        <span
-                            class="name overflow-hidden text-ellipsis nowrap"
-                            title="<%= beatmap.name %>"
-                            data-tooltip-overflow="true">
-                            <%= beatmap.name %>
-                        </span>
+                        <img src="/assets/ruleset-icons/<%= beatmap.mode %>.svg" class="ruleset flex-no-shrink">
+                        <span class="name overflow-hidden text-ellipsis nowrap" title="<%= beatmap.name %>"
+                            data-tooltip-overflow="true"><%= beatmap.name %></span>
                     </div>
                 </div>
             </div>
         </div>
         <div class="buttons flex col justify-evenly align-center flex-no-shrink">
-            <a
-                href="https://osu.ppy.sh/beatmapsets/<%= beatmap.mapset_id %>#<%= beatmap.mode %>/<%= beatmap.id %>"
-                class="btn square text"
-                target="_blank"
-                title="osu! beatmap page">
+            <a href="https://osu.ppy.sh/beatmapsets/<%= beatmap.mapset_id %>#<%= beatmap.mode %>/<%= beatmap.id %>"
+                class="btn square text" target="_blank" title="osu! beatmap page">
                 <div class="icon">open_in_new</div>
             </a>
-            <a
-                href="https://beatconnect.io/b/<%= beatmap.mapset_id %>"
-                class="btn square text"
-                target="_blank"
+            <a href="https://beatconnect.io/b/<%= beatmap.mapset_id %>" class="btn square text" target="_blank"
                 title="Download from Beatconnect">
                 <div class="icon">download</div>
             </a>

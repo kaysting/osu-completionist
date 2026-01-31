@@ -26,7 +26,10 @@ router.get('/:category', (req, res) => {
     }
     req.session.category = category;
     // Get results
-    const results = searchBeatmaps(query, category, sort, req.me?.id, limit, offset);
+    const results = searchBeatmaps(
+        query, category,
+        sort, req.me?.id, limit, offset
+    );
     // Define sort types
     const sortTypes = [
         { id: 'date_asc', name: 'Oldest to newest' },
@@ -58,15 +61,9 @@ router.get('/:category', (req, res) => {
             description: `Complete faster by using advanced filters and sorting to get the perfect list of maps to play next.`
         },
         category,
-        category_navigation: statCategories.getCategoryNavPaths(
-            `/recommended`,
-            category,
-            `?q=${encodeURIComponent(query)}&sort=${encodeURIComponent(sort)}`
-        ),
+        category_navigation: statCategories.getCategoryNavPaths(`/recommended`, category, `?q=${encodeURIComponent(query)}&sort=${encodeURIComponent(sort)}`),
         settings: {
-            sort,
-            sortTypes,
-            query
+            sort, sortTypes, query
         },
         placeholder,
         results,
@@ -79,7 +76,9 @@ router.get('/:category/surprise', async (req, res) => {
     const query = req.query.q?.trim() || '';
     const category = req.params.category.toLowerCase();
     const dest = utils.ensureOneOf(req.query.dest, ['direct', 'osu', 'download'], 'osu');
-    const map = searchBeatmaps(query, category, 'random', req.me?.id, 1).beatmaps[0];
+    const map = searchBeatmaps(
+        query, category, 'random', req.me?.id, 1
+    ).beatmaps[0];
     if (!map) {
         res.redirect(`/recommended/${category}?q=${encodeURIComponent(query)}`);
     }

@@ -7,7 +7,11 @@ router.get('/', (req, res) => {
     const query = req.query.q?.trim() || '';
     const limits = 12;
     const users = searchUsers(query, limits, 0);
-    const maps = searchBeatmaps(query, null, query ? null : 'date_desc', null, limits, 0);
+    const maps = searchBeatmaps(
+        query, null,
+        query ? null : 'date_desc',
+        null, limits, 0
+    );
     res.render('layout', {
         page: 'search',
         title: 'Search tracked completionists and maps',

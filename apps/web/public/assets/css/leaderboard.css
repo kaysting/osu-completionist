@@ -1,4 +1,4 @@
-#leaderboard > .card {
+#leaderboard>.card {
     padding: 12px 8px;
 }
 
@@ -9,7 +9,7 @@
     text-shadow: 0px 1px 2px var(--shadow-md);
 }
 
-#leaderboard .entry > .overlay {
+#leaderboard .entry>.overlay {
     top: 0px;
     left: 0px;
     z-index: 1;
@@ -22,7 +22,7 @@
     color: inherit;
 }
 
-#leaderboard .entry:hover > .overlay {
+#leaderboard .entry:hover>.overlay {
     background: hsla(220, 20%, 50%, 0.2);
     transition: none;
 }
@@ -70,12 +70,12 @@
     color: white;
 }
 
-#leaderboard .entry .profile .flags > div .flag {
+#leaderboard .entry .profile .flags>div .flag {
     height: 16px;
     flex-shrink: 0;
 }
 
-#leaderboard .entry .profile .flags > div .name {
+#leaderboard .entry .profile .flags>div .name {
     font-size: 14px;
     font-weight: 400;
     color: white;
@@ -92,7 +92,7 @@
 #leaderboard .entry .stat .name {
     color: var(--c-base-65);
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 600
 }
 
 #leaderboard .entry .stat .value {
@@ -132,7 +132,7 @@
         justify-content: center;
     }
 
-    #leaderboard .entry .stats > div {
+    #leaderboard .entry .stats>div {
         align-items: center;
     }
 }
@@ -147,7 +147,7 @@
         padding: 8px;
     }
 
-    #leaderboard .entry .stats > div:first-child {
+    #leaderboard .entry .stats>div:first-child {
         flex-basis: 100%;
     }
 

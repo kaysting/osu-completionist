@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+
     // Connect to socket
     const socket = io('/', {
         path: '/ws'
@@ -8,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('connect', () => {
         console.log('Connected to socket');
 
-        // Use a Set to avoid subscribing to 'user_123' multiple times
+        // Use a Set to avoid subscribing to 'user_123' multiple times 
         const rooms = new Set();
         document.querySelectorAll('[data-reload-socket-room]').forEach(el => {
             if (el.dataset.reloadSocketRoom) {
@@ -22,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(`Subscribing to ${room}`);
             socket.emit('subscribe', room);
         });
+
     });
 
     // Find all unique event names
@@ -74,4 +76,5 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
 });

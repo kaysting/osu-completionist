@@ -13,15 +13,15 @@ function initTriangleBackground(canvas, userConfig = {}) {
 
     // Configuration with defaults
     const config = {
-        bgColor1: '#1a2e22', // Center gradient color
-        bgColor2: '#0d0d0d', // Edge color
-        triColor: '#42b983', // Triangle line color
+        bgColor1: '#1a2e22',   // Center gradient color
+        bgColor2: '#0d0d0d',   // Edge color
+        triColor: '#42b983',   // Triangle line color
         strokeWidth: 2,
-        density: 15000, // Area per triangle (width * height / density). Higher = fewer triangles.
-        maxSize: 120, // Max triangle size
-        minSize: 20, // Min triangle size
-        opacity: 0.15, // Max opacity
-        speed: 1, // Vertical drift speed
+        density: 15000,        // Area per triangle (width * height / density). Higher = fewer triangles.
+        maxSize: 120,          // Max triangle size
+        minSize: 20,           // Min triangle size
+        opacity: 0.15,         // Max opacity
+        speed: 1,              // Vertical drift speed
         ...userConfig
     };
 
@@ -59,7 +59,7 @@ function initTriangleBackground(canvas, userConfig = {}) {
             triangles.push({
                 x: Math.random() * w,
                 y: Math.random() * h,
-                size: Math.random() * (config.maxSize - config.minSize) + config.minSize,
+                size: (Math.random() * (config.maxSize - config.minSize)) + config.minSize,
                 opacity: Math.random() * 0.9 + 0.1, // Relative opacity factor
                 speedVariance: Math.random() * 0.5 + 0.5
             });
@@ -80,7 +80,7 @@ function initTriangleBackground(canvas, userConfig = {}) {
 
         // 2. Draw & Update Triangles
         triangles.forEach(t => {
-            t.y -= t.speedVariance * config.speed;
+            t.y -= (t.speedVariance * config.speed);
 
             // Reset if off screen (fully above top edge)
             const triangleHeight = t.size * 0.866; // approx sqrt(3)/2

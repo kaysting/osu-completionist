@@ -86,13 +86,11 @@ app.use((req, res, next) => {
 });
 
 // Register JSON middleware and API route
-app.use(
-    express.json({
-        verify: (req, res, buf) => {
-            req.rawBody = buf; // Store raw bytes for later
-        }
-    })
-);
+app.use(express.json({
+    verify: (req, res, buf) => {
+        req.rawBody = buf; // Store raw bytes for later
+    }
+}));
 app.use('/api/v1', require('./routes/api-v1'));
 
 // Register webhook routes
@@ -106,30 +104,26 @@ app.use(express.static(path.join(__dirname, 'public'), { dotfiles: 'allow' }));
 
 // Register webapp middleware
 app.use(cookieParser());
-app.use(
-    session({
-        secret: dbRead.readMiscData('session_secret'),
-        name: 'osucomplete.sid',
-        resave: false,
-        saveUninitialized: false
-    })
-);
+app.use(session({
+    secret: dbRead.readMiscData('session_secret'),
+    name: 'osucomplete.sid',
+    resave: false,
+    saveUninitialized: false
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(getAuthenticatedUser);
 app.use(updateLastUrl);
 
 // Register client rate limiter
 app.set('trust proxy', 1);
-app.use(
-    rateLimit({
-        windowMs: env.CLIENT_RATE_LIMIT_WINDOW_SECS * 1000,
-        limit: env.CLIENT_RATE_LIMIT_LIMIT,
-        ipv6Subnet: 60,
-        handler: (req, res) => {
-            res.renderError(429, '429 rate limit exceeded', `You're going too fast! Slow down, play more.`);
-        }
-    })
-);
+app.use(rateLimit({
+    windowMs: (env.CLIENT_RATE_LIMIT_WINDOW_SECS) * 1000,
+    limit: env.CLIENT_RATE_LIMIT_LIMIT,
+    ipv6Subnet: 60,
+    handler: (req, res) => {
+        res.renderError(429, '429 rate limit exceeded', `You're going too fast! Slow down, play more.`);
+    }
+}));
 
 // Expose git info to templates
 try {
@@ -145,8 +139,8 @@ app.locals.dayjs = dayjs;
 app.locals.utils = utils;
 app.locals.n = utils.formatNumber;
 app.locals.env = env;
-app.locals.includeMarkdown = filePath => marked.parse(fs.readFileSync(path.join(__dirname, filePath), 'utf-8'));
-app.locals.asset = pathRel => {
+app.locals.includeMarkdown = (filePath) => marked.parse(fs.readFileSync(path.join(__dirname, filePath), 'utf-8'));
+app.locals.asset = (pathRel) => {
     pathRel = pathRel.replace(/^\/+/g, ''); // remove leading slash for append
     const fullPath = path.join(__dirname, 'public', pathRel);
     try {
@@ -176,11 +170,7 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
     utils.logError(err);
-    res.renderError(
-        500,
-        '500 internal server error',
-        `An internal server error occurred. Please try again later, and join the Discord server linked in the top bar to let us know if the issue persists.`
-    );
+    res.renderError(500, '500 internal server error', `An internal server error occurred. Please try again later, and join the Discord server linked in the top bar to let us know if the issue persists.`);
 });
 
 // Listen with http server, not express
@@ -201,7 +191,7 @@ process.on('unhandledRejection', (reason, promise) => {
     shutDown();
 });
 
-process.on('uncaughtException', err => {
+process.on('uncaughtException', (err) => {
     utils.logError('Uncaught Exception thrown:', err);
 });
 

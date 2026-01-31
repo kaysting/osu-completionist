@@ -2,7 +2,11 @@
 const copyText = async text => {
     try {
         await navigator.clipboard.writeText(text);
-        showPopup('Text copied!', `<pre><code>${text}</code></pre>`, [{ label: 'Okay' }]);
+        showPopup(
+            'Text copied!',
+            `<pre><code>${text}</code></pre>`,
+            [{ label: 'Okay' }]
+        );
     } catch (err) {
         showPopup(
             'Clipboard copy failed',
@@ -14,12 +18,18 @@ const copyText = async text => {
     }
 };
 
-const copyImage = async imageUrl => {
+const copyImage = async (imageUrl) => {
     try {
         const response = await fetch(imageUrl);
         const blob = await response.blob();
-        await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
-        showPopup('Image copied!', `<p>The image has been copied to your clipboard.</p>`, [{ label: 'Okay' }]);
+        await navigator.clipboard.write([
+            new ClipboardItem({ [blob.type]: blob })
+        ]);
+        showPopup(
+            'Image copied!',
+            `<p>The image has been copied to your clipboard.</p>`,
+            [{ label: 'Okay' }]
+        );
     } catch (err) {
         showPopup(
             'Clipboard copy failed',
@@ -41,13 +51,20 @@ const downloadFile = (fileUrl, filename) => {
 };
 
 const showPopup = (title, body, actions = [], options = {}) => {
-    const { closedby = 'any', width = '', height = '', onBeforeShow = () => {}, onClose = () => {} } = options;
+
+    const {
+        closedby = 'any',
+        width = '',
+        height = '',
+        onBeforeShow = () => { },
+        onClose = () => { }
+    } = options;
 
     // Build base dialog element
     const dialog = document.createElement('dialog');
     if (width) dialog.style.setProperty(`--width`, `${width}px`);
     if (height) dialog.style.setProperty(`--height`, `${height}px`);
-    dialog.innerHTML = /*html*/ `
+    dialog.innerHTML = /*html*/`
         <div class="title"></div>
         <div class="body"></div>
         <div class="actions"></div>
@@ -86,7 +103,8 @@ const showPopup = (title, body, actions = [], options = {}) => {
         for (const action of actions) {
             const btn = document.createElement(action.href ? 'a' : 'button');
             btn.classList = `btn medium ${action.class || ''}`;
-            if (action.class == 'primary') btn.autofocus = true;
+            if (action.class == 'primary')
+                btn.autofocus = true;
             btn.innerText = action.label;
             if (action.href) {
                 btn.href = action.href;
@@ -106,7 +124,7 @@ const showPopup = (title, body, actions = [], options = {}) => {
     // Show dialog
     document.body.appendChild(dialog);
     dialog.showModal();
-    dialog.addEventListener('toggle', async e => {
+    dialog.addEventListener('toggle', async (e) => {
         if (!dialog.open) return; // return if closed
         if (onBeforeShow) {
             try {
@@ -124,7 +142,7 @@ const showPopup = (title, body, actions = [], options = {}) => {
     });
 
     // Handle cancelling
-    dialog.addEventListener('cancel', e => {
+    dialog.addEventListener('cancel', (e) => {
         e.preventDefault();
         close();
     });
@@ -139,7 +157,7 @@ const initCustomTooltips = () => {
 
     // 1. PROMOTE TO TOP LAYER
     // This allows the tooltip to float above native <dialog> elements
-    tooltip.popover = 'manual';
+    tooltip.popover = "manual";
     tooltip.style.margin = '0'; // Prevent default user-agent margins from affecting math
 
     document.body.appendChild(tooltip);
@@ -187,11 +205,11 @@ const initCustomTooltips = () => {
 
         let placement = 'top';
 
-        if (spaceTop < tooltipRect.height + gap + arrowSize && spaceBottom > tooltipRect.height + gap + arrowSize) {
+        if (spaceTop < (tooltipRect.height + gap + arrowSize) && spaceBottom > (tooltipRect.height + gap + arrowSize)) {
             placement = 'bottom';
-        } else if (spaceTop < tooltipRect.height + gap + arrowSize && spaceRight > tooltipRect.width + gap) {
+        } else if (spaceTop < (tooltipRect.height + gap + arrowSize) && spaceRight > (tooltipRect.width + gap)) {
             placement = 'right';
-        } else if (spaceTop < tooltipRect.height + gap + arrowSize && spaceLeft > tooltipRect.width + gap) {
+        } else if (spaceTop < (tooltipRect.height + gap + arrowSize) && spaceLeft > (tooltipRect.width + gap)) {
             placement = 'left';
         }
 
@@ -199,30 +217,35 @@ const initCustomTooltips = () => {
 
         // CALCULATE COORDINATES
         if (placement === 'top' || placement === 'bottom') {
-            top = placement === 'top' ? targetRect.top - tooltipRect.height - gap : targetRect.bottom + gap;
+            top = (placement === 'top')
+                ? targetRect.top - tooltipRect.height - gap
+                : targetRect.bottom + gap;
 
-            left = targetRect.left + targetRect.width / 2 - tooltipRect.width / 2;
+            left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
 
             const minX = padding;
             const maxX = window.innerWidth - tooltipRect.width - padding;
             const clampedLeft = Math.max(minX, Math.min(left, maxX));
 
-            const targetCenter = targetRect.left + targetRect.width / 2;
+            const targetCenter = targetRect.left + (targetRect.width / 2);
             let arrowX = targetCenter - clampedLeft;
             arrowX = Math.max(8, Math.min(arrowX, tooltipRect.width - 8));
 
             left = clampedLeft;
             tooltip.style.setProperty('--arrow-x', `${Math.round(arrowX)}px`);
-        } else {
-            left = placement === 'left' ? targetRect.left - tooltipRect.width - gap : targetRect.right + gap;
 
-            top = targetRect.top + targetRect.height / 2 - tooltipRect.height / 2;
+        } else {
+            left = (placement === 'left')
+                ? targetRect.left - tooltipRect.width - gap
+                : targetRect.right + gap;
+
+            top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
 
             const minY = padding;
             const maxY = window.innerHeight - tooltipRect.height - padding;
             const clampedTop = Math.max(minY, Math.min(top, maxY));
 
-            const targetCenterY = targetRect.top + targetRect.height / 2;
+            const targetCenterY = targetRect.top + (targetRect.height / 2);
             let arrowY = targetCenterY - clampedTop;
             arrowY = Math.max(8, Math.min(arrowY, tooltipRect.height - 8));
 
@@ -237,7 +260,7 @@ const initCustomTooltips = () => {
     };
 
     // Listeners
-    document.addEventListener('mouseover', e => {
+    document.addEventListener('mouseover', (e) => {
         const target = e.target.closest('[title], [data-tooltip]');
         if (!target) return;
         if (currentTarget === target) return;
@@ -269,7 +292,7 @@ const initCustomTooltips = () => {
         }
     });
 
-    document.addEventListener('mouseout', e => {
+    document.addEventListener('mouseout', (e) => {
         const target = e.target.closest('[data-tooltip]');
         if (target && target === currentTarget) {
             tooltip.classList.remove('visible');
@@ -286,17 +309,13 @@ const initCustomTooltips = () => {
         }
     });
 
-    window.addEventListener(
-        'scroll',
-        () => {
-            if (tooltip.classList.contains('visible')) {
-                tooltip.classList.remove('visible');
-                tooltip.hidePopover();
-                currentTarget = null;
-            }
-        },
-        { capture: true, passive: true }
-    );
+    window.addEventListener('scroll', () => {
+        if (tooltip.classList.contains('visible')) {
+            tooltip.classList.remove('visible');
+            tooltip.hidePopover();
+            currentTarget = null;
+        }
+    }, { capture: true, passive: true });
 };
 
 // Handle image load states

@@ -34,7 +34,7 @@ main {
 }
 
 #recommended .noResults .icon {
-    font-family: 'Material Symbols Rounded';
+    font-family: "Material Symbols Rounded";
     font-size: 96px;
     user-select: none;
 }

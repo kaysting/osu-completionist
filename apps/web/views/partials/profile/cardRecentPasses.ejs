@@ -7,10 +7,9 @@
         <script>
             function loadMonthlyGraph() {
                 // Prepare data
-                const data = JSON.parse(
-                    '<%- JSON.stringify(historyMonthly.map(m => ({ month: m.month, delta: Math.max(0, m.delta.count_completed) }))) %>'
-                );
-                if (data.length < 2) data.push(data[0]);
+                const data = JSON.parse('<%- JSON.stringify(historyMonthly.map(m => ({ month: m.month, delta: Math.max(0, m.delta.count_completed) }))) %>');
+                if (data.length < 2)
+                    data.push(data[0]);
                 // Render graph
                 renderGraph(document.getElementById('monthlyGraph'), {
                     labels: data.map(dp => dp.month),
@@ -22,9 +21,7 @@
                     tooltipCallbacks: {
                         label: context => `${context.parsed.y.toLocaleString()} new passes`
                     },
-                    showX: true,
-                    showY: true,
-                    showGrid: true,
+                    showX: true, showY: true, showGrid: true,
                     height: 250
                 });
             }
@@ -37,7 +34,9 @@
     <div class="beatmapNarrowContainer flex col gap-2">
         <% if (recentPasses.length === 0) { %>
         <div class="empty">No passes found.</div>
-        <% } %> <% for (const pass of recentPasses) { %> <%- include('../beatmap/narrow', { beatmap: pass.beatmap, time:
-        `Passed ${pass.timeSincePass} for ${n(pass.beatmap.xp)} cxp` }) %> <% } %>
+        <% } %>
+        <% for (const pass of recentPasses) { %>
+        <%- include('../beatmap/narrow', { beatmap: pass.beatmap, time: `Passed ${pass.timeSincePass} for ${n(pass.beatmap.xp)} cxp` }) %>
+        <% } %>
     </div>
 </div>

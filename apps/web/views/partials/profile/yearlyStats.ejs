@@ -1,21 +1,18 @@
 <div id="yearlyStats" class="flex col gap-8">
     <div class="btnGroup">
-        <btn
-            data-reload-selectors="#yearlyStats"
-            data-reload-url="?yearly_type=maps"
+        <btn data-reload-selectors="#yearlyStats" data-reload-url="?yearly_type=maps"
             class="btn <%= yearlyType == 'maps' ? 'primary' : '' %> small">
             <span class="label">map count</span>
         </btn>
-        <btn
-            data-reload-selectors="#yearlyStats"
-            data-reload-url="?yearly_type=xp"
+        <btn data-reload-selectors="#yearlyStats" data-reload-url="?yearly_type=xp"
             class="btn <%= yearlyType == 'xp' ? 'primary' : '' %> small">
             <span class="label">cxp</span>
         </btn>
     </div>
     <div class="yearlyStatsContainer">
-        <% for (const yearData of yearly) { %> <%- include('../statsYearEntryLine', { ...yearData, yearlyType:
-        yearlyType }) %> <% } %>
+        <% for (const yearData of yearly) { %>
+        <%- include('../statsYearEntryLine', { ...yearData, yearlyType: yearlyType }) %>
+        <% } %>
     </div>
     <!-- Handle year button clicks -->
     <script>
@@ -25,15 +22,16 @@
                 const year = el.dataset.year;
                 el.addEventListener('click', () => {
                     const title = `${year} completion details`;
-                    showPopup(title, '', [{ label: 'Close' }], {
-                        closedby: 'any',
-                        width: 900,
-                        height: 900,
-                        onBeforeShow: async dialog => {
-                            dialog.querySelector('.body').id = 'yearlyPopupBody';
-                            await reloadElement('#yearlyPopupBody', { url: `?year=${year}` });
+                    showPopup(
+                        title, '', [{ label: 'Close' }],
+                        {
+                            closedby: 'any', width: 900, height: 900,
+                            onBeforeShow: async dialog => {
+                                dialog.querySelector('.body').id = 'yearlyPopupBody';
+                                await reloadElement('#yearlyPopupBody', { url: `?year=${year}` });
+                            }
                         }
-                    });
+                    );
                 });
             });
         })();

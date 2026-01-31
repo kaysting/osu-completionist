@@ -1,15 +1,10 @@
-<link rel="stylesheet" href="/assets/css/search.css" />
+<link rel="stylesheet" href="/assets/css/search.css">
 <div id="search" class="card flex col gap-8">
     <form class="flex gap-8" data-reload-selectors="#results">
         <div class="textbox medium hasIcon flex-grow">
             <span class="icon">search</span>
-            <input
-                type="text"
-                name="q"
-                id="inputQuery"
-                class="input"
-                placeholder="Search tracked players and maps..."
-                value="<%= query %>" />
+            <input type="text" name="q" id="inputQuery" class="input" placeholder="Search tracked players and maps..."
+                value="<%= query %>">
         </div>
     </form>
     <div id="results" class="results card lighter padded flex col gap-16">
@@ -22,7 +17,9 @@
         </div>
         <% if (user_results.total_matches) { %>
         <div class="users userCardContainer">
-            <% for (const user of user_results.users) { %> <%- include('../partials/userCard', { user }) %> <% } %>
+            <% for (const user of user_results.users) { %>
+            <%- include('../partials/userCard', { user }) %>
+            <% } %>
         </div>
         <% } else { %>
         <div class="users empty">No tracked players matched your search.</div>
@@ -36,7 +33,8 @@
         </div>
         <% if (map_results.total_matches) { %>
         <div class="maps beatmapCardContainer">
-            <% for (const beatmap of map_results.beatmaps) { %> <%- include('../partials/beatmap/card', { beatmap }) %>
+            <% for (const beatmap of map_results.beatmaps) { %>
+            <%- include('../partials/beatmap/card', { beatmap }) %>
             <% } %>
         </div>
         <% } else { %>

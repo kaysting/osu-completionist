@@ -6,17 +6,15 @@
         <% if (updateStatus.details.time_started) { %>
         <p>
             <b>Importing completion data from osu!</b>
-            <br />
-            <%= Math.floor(updateStatus.details.percent_completed) %>% complete, about <%=
-            updateStatus.details.time_remaining %> remaining. Discovered <%=
-            n(updateStatus.details.count_passes_imported) %> passes so far.
+            <br><%= Math.floor(updateStatus.details.percent_completed) %>% complete,
+            about <%= updateStatus.details.time_remaining %> remaining. Discovered
+            <%= n(updateStatus.details.count_passes_imported) %> passes so far.
         </p>
         <% } else { %>
         <p>
             <b>Queued for import (<%= utils.ordinalSuffix(updateStatus.details.position) %> in line)</b>
-            <br />
-            This profile is pending import from osu! and we expect to have it done in about <%=
-            updateStatus.details.time_remaining %>. Stay tuned!
+            <br>This profile is pending import from osu! and we expect to have it done in about
+            <%= updateStatus.details.time_remaining %>. Stay tuned!
         </p>
         <% } %>
     </div>
