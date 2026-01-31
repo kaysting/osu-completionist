@@ -26,7 +26,7 @@
                 const hoursCompleted = secsCompleted / 60 / 60;
             %>
             <div class="value"
-                title="<%= utils.getPlaytimeTooltip(secsLeft, { format: `Playtime left ({mod}): {time}` }) %>">
+                title="<%= utils.getPlaytimeTooltip(secsLeft, { rounded: true, include: ['h', 'm', 's'], format: `{time} left ({mod})` }) %>">
                 <%= n(hoursCompleted, 1) %> / <%= n(hoursTotal, 1) %>
             </div>
         </div>
