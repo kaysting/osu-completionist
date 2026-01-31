@@ -32,11 +32,11 @@
         </div>
         <div id="progressStatsRow" class="flex gap-16">
             <div class="stats flex-grow flex flex-wrap">
-                <div class="stat flex col gap-2">
+                <!-- <div class="stat flex col gap-2">
                     <div class="key">% maps passed</div>
                     <div class="value"><%= n(stats.count_completed / stats.count_total * 100, 2) %>%
                     </div>
-                </div>
+                </div> -->
                 <div class="stat flex col gap-2">
                     <div class="key">maps passed</div>
                     <div class="value"><%= n(stats.count_completed) %></div>
@@ -53,7 +53,8 @@
                 </div>
                 <div class="stat flex col gap-2">
                     <div class="key">nomod playtime left</div>
-                    <div class="value" title="<%= n(stats.secs_remaining / 60 / 60) %> hours">
+                    <div class="value"
+                        title="<%= utils.getPlaytimeTooltip(stats.secs_remaining, { rounded: true, include: ['h', 'm', 's'], format: `{time} left ({mod})` }) %>">
                         <%= utils.secsToDuration(stats.secs_remaining) %></div>
                 </div>
             </div>
@@ -71,7 +72,8 @@
                 </div>
                 <div class="stat flex col gap-2">
                     <div class="key">total nomod playtime</div>
-                    <div class="value" title="<%= n(stats.secs_total / 60 / 60) %> hours">
+                    <div class="value"
+                        title="<%= utils.getPlaytimeTooltip(stats.secs_total, { rounded: true, include: ['h', 'm', 's'], format: `{time} total ({mod})` }) %>">
                         <%= utils.secsToDuration(stats.secs_total) %></div>
                 </div>
             </div>
@@ -93,9 +95,7 @@
                 if (isImporting === 'true') {
                     return showPopup(
                         'Import in progress',
-                        `
-                            <p>Your completion stats are currently being imported from osu!, so they might seem incomplete until the import is done. Check back when it's finished to see if everything looks right.</p>
-                        `,
+                        `<p>Your completion stats are currently being imported from osu!, so they might seem incomplete until the import is done. Check back when it's finished to see if everything looks right.</p>`,
                         [
                             {
                                 label: 'Okay', class: 'primary'
@@ -105,10 +105,7 @@
                 } else if (hasFullImport === 'true') {
                     return showPopup(
                         'Hmm...',
-                        `
-                            <p>We've already fully imported your completion stats, so importing again is unlikely to fix anything.</p>
-                            <p>If you think you're still missing passes or your stats are inaccurate, please join the Discord server and let Kayla know so we can investigate further.</p>
-                        `,
+                        `<p>We've already fully imported your completion stats, so importing again is unlikely to fix anything.</p><p>If you think you're still missing passes or your stats are inaccurate, please join the Discord server and let Kayla know so we can investigate further.</p>`,
                         [
                             {
                                 label: 'Join Discord server',

@@ -27,7 +27,7 @@
                     </span>
                     <span>•</span>
                     <span class="stats overflow-hidden text-ellipsis nowrap flex-no-shrink"
-                        title="<%= utils.secsToDuration(beatmap.duration_secs) %> (nomod)\n<%= utils.secsToDuration(beatmap.duration_secs / 1.5) %> (DT 1.5x)\n<%= utils.secsToDuration(beatmap.duration_secs / 2) %> (DT 2x)">
+                        title="<%= utils.getPlaytimeTooltip(beatmap.duration_secs) %>">
                         <span class="cxp"><%= beatmap.xp %> cxp</span>
                     </span>
                 </div>
