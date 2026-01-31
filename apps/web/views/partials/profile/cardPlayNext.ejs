@@ -7,10 +7,7 @@
         <div class="empty">
             <p>Either no recommendations could be made or you've passed all maps in this category.</p>
         </div>
-        <% } %>
-        <% for (const beatmap of recommended) { %>
-        <%- include('../beatmap/card', { beatmap }) %>
-        <% } %>
+        <% } %> <% for (const beatmap of recommended) { %> <%- include('../beatmap/card', { beatmap }) %> <% } %>
     </div>
     <div class="flex col gap-8">
         <div class="flex gap-8 justify-center">
@@ -23,12 +20,14 @@
             </a>
         </div>
         <div class="flex gap-8 justify-center flex-wrap">
-            <a href="/recommended/<%= category %>/surprise?dest=direct&q=<%- encodeURIComponent(recommendedQuery) %>"
+            <a
+                href="/recommended/<%= category %>/surprise?dest=direct&q=<%- encodeURIComponent(recommendedQuery) %>"
                 class="btn text accent small">
                 <span class="icon filled">casino</span>
                 <span class="label">Pick for me (osu!direct)</span>
             </a>
-            <a target="_blank"
+            <a
+                target="_blank"
                 href="/recommended/<%= category %>/surprise?dest=osu&q=<%- encodeURIComponent(recommendedQuery) %>"
                 class="btn text small">
                 <span class="icon filled">casino</span>

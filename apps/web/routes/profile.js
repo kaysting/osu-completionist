@@ -26,7 +26,6 @@ router.get('/:id/reimport', async (req, res) => {
 });
 
 router.get('/:id/:category', ensureUserExists, (req, res) => {
-
     const user = req.user;
     const category = req.params.category.toLowerCase();
     const yearlyType = utils.ensureOneOf(req.query.yearly_type || req.session.yearlyType, ['maps', 'xp'], 'maps');
@@ -49,7 +48,9 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         // Format time remaining and position
         if (updateStatus.updating) {
             updateStatus.details.time_remaining = utils.getRelativeTimestamp(
-                (Date.now() + (updateStatus.details.time_remaining_secs * 1000)), undefined, false
+                Date.now() + updateStatus.details.time_remaining_secs * 1000,
+                undefined,
+                false
             );
         }
         return updateStatus;
@@ -64,9 +65,15 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         const stats = years.find(e => e.year == year);
         if (!stats?.year) return null;
         const query = [month ? `month=${year}-${month}` : `year=${year}`].join(' ');
-        const maps = user.id === req.me?.id ? apiRead.searchBeatmaps(query, category, sort, user.id, 50).beatmaps : null;
+        const maps =
+            user.id === req.me?.id ? apiRead.searchBeatmaps(query, category, sort, user.id, 50).beatmaps : null;
         return {
-            stats, query, maps, category, month, sort
+            stats,
+            query,
+            maps,
+            category,
+            month,
+            sort
         };
     };
 
@@ -74,7 +81,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         return apiRead.getUserCompletionStats(req.user.id, category);
     };
 
-    const getRecommended = (recentPasses) => {
+    const getRecommended = recentPasses => {
         // If not viewing our own profile or if basic stats are requested, return null
         if (req.user.id !== req.me?.id || selectors.match(/#basicStats/)) {
             return { recommended: null, recommendedQuery: null };
@@ -98,7 +105,6 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
 
         // Calculate limits and put together a recommended query if we have recent passes
         if (passesChecked) {
-
             // Sort collected star ratings and ranked times
             collectedStarRatings.sort((a, b) => a - b);
             collectedRankTimes.sort((a, b) => a - b);
@@ -116,7 +122,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
 
             // Expand star rating range slightly
             const starPadding = 0.5;
-            minStars = (Math.max(0, minStars - starPadding)).toFixed(1);
+            minStars = Math.max(0, minStars - starPadding).toFixed(1);
             maxStars = (maxStars + starPadding).toFixed(1);
 
             // Get years from ranked times
@@ -125,7 +131,6 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
 
             // Build query
             recommendedQuery = `stars > ${minStars} stars < ${maxStars} year >= ${minYear} year <= ${maxYear}`;
-
         }
 
         // Get as many maps as we can using the recommended query
@@ -138,14 +143,15 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         if (recommended.length < recommendedLimit) {
             recommendedQuery = '';
             recommended.push(
-                ...apiRead.searchBeatmaps('', category, 'random', req.user.id, recommendedLimit - recommended.length).beatmaps
+                ...apiRead.searchBeatmaps('', category, 'random', req.user.id, recommendedLimit - recommended.length)
+                    .beatmaps
             );
         }
         return { recommended, recommendedQuery };
     };
 
     const getRecentPasses = () => {
-        const timeRecentsAfter = Date.now() - (1000 * 60 * 60 * 24);
+        const timeRecentsAfter = Date.now() - 1000 * 60 * 60 * 24;
         const recentPasses = apiRead.getUserRecentPasses(req.user.id, category, 100, 0, timeRecentsAfter);
         // Get relative timestamps for recent passes
         for (const pass of recentPasses) {
@@ -157,14 +163,16 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     const getShareData = (stats, yearly) => {
         const data = {};
         const categoryName = statCategories.getCategoryName(category);
-        const statsText = [
-            `${user.name}'s ${categoryName.toLowerCase()} completion stats:\n`
-        ];
+        const statsText = [`${user.name}'s ${categoryName.toLowerCase()} completion stats:\n`];
         for (const year of yearly) {
             const checkbox = year.count_completed === year.count_total ? '☑' : '☐';
-            statsText.push(`${checkbox} ${year.year}: ${utils.formatNumber(year.count_completed)} / ${utils.formatNumber(year.count_total)} (${utils.formatNumber(year.map_percentage_completed, 2)}%)`);
+            statsText.push(
+                `${checkbox} ${year.year}: ${utils.formatNumber(year.count_completed)} / ${utils.formatNumber(year.count_total)} (${utils.formatNumber(year.map_percentage_completed, 2)}%)`
+            );
         }
-        statsText.push(`\nTotal: ${utils.formatNumber(stats.count_completed)} / ${utils.formatNumber(stats.count_total)} (${utils.formatNumber(stats.percentage_completed, 2)}%)`);
+        statsText.push(
+            `\nTotal: ${utils.formatNumber(stats.count_completed)} / ${utils.formatNumber(stats.count_total)} (${utils.formatNumber(stats.percentage_completed, 2)}%)`
+        );
         data.plainText = statsText.join('\n');
         data.profileUrl = `${req.protocol}://${req.get('host')}/u/${user.id}/${category}`;
         const getImageUrl = (template, params) => {
@@ -173,7 +181,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
         const getHtmlUrl = (template, params) => {
             return `${req.protocol}://${req.get('host')}/renders/${template}/html?${params.toString()}`;
         };
-        const getBbcode = (template) => {
+        const getBbcode = template => {
             const imageUrl = getImageUrl(template, renderParams);
             return `[url=${data.profileUrl}][img]${imageUrl}[/img][/url]`;
         };
@@ -240,9 +248,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
 
     // Render share popup body if requested
     if (selectors.match(/(#sharePopupBody|#sharePopupRenderList)/)) {
-        const share = getShareData(
-            getStats(), getYearlyStats()
-        );
+        const share = getShareData(getStats(), getYearlyStats());
         return res.renderPartial('profile/sharePopupBody', { share, query: req.query });
     }
 
@@ -250,7 +256,11 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     if (selectors.match(/#playNext/)) {
         const recentPasses = getRecentPasses();
         const { recommended, recommendedQuery } = getRecommended(recentPasses);
-        return res.renderPartial('profile/cardPlayNext', { recommended, recommendedQuery, category });
+        return res.renderPartial('profile/cardPlayNext', {
+            recommended,
+            recommendedQuery,
+            category
+        });
     }
 
     // Render full page
@@ -274,12 +284,18 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
             ...user,
             isMe: req.me?.id === req.user.id
         },
-        stats, yearly, recentPasses, updateStatus,
-        recommended, recommendedQuery, yearlyType, historyDaily, historyMonthly,
+        stats,
+        yearly,
+        recentPasses,
+        updateStatus,
+        recommended,
+        recommendedQuery,
+        yearlyType,
+        historyDaily,
+        historyMonthly,
         category,
-        category_navigation: statCategories.getCategoryNavPaths(`/u/${req.user.id}`, category),
+        category_navigation: statCategories.getCategoryNavPaths(`/u/${req.user.id}`, category)
     });
-
 });
 
 module.exports = router;

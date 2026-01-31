@@ -36,12 +36,7 @@ const verifyDiscordRequest = (req, res, next) => {
 
         // Verify
         // Algorithm is null because the key type (Ed25519) dictates the algorithm
-        const isVerified = crypto.verify(
-            null,
-            Buffer.from(timestamp + body),
-            key,
-            Buffer.from(signature, 'hex')
-        );
+        const isVerified = crypto.verify(null, Buffer.from(timestamp + body), key, Buffer.from(signature, 'hex'));
 
         if (!isVerified) {
             return res.status(401).end('invalid request signature');
@@ -58,12 +53,10 @@ router.post('/interactions', verifyDiscordRequest, (req, res, next) => {
     const type = req.body.type;
 
     switch (type) {
-
         // Ping event
         case 1: {
             return res.json({ type: 1 });
         }
-
     }
 });
 

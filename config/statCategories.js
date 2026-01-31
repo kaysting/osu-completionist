@@ -1,4 +1,4 @@
-const utils = require("#utils");
+const utils = require('#utils');
 
 const definitions = [];
 
@@ -10,11 +10,9 @@ for (const mode of ['global', 'osu', 'taiko', 'catch', 'mania']) {
                 continue;
             }
             const definition = {};
-            definition.id = [
-                mode, 'ranked',
-                includeLoved ? 'loved' : '',
-                includeConverts ? 'converts' : ''
-            ].filter(Boolean).join('-');
+            definition.id = [mode, 'ranked', includeLoved ? 'loved' : '', includeConverts ? 'converts' : '']
+                .filter(Boolean)
+                .join('-');
             definition.filters = [];
             if (mode !== 'global') {
                 definition.filters.push({
@@ -126,7 +124,8 @@ const categoryToSql = (categoryId, tablePrefix = 'map') => {
     }
     return {
         where: clauses.length > 0 ? clauses.join(' AND ') : '1=1',
-        params, def
+        params,
+        def
     };
 };
 
@@ -167,7 +166,10 @@ const getCategoryName = categoryId => {
 
 // If not required from another module, output the definitions
 if (require.main === module) {
-    console.log(`Registered ${definitions.length} stat category definitions:`, definitions.map(d => `${d.id}: ${getCategoryName(d.id)}`).join('\n'));
+    console.log(
+        `Registered ${definitions.length} stat category definitions:`,
+        definitions.map(d => `${d.id}: ${getCategoryName(d.id)}`).join('\n')
+    );
 }
 
 module.exports = {

@@ -2,24 +2,28 @@
     <div class="details flex gap-8 flex-grow align-center">
         <div class="map flex col gap-4 flex-grow">
             <div class="set flex align-center flex-wrap">
-                <span class="title overflow-hidden text-ellipsis nowrap"><%= beatmap.beatmapset.title %></span> <span
-                    class="artist">by
-                    <%= beatmap.beatmapset.artist %></span>
+                <span class="title overflow-hidden text-ellipsis nowrap"><%= beatmap.beatmapset.title %></span>
+                <span class="artist">by <%= beatmap.beatmapset.artist %></span>
             </div>
             <div class="diff flex align-center gap-8">
-                <img src="/assets/ruleset-icons/<%= beatmap.mode %>.svg" class="ruleset flex-no-shrink">
-                <span
-                    class="beatmapStatus rounded-16 flex-no-shrink <%= beatmap.status %>"><%= beatmap.status.toUpperCase() %></span>
-                <span class="beatmapStars rounded-16 flex-no-shrink"
-                    style="background: <%= beatmap.difficulty_color %>; color: <%= beatmap.stars < 6.5 ? 'black' : 'hsl(40, 100%, 70%)' %>">
-                    <span class="icon">star</span><span class="value"><%= beatmap.stars.toFixed(2) %></span>
+                <img src="/assets/ruleset-icons/<%= beatmap.mode %>.svg" class="ruleset flex-no-shrink" />
+                <span class="beatmapStatus rounded-16 flex-no-shrink <%= beatmap.status %>">
+                    <%= beatmap.status.toUpperCase() %>
                 </span>
-                <span class="text overflow-hidden text-ellipsis"
+                <span
+                    class="beatmapStars rounded-16 flex-no-shrink"
+                    style="background: <%= beatmap.difficulty_color %>; color: <%= beatmap.stars < 6.5 ? 'black' : 'hsl(40, 100%, 70%)' %>">
+                    <span class="icon">star</span>
+                    <span class="value"><%= beatmap.stars.toFixed(2) %></span>
+                </span>
+                <div
+                    class="text overflow-hidden text-ellipsis"
                     style=" color: <%= beatmap.stars < 6.5 ? beatmap.difficulty_color : 'white' %>">
                     <span class="name overflow-hidden text-ellipsis nowrap"><%= beatmap.name %></span>
-                    <span class="mapper overflow-hidden text-ellipsis nowrap">mapped by
-                        <%= beatmap.beatmapset.mapper || '<unknown>' %></span>
-                </span>
+                    <span class="mapper overflow-hidden text-ellipsis nowrap">
+                        mapped by <%= beatmap.beatmapset.mapper || '[unknown]' %>
+                    </span>
+                </div>
             </div>
         </div>
         <div class="time flex-no-shrink">
@@ -30,8 +34,11 @@
         <a href="osu://b/<%= beatmap.id %>" class="btn square text flex-no-shrink" title="osu!direct">
             <div class="icon">rocket_launch</div>
         </a>
-        <a href="https://osu.ppy.sh/beatmapsets/<%= beatmap.mapset_id %>#<%= beatmap.mode %>/<%= beatmap.id %>"
-            class="btn square text flex-no-shrink" target="_blank" title="osu! beatmap page">
+        <a
+            href="https://osu.ppy.sh/beatmapsets/<%= beatmap.mapset_id %>#<%= beatmap.mode %>/<%= beatmap.id %>"
+            class="btn square text flex-no-shrink"
+            target="_blank"
+            title="osu! beatmap page">
             <div class="icon">open_in_new</div>
         </a>
     </div>

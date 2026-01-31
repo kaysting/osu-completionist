@@ -4,10 +4,8 @@
     </div>
     <% if (results.in_progress.length) { %>
     <div class="userCardContainer">
-        <% for (const user of results.in_progress) { %>
-        <% if (!user) continue; %>
-        <%- include('../partials/userCard', { user }) %>
-        <% } %>
+        <% for (const user of results.in_progress) { %> <% if (!user) continue; %> <%- include('../partials/userCard', {
+        user }) %> <% } %>
     </div>
     <% } else { %>
     <div class="empty">No users are being imported at this time.</div>
@@ -17,9 +15,7 @@
     </div>
     <% if (results.waiting.length) { %>
     <div class="userCardContainer">
-        <% for (const user of results.waiting) { %>
-        <%- include('../partials/userCard', { user }) %>
-        <% } %>
+        <% for (const user of results.waiting) { %> <%- include('../partials/userCard', { user }) %> <% } %>
     </div>
     <% } else { %>
     <div class="empty">The update queue is empty.</div>

@@ -5,5 +5,9 @@
 /apps/web/public/sitemap.xml
 *.db*
 .*
+
 !.env.example
 !.gitignore
+!.vscode
+!.github
+!.prettierrc

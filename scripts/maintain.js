@@ -13,19 +13,22 @@ const apiRead = require('#api/read.js');
 const apiWrite = require('#api/write.js');
 const utils = require('#utils');
 
-const importBeatmapsets = async (dumpFolder) => {
-
-    if (!dumpFolder)
-        dumpFolder = path.resolve(env.ROOT, 'temp', `dump_${dayjs().set('date', 1).format('YYYY-MM-DD')}`);
+const importBeatmapsets = async dumpFolder => {
+    if (!dumpFolder) dumpFolder = path.resolve(env.ROOT, 'temp', `dump_${dayjs().set('date', 1).format('YYYY-MM-DD')}`);
     const dumpFileName = 'osu_beatmapsets.sql';
     const dumpFilePath = path.resolve(dumpFolder, dumpFileName);
     if (!fs.existsSync(dumpFilePath)) {
-        console.error(`Failed to locate dump file at expected path: ${dumpFilePath}\nConsider using the dump download maintenance function, then run import again leaving the dump folder path blank.`);
+        console.error(
+            `Failed to locate dump file at expected path: ${dumpFilePath}\nConsider using the dump download maintenance function, then run import again leaving the dump folder path blank.`
+        );
         return;
     }
 
     console.log(`Discovering missing beatmapsets from ${dumpFilePath}...`);
-    const storedMapsetIds = db.prepare(`SELECT id FROM beatmapsets`).all().map(row => row.id);
+    const storedMapsetIds = db
+        .prepare(`SELECT id FROM beatmapsets`)
+        .all()
+        .map(row => row.id);
     const beatmapsetsParser = new SqlDumpParser({ tableName: 'osu_beatmapsets' });
     const stream = fs.createReadStream(dumpFilePath);
     stream.pipe(beatmapsetsParser);
@@ -52,19 +55,21 @@ const importBeatmapsets = async (dumpFolder) => {
     // Save any other maps that we don't have or that are missing data
     const rows = [
         // beatmaps missing cs
-        ...db.prepare(
-            `SELECT DISTINCT mapset_id FROM beatmaps WHERE cs IS NULL`
-        ).all(),
+        ...db.prepare(`SELECT DISTINCT mapset_id FROM beatmaps WHERE cs IS NULL`).all(),
         // beatmaps users have passed but we don't have data for
-        ...db.prepare(
-            `SELECT DISTINCT mapset_id FROM user_passes
+        ...db
+            .prepare(
+                `SELECT DISTINCT mapset_id FROM user_passes
             WHERE mapset_id NOT IN (SELECT id FROM beatmapsets)`
-        ).all(),
+            )
+            .all(),
         // mapsets with no maps
-        ...db.prepare(
-            `SELECT id AS mapset_id FROM beatmapsets
+        ...db
+            .prepare(
+                `SELECT id AS mapset_id FROM beatmapsets
             WHERE id NOT IN (SELECT DISTINCT mapset_id FROM beatmaps)`
-        ).all()
+            )
+            .all()
     ];
     for (const row of rows) {
         await apiWrite.saveMapset(row.mapset_id, false);
@@ -81,11 +86,15 @@ const importBeatmapsets = async (dumpFolder) => {
     `);
     const rebuildSearchIndex = db.transaction(() => {
         // Get all maps
-        const maps = db.prepare(`
+        const maps = db
+            .prepare(
+                `
             SELECT b.id AS map_id, b.mode, b.name, bs.title, bs.artist
             FROM beatmaps b
             JOIN beatmapsets bs ON b.mapset_id = bs.id
-        `).all();
+        `
+            )
+            .all();
         console.log(`Rebuilding beatmap search index with ${maps.length} entries`);
         // Clear index
         db.prepare(`DELETE FROM beatmaps_search`).run();
@@ -99,14 +108,13 @@ const importBeatmapsets = async (dumpFolder) => {
 
     // Optimize
     if (count > 1000) {
-        console.log("Optimizing FTS index...");
+        console.log('Optimizing FTS index...');
         db.prepare("INSERT INTO beatmaps_search(beatmaps_search) VALUES('optimize')").run();
     }
 
     // Recalculate beatmap stats
     console.log('Updating beatmap stats...');
     apiWrite.updateUserCategoryStats(0); // id 0 stores totals
-
 };
 
 const schemaPath = path.resolve(env.ROOT, 'database/schema.sql');
@@ -122,12 +130,10 @@ const dumpSchema = () => {
 
 const downloadDump = async () => {
     try {
-
         // Determine path and create output directory
         const date = dayjs().set('date', 1);
         const outputDir = path.resolve(env.ROOT, 'temp', `dump_${date.format('YYYY-MM-DD')}`);
-        if (fs.existsSync(outputDir))
-            fs.rmSync(outputDir, { recursive: true, force: true });
+        if (fs.existsSync(outputDir)) fs.rmSync(outputDir, { recursive: true, force: true });
         fs.mkdirSync(outputDir, { recursive: true });
         console.log(`Output directory: ${outputDir}`);
         console.log(`Downloading and extracting dump, this might take a bit...`);
@@ -150,20 +156,20 @@ const downloadDump = async () => {
         });
 
         // Pipe download stream through bz2 and tar extractors
-        const extraction = stream.data
-            .pipe(bz2())
-            .pipe(tar.x({
-                cwd: outputDir, strip: 1
-            }));
+        const extraction = stream.data.pipe(bz2()).pipe(
+            tar.x({
+                cwd: outputDir,
+                strip: 1
+            })
+        );
 
         // Handle extraction events
         extraction.on('finish', () => {
             console.log('Done!');
         });
-        extraction.on('error', (err) => {
+        extraction.on('error', err => {
             console.error('Error during extraction:', err);
         });
-
     } catch (error) {
         return console.error('Error during download:', error.message);
     }
@@ -194,9 +200,7 @@ const options = [
         f: importBeatmapsets,
         name: `importmaps`,
         description: `Import any missing beatmaps(ets) using IDs from a data.ppy.sh dump.\nDump folder path defaults to where the download function saves.`,
-        args: [
-            { name: 'path_to_dump_folder' }
-        ]
+        args: [{ name: 'path_to_dump_folder' }]
     },
     {
         f: apiWrite.updateAllUserCategoryStats,
@@ -204,7 +208,7 @@ const options = [
         description: `Recalculate category stats for all users, including totals.`
     },
     {
-        f: async (userId) => {
+        f: async userId => {
             if (!userId) {
                 return apiWrite.savePassesFromAllUserRecents;
             }
@@ -214,9 +218,7 @@ const options = [
         },
         name: `saverecentpasses`,
         description: `Save the past 24 hours of user passes using per-user recent scores.`,
-        args: [
-            { name: 'user_id' }
-        ]
+        args: [{ name: 'user_id' }]
     },
     {
         f: () => console.log(`Here's a cryptographically securely random secret:\n${utils.generateSecretKey(32)}`),
@@ -239,9 +241,7 @@ const options = [
         f: apiWrite.unqueueUser,
         name: `unqueueuser`,
         description: `Remove a user from the import queue.`,
-        args: [
-            { name: 'user_id', required: true }
-        ]
+        args: [{ name: 'user_id', required: true }]
     },
     {
         f: apiWrite.generateSitemap,
@@ -259,7 +259,12 @@ async function main() {
     const option = options.find(o => o.name === optionName);
     if (!option || optionName === 'help') {
         for (const option of options) {
-            console.log(clc.cyan(option.name), (option.args || []).map(a => a.required ? clc.yellowBright(`<${a.name}>`) : clc.whiteBright(`[${a.name}]`)).join(' '));
+            console.log(
+                clc.cyan(option.name),
+                (option.args || [])
+                    .map(a => (a.required ? clc.yellowBright(`<${a.name}>`) : clc.whiteBright(`[${a.name}]`)))
+                    .join(' ')
+            );
             console.log(clc.blackBright(option.description || ''));
         }
     } else {
@@ -270,9 +275,16 @@ async function main() {
                 const argDef = option.args[i];
                 const argValue = optionArgs[i];
                 if (argDef.required && !argValue) {
-                    return console.error(clc.redBright(`${utils.ordinalSuffix(i + 1)} argument expects ${argDef.name}`));
+                    return console.error(
+                        clc.redBright(`${utils.ordinalSuffix(i + 1)} argument expects ${argDef.name}`)
+                    );
                 }
-                console.log(`  `, clc.yellowBright(argDef.name), '=', clc.whiteBright(argValue || clc.blackBright('default')));
+                console.log(
+                    `  `,
+                    clc.yellowBright(argDef.name),
+                    '=',
+                    clc.whiteBright(argValue || clc.blackBright('default'))
+                );
                 finalArgs.push(argValue);
             }
         }

@@ -192,7 +192,7 @@ main {
     color: var(--warning-text);
 }
 
-.card.warning>.icon {
+.card.warning > .icon {
     font-family: 'Material Symbols Rounded';
     font-weight: 300;
     font-size: 32px;
@@ -201,7 +201,7 @@ main {
     user-select: none;
 }
 
-.card.warning>.text {
+.card.warning > .text {
     display: block;
     min-width: 0;
     white-space: normal;

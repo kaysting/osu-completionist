@@ -24,7 +24,7 @@ const audioButtonClick = (event, audioUrl) => {
     const elBtn = event.currentTarget;
     // If the this button is the same as the last one, handle play/pause
     if (elBtn === lastAudioButtonElement) {
-        if (elBtn.dataset.playing === "true") {
+        if (elBtn.dataset.playing === 'true') {
             audioPlayer.pause();
         } else {
             audioPlayer.play();
@@ -82,7 +82,7 @@ const renderGraph = (canvasElement, opts) => {
     const gridStyle = {
         display: opts.showGrid || false,
         drawBorder: false,
-        color: 'hsla(220, 20%, 70%, 0.1)',
+        color: 'hsla(220, 20%, 70%, 0.1)'
     };
 
     const axisOptions = {
@@ -148,7 +148,7 @@ const renderGraph = (canvasElement, opts) => {
                 y: opts.showY ? { ...axisOptions, beginAtZero: true } : { display: false }
             },
             layout: {
-                padding: (opts.showX || opts.showY) ? 4 : 0
+                padding: opts.showX || opts.showY ? 4 : 0
             }
         }
     });
