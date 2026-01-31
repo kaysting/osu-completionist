@@ -10,7 +10,7 @@ router.get('/', (req, res) => {
     res.redirect('https://github.com/kaysting/osu-completionist');
 });
 
-const verifySignature = (req) => {
+const verifySignature = req => {
     const signature = req.headers['x-hub-signature-256'];
     const secret = env.GITHUB_WEBHOOK_SECRET;
 
@@ -23,14 +23,10 @@ const verifySignature = (req) => {
     const digest = 'sha256=' + hmac.update(req.rawBody).digest('hex');
 
     // Constant-time comparison to prevent timing attacks
-    return crypto.timingSafeEqual(
-        Buffer.from(signature),
-        Buffer.from(digest)
-    );
+    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest));
 };
 
 router.post('/webhook', async (req, res) => {
-
     // Validate signature
     if (!verifySignature(req)) {
         utils.log(`Invalid GitHub webhook signature`);
@@ -44,7 +40,6 @@ router.post('/webhook', async (req, res) => {
     utils.log(`Received GitHub webhook event: ${eventType}`);
     switch (eventType) {
         case 'push': {
-
             // Log commits to Discord
             for (const commit of req.body.commits) {
                 const files = [
@@ -63,27 +58,30 @@ router.post('/webhook', async (req, res) => {
                     }
                 }
                 await utils.sendDiscordMessage(env.GITHUB_FEED_DISCORD_CHANNEL_ID, {
-                    embeds: [{
-                        author: {
-                            name: `${req.body.sender.login} pushed a commit to ${req.body.repository.name}`,
-                            url: req.body.repository.html_url,
-                            icon_url: req.body.sender.avatar_url
-                        },
-                        title: commit.message.split('\n')[0],
-                        description: commit.message.split('\n').slice(1).join('\n'),
-                        fields: [{
-                            name: 'Changes',
-                            value: changeLines.join('\n')
-                        }],
-                        url: commit.url,
-                        timestamp: new Date(commit.timestamp).toISOString(),
-                        color: 0xffffff
-                    }]
+                    embeds: [
+                        {
+                            author: {
+                                name: `${req.body.sender.login} pushed a commit to ${req.body.repository.name}`,
+                                url: req.body.repository.html_url,
+                                icon_url: req.body.sender.avatar_url
+                            },
+                            title: commit.message.split('\n')[0],
+                            description: commit.message.split('\n').slice(1).join('\n'),
+                            fields: [
+                                {
+                                    name: 'Changes',
+                                    value: changeLines.join('\n')
+                                }
+                            ],
+                            url: commit.url,
+                            timestamp: new Date(commit.timestamp).toISOString(),
+                            color: 0xffffff
+                        }
+                    ]
                 });
             }
 
             try {
-
                 // Pull code from GitHub
                 utils.log(`Pulling latest code from GitHub...`);
                 const output = cp.execSync(`git pull`);
@@ -100,7 +98,6 @@ router.post('/webhook', async (req, res) => {
                 //utils.log(`Restarting server to apply updates...`);
                 //process.kill(process.pid, 'SIGTERM');
                 // This is commented out since the new PM2 config should handle it
-
             } catch (error) {
                 utils.logError(`Error updating from GitHub: ${error.message}`);
             }
@@ -108,7 +105,6 @@ router.post('/webhook', async (req, res) => {
             break;
         }
     }
-
 });
 
 module.exports = router;

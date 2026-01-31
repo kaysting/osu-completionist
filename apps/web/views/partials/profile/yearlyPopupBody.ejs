@@ -1,31 +1,35 @@
-<div id="yearlyPopupBody" class="body flex col gap-16" data-reload-socket-event="update_stats"
-    data-reload-on-show="true" data-reload-url="?year=<%= stats.year %>">
+<div
+    id="yearlyPopupBody"
+    class="body flex col gap-16"
+    data-reload-socket-event="update_stats"
+    data-reload-on-show="true"
+    data-reload-url="?year=<%= stats.year %>">
     <div class="top flex col gap-8">
         <div class="flex row">
             <div class="year flex-grow"><%= stats.year %></div>
             <div class="percent"><%= n(stats.time_percentage_completed, 2) %>%</div>
         </div>
-        <div class="bar"
-            style="--percent: <%= n(Math.max(2, stats.time_percentage_completed)) %>%; --color: <%= stats.time_completed_color %>">
+        <div
+            class="bar"
+            style="
+                --percent: <%= n(Math.max(2, stats.time_percentage_completed)) %>%;
+                --color: <%= stats.time_completed_color %>;
+            ">
             <div class="filling"></div>
         </div>
     </div>
     <div class="stats flex flex-wrap justify-center">
         <div class="stat">
             <div class="key">maps passed</div>
-            <div class="value"><%= n(stats.count_completed) %> /
-                <%= n(stats.count_total) %></div>
+            <div class="value"><%= n(stats.count_completed) %> / <%= n(stats.count_total) %></div>
         </div>
         <div class="stat">
             <div class="key">nomod hours completed</div>
-            <%
-                const secsTotal = stats.secs_total;
-                const secsCompleted = stats.secs_completed;
-                const secsLeft = secsTotal - secsCompleted;
-                const hoursTotal = secsTotal / 60 / 60;
-                const hoursCompleted = secsCompleted / 60 / 60;
-            %>
-            <div class="value"
+            <% const secsTotal = stats.secs_total; const secsCompleted = stats.secs_completed; const secsLeft =
+            secsTotal - secsCompleted; const hoursTotal = secsTotal / 60 / 60; const hoursCompleted = secsCompleted / 60
+            / 60; %>
+            <div
+                class="value"
                 title="<%= utils.getPlaytimeTooltip(secsLeft, { rounded: true, include: ['h', 'm', 's'], format: `{time} left ({mod})` }) %>">
                 <%= n(hoursCompleted, 1) %> / <%= n(hoursTotal, 1) %>
             </div>
@@ -42,52 +46,48 @@
         <span class="header">maps remaining (<%= n(countLeft) %>)</span>
     </div>
     <div class="flex col gap-8">
-
         <% if (maps.length > 0) { %>
         <div class="flex gap-8 justify-center flex-wrap">
-            <a href="/recommended/<%= category %>/surprise?dest=direct&q=<%- encodeURIComponent(query) %>"
+            <a
+                href="/recommended/<%= category %>/surprise?dest=direct&q=<%- encodeURIComponent(query) %>"
                 class="btn primary">
                 <span class="icon filled">casino</span>
                 <span class="label">Pick for me (osu!direct)</span>
             </a>
-            <a target="_blank" href="/recommended/<%= category %>/surprise?dest=osu&q=<%- encodeURIComponent(query) %>"
+            <a
+                target="_blank"
+                href="/recommended/<%= category %>/surprise?dest=osu&q=<%- encodeURIComponent(query) %>"
                 class="btn">
                 <span class="icon filled">casino</span>
                 <span class="label">Pick for me (osu!web)</span>
             </a>
         </div>
         <div class="beatmapCardContainer">
-            <% for (const beatmap of maps) { %>
-            <%- include('../beatmap/card', { beatmap }) %>
-            <% } %>
+            <% for (const beatmap of maps) { %> <%- include('../beatmap/card', { beatmap }) %> <% } %>
         </div>
 
         <!-- Only show play next button if there are more maps than shown -->
         <% if (countLeft > maps.length) { %>
         <div class="flex justify-center">
-            <a href="/recommended/<%= category %>?q=<%= encodeURIComponent(query) %>&sort=<%= encodeURIComponent(sort) %>"
+            <a
+                href="/recommended/<%= category %>?q=<%= encodeURIComponent(query) %>&sort=<%= encodeURIComponent(sort) %>"
                 class="btn primary">
                 <span class="icon filled">cards_star</span>
                 <span class="label">More in play next...</span>
             </a>
         </div>
-        <% } %>
-
-        <% } %>
-
-        <% if (maps.length === 0) { %>
+        <% } %> <% } %> <% if (maps.length === 0) { %>
         <div class="empty">
             <p>You've passed them all!</p>
         </div>
         <% } %>
-
     </div>
     <% } %>
 
     <!-- Body styling -->
     <style>
-        #yearlyPopupBody>.top,
-        #yearlyPopupBody>.stats {
+        #yearlyPopupBody > .top,
+        #yearlyPopupBody > .stats {
             padding: 0px 8px;
         }
 
@@ -100,24 +100,24 @@
             color: white;
         }
 
-        #yearlyPopupBody>.stats {
+        #yearlyPopupBody > .stats {
             gap: 8px 32px;
         }
 
-        #yearlyPopupBody>.stats .stat {
+        #yearlyPopupBody > .stats .stat {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 2px;
         }
 
-        #yearlyPopupBody>.stats .stat .key {
+        #yearlyPopupBody > .stats .stat .key {
             font-size: 15px;
             font-weight: 600;
             color: var(--c-base-65);
         }
 
-        #yearlyPopupBody>.stats .stat .value {
+        #yearlyPopupBody > .stats .stat .value {
             font-size: 24px;
             font-weight: 400;
             color: white;

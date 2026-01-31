@@ -62,7 +62,6 @@ const runGenerateSitemap = async () => {
 };
 
 async function main() {
-
     // Get osu API token
     // We await this before starting other processes to avoid
     // getting a bunch of tokens at once
@@ -86,7 +85,7 @@ async function main() {
     // Connect to oSC websocket
     const socket = io(env.OSU_SCORE_CACHE_BASE_URL, {
         path: '/ws',
-        transports: ['websocket'],
+        transports: ['websocket']
     });
     socket.on('connect', () => {
         socket.emit('subscribe', 'scores');
@@ -98,6 +97,5 @@ async function main() {
         scoreBuffer.push(...scores);
         //utils.log(`Received ${scores.length} new scores from oSC`);
     });
-
 }
 main();

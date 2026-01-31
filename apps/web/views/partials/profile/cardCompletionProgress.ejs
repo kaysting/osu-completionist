@@ -1,4 +1,6 @@
-<div id="completionProgressCard" class="card lighter padded progress flex col gap-16"
+<div
+    id="completionProgressCard"
+    class="card lighter padded progress flex col gap-16"
     data-reload-socket-event="update_stats">
     <div class="flex col gap-16 flex-grow">
         <div>
@@ -10,8 +12,7 @@
                 function loadProgressGraph() {
                     // Prepare data
                     const data = JSON.parse('<%- JSON.stringify(historyDaily) %>');
-                    if (data.length < 2)
-                        data.push(data[0]);
+                    if (data.length < 2) data.push(data[0]);
                     // Render graph
                     renderGraph(document.getElementById('progressGraph'), {
                         labels: data.map(dp => dp.date),
@@ -43,9 +44,7 @@
                 </div>
                 <div class="stat flex col gap-2">
                     <div class="key">maps left</div>
-                    <div class="value">
-                        <%= n(stats.count_total - stats.count_completed) %>
-                    </div>
+                    <div class="value"><%= n(stats.count_total - stats.count_completed) %></div>
                 </div>
                 <div class="stat flex col gap-2">
                     <div class="key">cxp left</div>
@@ -53,9 +52,11 @@
                 </div>
                 <div class="stat flex col gap-2">
                     <div class="key">nomod playtime left</div>
-                    <div class="value"
+                    <div
+                        class="value"
                         title="<%= utils.getPlaytimeTooltip(stats.secs_remaining, { rounded: true, include: ['h', 'm', 's'], format: `{time} left ({mod})` }) %>">
-                        <%= utils.secsToDuration(stats.secs_remaining) %></div>
+                        <%= utils.secsToDuration(stats.secs_remaining) %>
+                    </div>
                 </div>
             </div>
             <div id="categoryStatsHeader">
@@ -72,9 +73,11 @@
                 </div>
                 <div class="stat flex col gap-2">
                     <div class="key">total nomod playtime</div>
-                    <div class="value"
+                    <div
+                        class="value"
                         title="<%= utils.getPlaytimeTooltip(stats.secs_total, { rounded: true, include: ['h', 'm', 's'], format: `{time} total ({mod})` }) %>">
-                        <%= utils.secsToDuration(stats.secs_total) %></div>
+                        <%= utils.secsToDuration(stats.secs_total) %>
+                    </div>
                 </div>
             </div>
         </div>
@@ -82,8 +85,7 @@
     <div>
         <span class="header">completion by year</span>
     </div>
-    <%- include('./yearlyStats', { yearly, yearlyType }) %>
-    <% if (user.isMe) { %>
+    <%- include('./yearlyStats', { yearly, yearlyType }) %> <% if (user.isMe) { %>
     <div>
         <button id="inaccurateStatsHelp" class="btn text accent small">
             <span class="label">help, my stats aren't accurate...</span>
@@ -98,7 +100,8 @@
                         `<p>Your completion stats are currently being imported from osu!, so they might seem incomplete until the import is done. Check back when it's finished to see if everything looks right.</p>`,
                         [
                             {
-                                label: 'Okay', class: 'primary'
+                                label: 'Okay',
+                                class: 'primary'
                             }
                         ]
                     );
@@ -113,7 +116,8 @@
                                 newTab: true
                             },
                             {
-                                label: 'Okay', class: 'primary'
+                                label: 'Okay',
+                                class: 'primary'
                             }
                         ]
                     );
@@ -133,7 +137,7 @@
                             {
                                 label: `Start full import`,
                                 class: 'primary',
-                                href: '/u/<%= user.id %>/reimport',
+                                href: '/u/<%= user.id %>/reimport'
                             }
                         ]
                     );

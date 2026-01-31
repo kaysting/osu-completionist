@@ -1,8 +1,9 @@
-<link rel="stylesheet" href="/assets/css/home.css">
+<link rel="stylesheet" href="/assets/css/home.css" />
 <div id="home">
     <div class="header flex col gap-16 align-center">
         <div class="logo">
-            <span class="white">osu!</span><span class="green">complete</span>
+            <span class="white">osu!</span>
+            <span class="green">complete</span>
         </div>
         <% if (me) { %>
         <div class="slogan">Welcome back, <%= me.name %>!</div>
@@ -32,11 +33,9 @@
         <form class="search flex gap-8 justify-center" action="/search" method="GET">
             <div class="textbox medium hasIcon w-full">
                 <span class="icon">search</span>
-                <input type="text" class="input" name="q" placeholder="Search tracked players and maps...">
+                <input type="text" class="input" name="q" placeholder="Search tracked players and maps..." />
             </div>
-            <button type="submit" class="btn medium primary">
-                Go
-            </button>
+            <button type="submit" class="btn medium primary">Go</button>
         </form>
     </div>
     <div class="stats flex flex-wrap justify-center align-center">

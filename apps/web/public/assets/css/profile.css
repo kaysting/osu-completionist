@@ -90,7 +90,6 @@
 }
 
 @media (max-width: 700px) {
-
     #profile .basics {
         padding: 8px 16px;
         flex-direction: column;
@@ -143,5 +142,4 @@
     #profile .passes .beatmap .time {
         flex-basis: 100%;
     }
-
 }

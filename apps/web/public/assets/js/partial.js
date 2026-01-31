@@ -8,7 +8,7 @@
 const activeRequests = new Map();
 
 // Helper: Re-execute <script> tags inside replaced content
-const executeScripts = (element) => {
+const executeScripts = element => {
     element.querySelectorAll('script').forEach(oldScript => {
         const newScript = document.createElement('script');
         Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
@@ -18,14 +18,14 @@ const executeScripts = (element) => {
 };
 
 // Helper: Apply loading visual state
-const applyLoadingStyle = (element) => {
+const applyLoadingStyle = element => {
     element.style.transition = '0.1s ease-in-out';
     element.style.opacity = '0.5';
     element.style.pointerEvents = 'none';
 };
 
 // Helper: Remove loading visual state
-const removeLoadingStyle = (element) => {
+const removeLoadingStyle = element => {
     element.style.removeProperty('opacity');
     element.style.removeProperty('pointer-events');
     setTimeout(() => {
@@ -59,7 +59,7 @@ const fetchPartials = async (selectors, options = {}) => {
  * It strips known client-side-only attributes so we can verify
  * if the underlying content actually changed.
  */
-const getCleanNode = (element) => {
+const getCleanNode = element => {
     const clone = element.cloneNode(true);
 
     // 1. Clean Images
@@ -71,7 +71,7 @@ const getCleanNode = (element) => {
     clone.querySelectorAll('[data-live-bound]').forEach(el => el.removeAttribute('data-live-bound'));
 
     // 3. Clean Tooltips (Revert data-tooltip back to title)
-    const revertTooltip = (el) => {
+    const revertTooltip = el => {
         if (el.hasAttribute('data-tooltip')) {
             const title = el.getAttribute('data-tooltip');
             // Only set title if it's not empty, matching standard browser behavior
@@ -99,8 +99,8 @@ const reloadElement = async (targetSelectors, options = {}) => {
     activeRequests.forEach((controller, activeSelector) => {
         const activeElement = document.querySelector(activeSelector);
         if (!activeElement) return;
-        const isCollision = newElements.some(newEl =>
-            activeElement === newEl || activeElement.contains(newEl) || newEl.contains(activeElement)
+        const isCollision = newElements.some(
+            newEl => activeElement === newEl || activeElement.contains(newEl) || newEl.contains(activeElement)
         );
         if (isCollision) controller.abort();
     });
@@ -152,11 +152,13 @@ const reloadElement = async (targetSelectors, options = {}) => {
                 initLiveForms();
                 executeScripts(newElement);
                 successCount++;
-
             } else if (oldElement && !newElement) {
                 // Safety check for custom URLs
                 if (url !== window.location.href) {
-                    if (!silent) console.warn(`[Partial] Selector "${selector}" missing in response from "${url}". Preserving existing element.`);
+                    if (!silent)
+                        console.warn(
+                            `[Partial] Selector "${selector}" missing in response from "${url}". Preserving existing element.`
+                        );
                     if (!silent) removeLoadingStyle(oldElement);
                     continue;
                 }
@@ -170,7 +172,6 @@ const reloadElement = async (targetSelectors, options = {}) => {
         }
 
         if (successCount > 0) document.dispatchEvent(new Event('page:updated'));
-
     } catch (error) {
         if (error.name === 'AbortError') return;
         if (!silent) console.error('[Partial] Error:', error);
@@ -204,7 +205,7 @@ const initLiveForms = () => {
         };
 
         let timeout;
-        form.addEventListener('input', (e) => {
+        form.addEventListener('input', e => {
             if (e.target.matches('input[type="text"], input[type="number"], input[type="search"], textarea')) {
                 // Visual feedback immediately
                 selectors.forEach(s => {
@@ -215,12 +216,12 @@ const initLiveForms = () => {
                 timeout = setTimeout(performUpdate, 500);
             }
         });
-        form.addEventListener('change', (e) => {
+        form.addEventListener('change', e => {
             if (e.target.matches('select, input[type="checkbox"], input[type="radio"]')) {
                 performUpdate();
             }
         });
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', e => {
             e.preventDefault();
             clearTimeout(timeout);
             performUpdate();
@@ -275,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-document.addEventListener('click', (e) => {
+document.addEventListener('click', e => {
     const trigger = e.target.closest('[data-reload-selectors]');
     if (!trigger || trigger.tagName === 'FORM') return;
 
@@ -294,7 +295,7 @@ document.addEventListener('click', (e) => {
     });
 });
 
-window.addEventListener('popstate', (event) => {
+window.addEventListener('popstate', event => {
     if (event.state?.reloadSelectors) {
         reloadElement(event.state.reloadSelectors, {
             url: window.location.href,
@@ -329,14 +330,15 @@ document.addEventListener('visibilitychange', () => {
 
     // Group elements by their reload URL
     const urlGroups = new Map();
-    Array.from(elementsToReload).forEach((el) => {
+    Array.from(elementsToReload).forEach(el => {
         const url = el.getAttribute('data-reload-url') || window.location.href;
         if (!urlGroups.has(url)) {
             urlGroups.set(url, []);
         }
 
-        const selector = el.id ? `#${el.id}` : el.tagName.toLowerCase() +
-            (el.className ? '.' + el.className.split(' ').join('.') : '');
+        const selector = el.id
+            ? `#${el.id}`
+            : el.tagName.toLowerCase() + (el.className ? '.' + el.className.split(' ').join('.') : '');
         urlGroups.get(url).push(selector);
     });
 

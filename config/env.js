@@ -29,7 +29,8 @@ env.API_RATE_LIMIT_WINDOW_SECS = Number(process.env.API_RATE_LIMIT_WINDOW_SECS |
 // osu
 env.OSU_CLIENT_ID = process.env.OSU_CLIENT_ID;
 env.OSU_CLIENT_SECRET = process.env.OSU_CLIENT_SECRET;
-env.OSU_AUTH_REDIRECT_URI = process.env.OSU_AUTH_REDIRECT_URI || `${env.HTTPS ? 'https' : 'http'}://${env.HOST}/auth/callback`;
+env.OSU_AUTH_REDIRECT_URI =
+    process.env.OSU_AUTH_REDIRECT_URI || `${env.HTTPS ? 'https' : 'http'}://${env.HOST}/auth/callback`;
 
 // osu score cache
 env.OSU_SCORE_CACHE_BASE_URL = process.env.OSU_SCORE_CACHE_BASE_URL || 'https://osc.kaysting.dev';
@@ -67,7 +68,15 @@ for (const v of requiredVars) {
 }
 
 // Validate positive integer vars
-const mustBePositiveInts = ['WEBSERVER_PORT', 'CLIENT_RATE_LIMIT_LIMIT', 'CLIENT_RATE_LIMIT_WINDOW_SECS', 'API_RATE_LIMIT_LIMIT', 'API_RATE_LIMIT_WINDOW_SECS', 'DB_BACKUP_INTERVAL_HOURS', 'DB_KEEP_BACKUPS_COUNT'];
+const mustBePositiveInts = [
+    'WEBSERVER_PORT',
+    'CLIENT_RATE_LIMIT_LIMIT',
+    'CLIENT_RATE_LIMIT_WINDOW_SECS',
+    'API_RATE_LIMIT_LIMIT',
+    'API_RATE_LIMIT_WINDOW_SECS',
+    'DB_BACKUP_INTERVAL_HOURS',
+    'DB_KEEP_BACKUPS_COUNT'
+];
 for (const v of mustBePositiveInts) {
     if (isNaN(env[v]) || env[v] <= 0 || !Number.isInteger(env[v])) {
         throw new Error(`Environment variable ${v} must be a positive integer.`);

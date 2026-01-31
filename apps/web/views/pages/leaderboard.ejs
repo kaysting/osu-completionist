@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/assets/css/leaderboard.css">
+<link rel="stylesheet" href="/assets/css/leaderboard.css" />
 <div id="leaderboard" class="flex col gap-16">
     <%- include('../partials/statSettings') %>
     <div id="leaderboardContent" class="card flex col gap-12">
@@ -9,24 +9,33 @@
                 <div class="rank"><%= `#${entry.stats.rank}` %></div>
                 <div class="content relative rounded-12 overflow-hidden flex align-center flex-grow">
                     <div class="profile relative rounded-12 overflow-hidden flex gap-16 align-center flex-grow">
-                        <img src="<%= entry.user.banner_url %>" class="banner absolute w-full h-full object-cover"
-                            loading="lazy">
+                        <img
+                            src="<%= entry.user.banner_url %>"
+                            class="banner absolute w-full h-full object-cover"
+                            loading="lazy" />
                         <div class="dimming absolute w-full h-full"></div>
-                        <img src="<%= entry.user.avatar_url %>"
-                            class="avatar relative rounded-12 object-cover flex-no-shrink" loading="lazy">
+                        <img
+                            src="<%= entry.user.avatar_url %>"
+                            class="avatar relative rounded-12 object-cover flex-no-shrink"
+                            loading="lazy" />
                         <div class="text relative flex col gap-8 flex-grow">
                             <div class="name text-shadow-sm overflow-hidden text-ellipsis"><%= entry.user.name %></div>
                             <div class="flags flex gap-16 align-center">
                                 <div class="country flex gap-4 align-center" title="<%= entry.user.country.name %>">
-                                    <img src="<%= entry.user.country.flag_url %>" class="flag rounded-4 flex-no-shrink"
-                                        loading="lazy">
-                                    <span
-                                        class="name overflow-hidden text-ellipsis"><%= entry.user.country.name %></span>
+                                    <img
+                                        src="<%= entry.user.country.flag_url %>"
+                                        class="flag rounded-4 flex-no-shrink"
+                                        loading="lazy" />
+                                    <span class="name overflow-hidden text-ellipsis">
+                                        <%= entry.user.country.name %>
+                                    </span>
                                 </div>
                                 <% if (entry.user.team.name) { %>
                                 <div class="team flex gap-4 align-center" title="<%= entry.user.team.name %>">
-                                    <img src="<%= entry.user.team.flag_url %>" class="flag rounded-4 flex-no-shrink"
-                                        loading="lazy">
+                                    <img
+                                        src="<%= entry.user.team.flag_url %>"
+                                        class="flag rounded-4 flex-no-shrink"
+                                        loading="lazy" />
                                     <span class="name overflow-hidden text-ellipsis"><%= entry.user.team.name %></span>
                                 </div>
                                 <% } %>
@@ -49,9 +58,12 @@
                             </div>
                         </div>
                         <div class="bar relative w-full rounded-4">
-                            <div class="filling absolute h-full rounded-4"
-                                style="width: <%= entry.stats.percentage_completed %>%; background: <%= entry.stats.percentage_completed_color %>">
-                            </div>
+                            <div
+                                class="filling absolute h-full rounded-4"
+                                style="
+                                    width: <%= entry.stats.percentage_completed %>%;
+                                    background: <%= entry.stats.percentage_completed_color %>;
+                                "></div>
                         </div>
                     </div>
                 </div>

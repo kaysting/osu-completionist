@@ -2,9 +2,10 @@ In the search bar, you can enter key words to search within beatmap titles, arti
 
 Filters can be used in addition to text searches as long as you separate them with spaces.
 
-A filter might look like `stars>5.5` or `year=2019`. They take the form of `key operator value`, where `key` is the metric you want to filter, `operator` is the comparison you want to make, and `value` is the value you want to filter the metric to. 
+A filter might look like `stars>5.5` or `year=2019`. They take the form of `key operator value`, where `key` is the metric you want to filter, `operator` is the comparison you want to make, and `value` is the value you want to filter the metric to.
 
 Valid filter keys include:
+
 - `cs`: Circle size (or key count in mania)
 - `ar`: Approach rate
 - `od`: Overall difficulty (aka accuracy)
@@ -18,6 +19,7 @@ Valid filter keys include:
 - `mode`: Map mode (`osu`, `taiko`, `catch`, or `mania`) (**This won't work in play next, only global search!**)
 
 Valid operators include:
+
 - `=`: Equal to
 - `<`: Less than
 - `>`: Greater than
@@ -25,6 +27,7 @@ Valid operators include:
 - `>=`: Greater than or equal to
 
 Additional notes:
+
 - **Range filters:** You can use a hyphen to specify a range, like `length=90-180` (between 90 and 180 seconds). This works for all numeric filters.
 - **List filters:** You can separate values with commas, like `year=2019,2021,2023`, to find maps matching ANY of those values.
 - **Smart integer ranges:** Providing a whole number like `stars=5` will automatically search the full range (e.g. from 5.00 up to 6.00).

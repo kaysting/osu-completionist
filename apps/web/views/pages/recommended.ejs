@@ -1,24 +1,37 @@
-<link rel="stylesheet" href="/assets/css/recommended.css">
+<link rel="stylesheet" href="/assets/css/recommended.css" />
 <div class="flex col gap-16">
     <%- include('../partials/statSettings') %>
-    <div id="recommended" class="card flex col" data-reload-socket-room="user_<%= locals?.me?.id %>,maps"
+    <div
+        id="recommended"
+        class="card flex col"
+        data-reload-socket-room="user_<%= locals?.me?.id %>,maps"
         data-reload-on-show="true">
         <form class="settings flex col gap-8" data-reload-selectors="#results,#searchHint,#statSettings">
             <div class="inputs flex gap-8">
                 <div class="textbox medium hasIcon flex-grow">
                     <span class="icon">search</span>
-                    <input type="text" name="q" id="inputQuery" class="input" placeholder="<%= placeholder %>"
-                        value="<%= settings.query %>" autocapitalize="none" autocomplete="off" spellcheck="false">
+                    <input
+                        type="text"
+                        name="q"
+                        id="inputQuery"
+                        class="input"
+                        placeholder="<%= placeholder %>"
+                        value="<%= settings.query %>"
+                        autocapitalize="none"
+                        autocomplete="off"
+                        spellcheck="false" />
                 </div>
                 <div class="flex row gap-8">
                     <div class="textbox medium select hasIcon flex-grow">
                         <span class="icon">sort</span>
                         <select name="sort" class="input" id="inputSort">
                             <% for (const type of settings.sortTypes) { %>
-                            <option value="<%= type.id %>" <%= type.id === (settings.sort || '') ? 'selected' : '' %>>
-                                <%= type.name %>
-                            </option>
-                            <% } %>
+                            <!-- Mark selected option -->
+                            <% if (type.id === (settings.sort || '')) { %>
+                            <option value="<%= type.id %>" selected><%= type.name %></option>
+                            <% } else { %>
+                            <option value="<%= type.id %>"><%= type.name %></option>
+                            <% } %> <% } %>
                         </select>
                     </div>
                 </div>
@@ -33,16 +46,18 @@
                 </div>
             </div>
         </form>
-        <div id="results" <%- settings.sort !== '' ? 'data-reload-socket-event="update_stats,new_mapset"' : '' %>>
+        <div id="results" data-reload-socket-event="<%= settings.sort !== '' ? 'update_stats,new_mapset' : '' %>">
             <% if (results.beatmaps.length) { %>
-            <div class="card lighter flex col gap-8" style="padding: 8px;">
+            <div class="card lighter flex col gap-8" style="padding: 8px">
                 <div class="flex align-center justify-center flex-wrap gap-8">
-                    <a href="/recommended/<%= category %>/surprise?dest=direct&q=<%= encodeURIComponent(settings.query) %>"
+                    <a
+                        href="/recommended/<%= category %>/surprise?dest=direct&q=<%= encodeURIComponent(settings.query) %>"
                         class="btn primary">
                         <span class="icon filled">casino</span>
                         <span class="label">Pick for me (osu!direct)</span>
                     </a>
-                    <a target="_blank"
+                    <a
+                        target="_blank"
                         href="/recommended/<%= category %>/surprise?dest=osu&q=<%= encodeURIComponent(settings.query) %>"
                         class="btn">
                         <span class="icon filled">casino</span>
@@ -50,9 +65,8 @@
                     </a>
                 </div>
                 <div class="beatmapCardContainer">
-                    <% for (const beatmap of results.beatmaps) { %>
-                    <%- include('../partials/beatmap/card', { beatmap }) %>
-                    <% } %>
+                    <% for (const beatmap of results.beatmaps) { %> <%- include('../partials/beatmap/card', { beatmap })
+                    %> <% } %>
                 </div>
             </div>
             <% } else { %>

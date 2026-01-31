@@ -9,7 +9,9 @@ const db = require('#db');
 const router = express.Router();
 
 router.get('/login', (req, res) => {
-    res.redirect(`https://osu.ppy.sh/oauth/authorize?client_id=${env.OSU_CLIENT_ID}&redirect_uri=${encodeURIComponent(env.OSU_AUTH_REDIRECT_URI)}&response_type=code&scope=identify`);
+    res.redirect(
+        `https://osu.ppy.sh/oauth/authorize?client_id=${env.OSU_CLIENT_ID}&redirect_uri=${encodeURIComponent(env.OSU_AUTH_REDIRECT_URI)}&response_type=code&scope=identify`
+    );
 });
 
 router.get('/callback', async (req, res) => {
@@ -46,7 +48,11 @@ router.get('/callback', async (req, res) => {
         // Save/update user data to db
         const userEntry = await updaterHelpers.updateUserProfile(user.data.id);
         if (!userEntry) {
-            return res.renderError(401, 'Failed to sign in', `Your osu! sign in attempt failed. This might be because you cancelled it, or your account is banned, preventing us from fetching your account info. Please try again.`);
+            return res.renderError(
+                401,
+                'Failed to sign in',
+                `Your osu! sign in attempt failed. This might be because you cancelled it, or your account is banned, preventing us from fetching your account info. Please try again.`
+            );
         }
         if (!existingUserEntry) {
             // Queue user if they're new
@@ -54,15 +60,17 @@ router.get('/callback', async (req, res) => {
             const userCount = db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
             utils.log(`${user.data.username} registered as a new user!`);
             await utils.sendDiscordMessage(env.USER_FEED_DISCORD_CHANNEL_ID, {
-                embeds: [{
-                    author: {
-                        name: userEntry.name,
-                        icon_url: userEntry.avatar_url,
-                        url: `${env.HTTPS ? 'https' : 'http'}://${env.HOST}/u/${userEntry.id}`
-                    },
-                    title: `Registered as our ${utils.ordinalSuffix(userCount)} user!`,
-                    color: 0xA3F5A3
-                }]
+                embeds: [
+                    {
+                        author: {
+                            name: userEntry.name,
+                            icon_url: userEntry.avatar_url,
+                            url: `${env.HTTPS ? 'https' : 'http'}://${env.HOST}/u/${userEntry.id}`
+                        },
+                        title: `Registered as our ${utils.ordinalSuffix(userCount)} user!`,
+                        color: 0xa3f5a3
+                    }
+                ]
             });
         } else if (!userEntry?.last_import_time && !existingQueueEntry) {
             // Queue user if they haven't been imported and they aren't queued
@@ -76,7 +84,7 @@ router.get('/callback', async (req, res) => {
         res.cookie('token', jwt, {
             httpOnly: true,
             secure: env.HTTPS,
-            expires: new Date(Date.now() + (1000 * 60 * 60 * 24 * 365))
+            expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365)
         });
         // Redirect to saved path or user profile
         // Only redirect to saved path if it's something the user

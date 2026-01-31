@@ -1,13 +1,15 @@
 ### Added a dynamic render for primary category stats
+
 Another great addition to your osu! me! section, we now offer dynamic renders for the main stats of a selected category.
 
 ![Here it is on an osu! me! page](/assets/images/docs/basic-stats-render.png)
 
 You can access it and copy its BBCode using the same **share & embed** menu on your profile.
 
-*Edit: The design of this render has been updated and country and team flags, as well as category rank have been added to both this and the per-year render.*
+_Edit: The design of this render has been updated and country and team flags, as well as category rank have been added to both this and the per-year render._
 
 ### New share menu!
+
 Hi again! Today we've revamped the profile sharing system. You'll notice a new button on top of your profile banner labeled **share & embed**, which, when clicked, opens a new fancy popup providing various options for sharing your completion stats.
 
 ![The button](/assets/images/docs/share-menu-button.png)
@@ -19,4 +21,5 @@ The existing plain text stats can still be copied as before, but we now offer a 
 We highly encourage you to make use of this feature since it beats manually updating your stats as text in your profile whenever you remember to. Check it out!
 
 ### Welcome to the changelog popup!
+
 Hi! You're seeing this popup because new features have been added and this is the easiest way for us to let you know about them. This'll pop back up every time there are new features worth mentioning.

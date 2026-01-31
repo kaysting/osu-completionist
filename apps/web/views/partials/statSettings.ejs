@@ -1,10 +1,12 @@
 <div id="statSettings" class="flex flex-wrap justify-center">
-    <% const button = (key, label, includes, icon, title, isActiveOverride, alwaysFilled = false) => {
-        const isActive = typeof isActiveOverride === 'boolean' ? isActiveOverride : category.includes(includes);
-    %>
-    <button data-reload-selectors="#statSettings,#profileContent,#leaderboardContent,#recommended"
-        data-reload-url="<%= category_navigation[key] %>" data-reload-replace-address="true"
-        class="btn <%= isActive ? 'primary' : '' %>" <% if (title) { %>title="<%= title %>" <% } %>>
+    <% const button = (key, label, includes, icon, title, isActiveOverride, alwaysFilled = false) => { const isActive =
+    typeof isActiveOverride === 'boolean' ? isActiveOverride : category.includes(includes); %>
+    <button
+        data-reload-selectors="#statSettings,#profileContent,#leaderboardContent,#recommended"
+        data-reload-url="<%= category_navigation[key] %>"
+        data-reload-replace-address="true"
+        class="btn <%= isActive ? 'primary' : '' %>"
+        title="<%= title %>">
         <% if (icon) { %>
         <span class="icon <%= alwaysFilled || isActive ? 'filled' : '' %>"><%= icon %></span>
         <% } %>
@@ -13,27 +15,23 @@
     <% } %>
     <div class="section mode">
         <div class="btnGroup">
-            <% button('global', 'All', 'global-', null, 'All game modes') %>
-            <% button('osu', 'osu', 'osu-') %>
-            <% button('taiko', 'taiko', 'taiko-') %>
-            <% button('catch', 'catch', 'catch-') %>
-            <% button('mania', 'mania', 'mania-') %>
+            <% button('global', 'All', 'global-', null, 'All game modes') %> <% button('osu', 'osu', 'osu-') %> <%
+            button('taiko', 'taiko', 'taiko-') %> <% button('catch', 'catch', 'catch-') %> <% button('mania', 'mania',
+            'mania-') %>
         </div>
     </div>
     <% if (category.includes('mania-')) { %>
     <div class="section">
         <div class="btnGroup">
-            <% button('mania', 'All', 'mania-', 'piano', null, !category.match(/-(\dk|otherkeys)$/), true) %>
-            <% button('mania4k', '4K', '-4k') %>
-            <% button('mania7k', '7K', '-7k') %>
-            <% button('maniaOther', 'Other', '-otherkeys', null, 'All other keycounts (not 4K or 7K)') %>
+            <% button('mania', 'All', 'mania-', 'piano', null, !category.match(/-(\dk|otherkeys)$/), true) %> <%
+            button('mania4k', '4K', '-4k') %> <% button('mania7k', '7K', '-7k') %> <% button('maniaOther', 'Other',
+            '-otherkeys', null, 'All other keycounts (not 4K or 7K)') %>
         </div>
     </div>
     <% } %>
     <div class="section flex gap-8 flex-wrap">
-        <% button('toggleLoved', 'Include loved', 'loved', 'favorite', 'Should loved maps be included in stats?') %>
-        <% if (!category.includes('osu-')) { %>
-        <% button('toggleConverts', 'Include converts', 'converts', 'compare_arrows', 'Should converts be included in stats?') %>
-        <% } %>
+        <% button('toggleLoved', 'Include loved', 'loved', 'favorite', 'Should loved maps be included in stats?') %> <%
+        if (!category.includes('osu-')) { %> <% button('toggleConverts', 'Include converts', 'converts',
+        'compare_arrows', 'Should converts be included in stats?') %> <% } %>
     </div>
 </div>

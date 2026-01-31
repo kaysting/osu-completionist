@@ -3,10 +3,11 @@
         <span class="header">Plain-text stats</span>
     </div>
     <div>
-        <p>Click the button below to copy a plain text version of this profile's category stats. The text includes
-            username,
-            category name, per year stats, and a total at the bottom, with checkboxes next to each year indicating full
-            completion.</p>
+        <p>
+            Click the button below to copy a plain text version of this profile's category stats. The text includes
+            username, category name, per year stats, and a total at the bottom, with checkboxes next to each year
+            indicating full completion.
+        </p>
         <button class="btn primary" onClick="copyText(`<%= share.plainText %>`)">
             <span class="icon">content_copy</span>
             <span>Copy plain-text stats</span>
@@ -16,29 +17,49 @@
         <span class="header">Customize image background colors</span>
     </div>
     <div>
-        <p>The background color of the following image renders can be given custom hue and saturation values. Change the
-            values in the following textboxes to see them reflected in the preview images and in the embeds you copy.
+        <p>
+            The background color of the following image renders can be given custom hue and saturation values. Change
+            the values in the following textboxes to see them reflected in the preview images and in the embeds you
+            copy.
         </p>
         <ul>
-            <li><b>Hue</b> ranges from 0 to 360 and represents a degree of the hue circle. Where 0 is red, 120 is green,
-                240 is blue, etc., looping back to red at 360.</li>
-            <li><b>Saturation</b> ranges from 0 to 100 and represents the intensity of the color. Where 0 is completely
-                desaturated (gray) and 100 is fully saturated (vivid color). Set this to 10% if you're putting the image
-                on the osu! website.</li>
+            <li>
+                <b>Hue</b>
+                ranges from 0 to 360 and represents a degree of the hue circle. Where 0 is red, 120 is green, 240 is
+                blue, etc., looping back to red at 360.
+            </li>
+            <li>
+                <b>Saturation</b>
+                ranges from 0 to 100 and represents the intensity of the color. Where 0 is completely desaturated (gray)
+                and 100 is fully saturated (vivid color). Set this to 10% if you're putting the image on the osu!
+                website.
+            </li>
         </ul>
         <form class="flex gap-12 flex-wrap" data-reload-selectors="#sharePopupRenderList">
             <div class="flex col gap-4">
                 <label>Hue</label>
                 <div class="textbox" style="width: 100px">
-                    <input class="input" type="number" name="share_base_hue" placeholder="340"
-                        value="<%= query.share_base_hue %>" min="0" max="360">
+                    <input
+                        class="input"
+                        type="number"
+                        name="share_base_hue"
+                        placeholder="340"
+                        value="<%= query.share_base_hue %>"
+                        min="0"
+                        max="360" />
                 </div>
             </div>
             <div class="flex col gap-4">
                 <label>Saturation</label>
                 <div class="textbox" style="width: 100px">
-                    <input class="input" type="number" name="share_base_sat" placeholder="10"
-                        value="<%= query.share_base_sat %>" min="0" max="100">
+                    <input
+                        class="input"
+                        type="number"
+                        name="share_base_sat"
+                        placeholder="10"
+                        value="<%= query.share_base_sat %>"
+                        min="0"
+                        max="100" />
                 </div>
             </div>
         </form>
