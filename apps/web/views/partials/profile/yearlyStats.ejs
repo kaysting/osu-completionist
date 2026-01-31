@@ -18,12 +18,12 @@
     <script>
         (() => {
             const yearlyEls = document.querySelectorAll('.yearlyStatsEntry');
-            console.log(yearlyEls);
             yearlyEls.forEach(el => {
                 const year = el.dataset.year;
                 el.addEventListener('click', () => {
+                    const title = `${year} completion details`;
                     showPopup(
-                        `${year} completion details`, '', [{ label: 'Close' }],
+                        title, '', [{ label: 'Close' }],
                         {
                             closedby: 'any', width: 900, height: 900,
                             onBeforeShow: async dialog => {

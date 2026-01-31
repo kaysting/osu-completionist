@@ -67,13 +67,6 @@
 <script id="data-filterHelp" type="application/json">
     <%- JSON.stringify(filterHelpHtml) %>
 </script>
-<dialog id="filterHelpPopup" class="popup" closedby="any" style="--width: 800px">
-    <div class="title">Searching and filtering help</div>
-    <div class="body"><%- filterHelpHtml %></div>
-    <div class="actions">
-        <button class="btn primary medium" id="filterHelpClose">Got it</button>
-    </div>
-</dialog>
 <script>
     document.querySelector('#filterHelpButton').addEventListener('click', () => {
         const html = JSON.parse(document.getElementById('data-filterHelp').textContent);

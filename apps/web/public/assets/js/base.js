@@ -50,7 +50,7 @@ const downloadFile = (fileUrl, filename) => {
     document.body.removeChild(link);
 };
 
-const showPopup = (title, body, actions, options = {}) => {
+const showPopup = (title, body, actions = [], options = {}) => {
 
     const {
         closedby = 'any',
@@ -68,8 +68,8 @@ const showPopup = (title, body, actions, options = {}) => {
         <div class="title"></div>
         <div class="body"></div>
         <div class="actions"></div>
-        `;
-    dialog.closedby = closedby;
+    `;
+    dialog.setAttribute('closedby', closedby);
     dialog.classList.add('popup');
 
     // Function to close with animation
@@ -85,6 +85,7 @@ const showPopup = (title, body, actions, options = {}) => {
             document.body.removeChild(dialog);
         }, 200);
     };
+    dialog.closeWithAnimation = close;
 
     // Populate dialog
     dialog.querySelector('.title').innerText = title;
@@ -97,25 +98,27 @@ const showPopup = (title, body, actions, options = {}) => {
     }
 
     // Populate actions
-    const actionsContainer = dialog.querySelector('.actions');
-    for (const action of actions) {
-        const btn = document.createElement(action.href ? 'a' : 'button');
-        btn.classList = `btn medium ${action.class || ''}`;
-        if (action.class == 'primary')
-            btn.autofocus = true;
-        btn.innerText = action.label;
-        if (action.href) {
-            btn.href = action.href;
-            if (action.newTab) {
-                btn.target = '_blank';
+    if (actions?.length) {
+        const actionsContainer = dialog.querySelector('.actions');
+        for (const action of actions) {
+            const btn = document.createElement(action.href ? 'a' : 'button');
+            btn.classList = `btn medium ${action.class || ''}`;
+            if (action.class == 'primary')
+                btn.autofocus = true;
+            btn.innerText = action.label;
+            if (action.href) {
+                btn.href = action.href;
+                if (action.newTab) {
+                    btn.target = '_blank';
+                }
             }
+            btn.addEventListener('click', event => {
+                if (action.onClick) action.onClick(dialog);
+                if (action.noClose) return;
+                close();
+            });
+            actionsContainer.appendChild(btn);
         }
-        btn.addEventListener('click', event => {
-            if (action.onClick) action.onClick(dialog);
-            if (action.noClose) return;
-            close();
-        });
-        actionsContainer.appendChild(btn);
     }
 
     // Show dialog

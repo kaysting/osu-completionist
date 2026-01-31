@@ -206,6 +206,7 @@
                     label: 'Got it!', class: 'primary'
                 }
             ], {
+                closedby: 'none',
                 onClose: () => {
                     localStorage.setItem('devNoticeVersion', devMsgVersion.toString());
                     localStorage.setItem('changelogVersion', currentChangelogVersion);
