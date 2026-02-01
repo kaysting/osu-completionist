@@ -51,7 +51,7 @@ app.use((req, res, next) => {
     res.end = function (...args) {
         const elapsed = (Number(process.hrtime.bigint() - START_TIME) / 1_000_000).toFixed(2);
         const status = res.statusCode;
-        const logParts = [ip, req.method, status, req.url];
+        const logParts = [ip, req.method, status, req.originalUrl];
         const reloadSelectors = req.headers['x-reload-selectors'];
         if (reloadSelectors) logParts.push(JSON.stringify(reloadSelectors.split(',')));
         logParts.push(`[${elapsed}ms]`);
