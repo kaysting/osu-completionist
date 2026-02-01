@@ -85,7 +85,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// Register JSON middleware and API route
+// Register body parsing middleware
 app.use(
     express.json({
         verify: (req, res, buf) => {
@@ -93,11 +93,15 @@ app.use(
         }
     })
 );
+app.use(express.urlencoded({ extended: true }));
+
+// Register API route
 app.use('/api/v1', require('./routes/api-v1'));
 
 // Register webhook routes
 app.use('/discord', require('./routes/discord'));
 app.use('/github', require('./routes/github'));
+app.use('/kofi', require('./routes/kofi'));
 
 // Register static files and view engine
 app.set('view engine', 'ejs');
@@ -114,7 +118,6 @@ app.use(
         saveUninitialized: false
     })
 );
-app.use(express.urlencoded({ extended: true }));
 app.use(getAuthenticatedUser);
 app.use(updateLastUrl);
 
