@@ -9,8 +9,7 @@ const apiRead = require('#api/read.js');
 const router = express.Router();
 
 router.get('/:id', ensureUserExists, (req, res) => {
-    const category = req?.session?.category || 'osu-ranked';
-    res.redirect(`/u/${req.user.id}/${category}`);
+    res.redirect(`/u/${req.user.id}/${req.user.primary_category}`);
 });
 
 router.get('/:id/reimport', async (req, res) => {

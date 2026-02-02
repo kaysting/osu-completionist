@@ -290,7 +290,7 @@ async function main() {
         }
         console.log();
         await option.f(...finalArgs);
-        process.exit();
     }
+    process.exit();
 }
 main();

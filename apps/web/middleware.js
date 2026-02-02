@@ -10,12 +10,10 @@ const middleware = {
         if (isNaN(parseInt(userId))) {
             const entry = db
                 .prepare(
-                    `
-                SELECT u.id
-                FROM users u
-                LEFT JOIN user_previous_names un ON u.id = un.user_id
-                WHERE un.name = ? OR u.name = ?
-            `
+                    `SELECT u.id
+                    FROM users u
+                    LEFT JOIN user_previous_names un ON u.id = un.user_id
+                    WHERE un.name = ? OR u.name = ?`
                 )
                 .get(userId, userId);
             if (entry) userId = entry.id;
