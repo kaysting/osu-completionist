@@ -10,8 +10,8 @@ Valid filter keys include:
 - `ar`: Approach rate
 - `od`: Overall difficulty (aka accuracy)
 - `hp`: HP drain
-- `keys`: Alias of `cs` meant to be used with mania
-- `stars` or `sr`: Star rating/difficulty
+- `keys` or `key`: Alias of `cs` meant to be used with mania
+- `stars`, `star`, or `sr`: Star rating/difficulty
 - `bpm`: Map BPM
 - `length`: Map duration
 - `year`: Map ranked year
