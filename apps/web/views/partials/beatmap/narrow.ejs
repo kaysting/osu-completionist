@@ -16,7 +16,9 @@
                     <span class="icon">star</span>
                     <span class="value"><%= beatmap.stars.toFixed(2) %></span>
                 </span>
-                <div class="text overflow-hidden text-ellipsis" style="color: <%= beatmap.difficulty_color.fg %>">
+                <div
+                    class="text overflow-hidden text-ellipsis"
+                    style="color: <%= beatmap.difficulty_color.fg == '#000000' ? beatmap.difficulty_color.bg : beatmap.difficulty_color.fg %>">
                     <span class="name overflow-hidden text-ellipsis nowrap"><%= beatmap.name %></span>
                     <span class="mapper overflow-hidden text-ellipsis nowrap">
                         mapped by <%= beatmap.beatmapset.mapper || '[unknown]' %>
