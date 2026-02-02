@@ -16,7 +16,11 @@ Valid filter keys include:
 - `length`: Map duration
 - `year`: Map ranked year
 - `month`: Map ranked month (in `yyyy-mm` format), for example, "2019-05" shows maps ranked during May of 2019
-- `mode`: Map mode (`osu`, `taiko`, `catch`, or `mania`) (**This won't work in play next, only global search!**)
+
+These filter keys are also valid but may yield unexpected or no results when used in play next:
+
+- `mode`: Map mode (`osu`, `taiko`, `catch`, or `mania`, or abbreviations)
+- `status`: Map ranked status (`ranked` or `loved`, or abbreviations)
 
 Valid operators include:
 
