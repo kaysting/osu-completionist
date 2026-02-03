@@ -25,12 +25,11 @@
                 const year = el.dataset.year;
                 el.addEventListener('click', () => {
                     const title = `${year} completion details`;
-                    showPopup(title, '', [{ label: 'Close' }], {
+                    showPopup(title, '<div id="yearlyPopupBody"></div>', [{ label: 'Close' }], {
                         closedby: 'any',
                         width: 900,
                         height: 900,
                         onBeforeShow: async dialog => {
-                            dialog.querySelector('.body').id = 'yearlyPopupBody';
                             await reloadElement('#yearlyPopupBody', { url: `?year=${year}` });
                         }
                     });
