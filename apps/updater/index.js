@@ -45,10 +45,24 @@ const runFetchNewMaps = async () => {
     setTimeout(runFetchNewMaps, 1000 * 60 * 5);
 };
 
-const runUpdateMapStatuses = async () => {
-    await writers.updateMapStatuses();
-    writers.updateAllUserCategoryStats();
-    setTimeout(runUpdateMapStatuses, 1000 * 60 * 60 * 24);
+let isFullStatusUpdateRunning = false;
+const runUpdateAllMapStatuses = async () => {
+    isFullStatusUpdateRunning = true;
+    try {
+        await writers.updateMapStatuses();
+    } catch (error) {
+        utils.logError(error);
+    }
+    isFullStatusUpdateRunning = false;
+    setTimeout(runUpdateAllMapStatuses, 1000 * 60 * 60 * 24);
+};
+
+const runUpdateRecentMapStatuses = async () => {
+    if (!isFullStatusUpdateRunning) {
+        const after = Date.now() - 1000 * 60 * 60 * 24 * 7;
+        await writers.updateMapStatuses(after);
+    }
+    setTimeout(runUpdateRecentMapStatuses, 1000 * 60 * 15);
 };
 
 const runAnalyticsSave = async () => {
@@ -78,9 +92,10 @@ async function main() {
     runGenerateSitemap();
     runUpdateGlobalRecents();
     saveFromScoreBuffer();
+    runUpdateRecentMapStatuses();
 
     // Delay this one so it only runs after the updater has been going for an hour
-    setTimeout(runUpdateMapStatuses, 1000 * 60 * 60);
+    setTimeout(runUpdateAllMapStatuses, 1000 * 60 * 60);
 
     // Connect to oSC websocket
     const socket = io(env.OSU_SCORE_CACHE_BASE_URL, {
