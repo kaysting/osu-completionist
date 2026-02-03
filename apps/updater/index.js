@@ -62,7 +62,7 @@ const runUpdateRecentMapStatuses = async () => {
         const after = Date.now() - 1000 * 60 * 60 * 24 * 7;
         await writers.updateMapStatuses(after);
     }
-    setTimeout(runUpdateRecentMapStatuses, 1000 * 60 * 15);
+    setTimeout(runUpdateRecentMapStatuses, 1000 * 60 * 5);
 };
 
 const runAnalyticsSave = async () => {
