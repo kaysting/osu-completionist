@@ -48,7 +48,7 @@
 #sidebar .item {
     height: 42px;
     padding: 0px 12px 0px 8px;
-    gap: 12px;
+    gap: 8px;
     justify-content: flex-start;
     font-size: 16px;
     --btnBg: transparent;
@@ -70,8 +70,9 @@
     width: 4px;
     height: 12px;
     border-radius: 4px;
-    background: var(--c-base-40);
+    background: transparent;
     flex-shrink: 0;
+    transition: 0.1s ease-in-out;
 }
 
 #sidebar .item.page.active::before {
@@ -81,6 +82,15 @@
 
 #sidebar .item:not(.page)::before {
     background: transparent;
+}
+
+#sidebar .item .label {
+    flex-grow: 1;
+    text-align: left;
+}
+
+#sidebar .item .icon:last-child {
+    font-size: 20px;
 }
 
 #sidebar .bottom {
@@ -184,7 +194,7 @@
 
 @media (max-width: 1300px) and (min-width: 800px) {
     body {
-        --sidebarClosedWidth: 80px;
+        --sidebarClosedWidth: 90px;
     }
 
     @media (hover: hover) {
@@ -215,6 +225,10 @@
         }
 
         #sidebar:not(:hover) .btn .label {
+            visibility: hidden;
+        }
+
+        #sidebar:not(:hover) .btn .icon:last-child {
             visibility: hidden;
         }
     }
