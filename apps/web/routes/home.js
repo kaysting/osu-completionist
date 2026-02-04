@@ -31,7 +31,13 @@ const getStats = () => {
 
 router.get('/', (req, res) => {
     const stats = getStats();
-    res.renderPage('home', { stats });
+    res.renderPage('home', {
+        stats,
+        topbar: {
+            icon: 'home',
+            title: 'Home'
+        }
+    });
 });
 
 module.exports = router;

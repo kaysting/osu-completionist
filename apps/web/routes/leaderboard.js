@@ -36,12 +36,17 @@ router.get('/:category', (req, res) => {
         }
     }
     // Render
-    const title = `${statCategories.getCategoryName(category)} completionist leaderboard`;
+    const categoryName = statCategories.getCategoryName(category);
+    const title = `${categoryName} completionist leaderboard`;
     res.render('layout', {
         title,
         meta: {
             title,
             description: `View the players who have the highest completion in this category!`
+        },
+        topbar: {
+            title: `Leaderboard - ${categoryName}`,
+            icon: 'leaderboard'
         },
         page: 'leaderboard',
         category,

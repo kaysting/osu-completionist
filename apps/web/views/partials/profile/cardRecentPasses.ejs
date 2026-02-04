@@ -1,6 +1,9 @@
-<div id="recentPassesCard" class="card lighter padded passes flex col gap-16" data-reload-socket-event="update_stats">
+<section
+    id="recentPassesCard"
+    class="card lighter padded passes flex col gap-16"
+    data-reload-socket-event="update_stats">
     <div>
-        <span class="header">monthly progress</span>
+        <h2 class="header">monthly progress</h2>
     </div>
     <div>
         <canvas id="monthlyGraph"></canvas>
@@ -32,7 +35,7 @@
         </script>
     </div>
     <div>
-        <span class="header">recent passes (<%= n(recentPasses.length) %> in the past 24 hours)</span>
+        <h2 class="header">recent passes (<%= n(recentPasses.length) %> in the past 24 hours)</h2>
     </div>
     <div class="beatmapNarrowContainer flex col gap-2">
         <% if (recentPasses.length === 0) { %>
@@ -40,4 +43,4 @@
         <% } %> <% for (const pass of recentPasses) { %> <%- include('../beatmap/narrow', { beatmap: pass.beatmap, time:
         `Passed ${pass.timeSincePass} for ${n(pass.beatmap.xp)} cxp` }) %> <% } %>
     </div>
-</div>
+</section>

@@ -49,6 +49,7 @@ router.get('/:category', (req, res) => {
         `Try "ar=10" to find high AR maps`
     ];
     const placeholder = placeholders[Math.floor(Math.random() * placeholders.length)];
+    const categoryName = statCategories.getCategoryName(category);
     // Render
     res.render('layout', {
         title: 'Play next',
@@ -56,6 +57,10 @@ router.get('/:category', (req, res) => {
         meta: {
             title: `Find beatmaps to complete next`,
             description: `Complete faster by using advanced filters and sorting to get the perfect list of maps to play next.`
+        },
+        topbar: {
+            icon: 'cards_star',
+            title: `Play next - ${categoryName}`
         },
         category,
         category_navigation: statCategories.getCategoryNavPaths(

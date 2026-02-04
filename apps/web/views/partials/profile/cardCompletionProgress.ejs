@@ -1,10 +1,10 @@
-<div
+<section
     id="completionProgressCard"
     class="card lighter padded progress flex col gap-16"
     data-reload-socket-event="update_stats,new_mapset">
     <div class="flex col gap-16 flex-grow">
         <div>
-            <span class="header">completion progress</span>
+            <h2 class="header">completion progress</h2>
         </div>
         <div>
             <canvas id="progressGraph"></canvas>
@@ -60,7 +60,7 @@
                 </div>
             </div>
             <div id="categoryStatsHeader">
-                <span class="header">category totals</span>
+                <h3 class="header">category totals</h3>
             </div>
             <div class="stats flex flex-wrap">
                 <div class="stat flex col gap-2">
@@ -83,7 +83,7 @@
         </div>
     </div>
     <div>
-        <span class="header">completion by year</span>
+        <h3 class="header">completion by year</h3>
     </div>
     <%- include('./yearlyStats', { yearly, yearlyType }) %> <% if (user.isMe) { %>
     <div>
@@ -146,4 +146,4 @@
         </script>
     </div>
     <% } %>
-</div>
+</section>

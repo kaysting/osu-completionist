@@ -48,9 +48,9 @@ const showPopup = (title, body, actions = [], options = {}) => {
     if (width) dialog.style.setProperty(`--width`, `${width}px`);
     if (height) dialog.style.setProperty(`--height`, `${height}px`);
     dialog.innerHTML = /*html*/ `
-        <div class="title"></div>
-        <div class="body"></div>
-        <div class="actions"></div>
+        <h2 class="title"></h2>
+        <section class="body"></section>
+        <section class="actions"></section>
     `;
     dialog.setAttribute('closedby', closedby);
     dialog.classList.add('popup');

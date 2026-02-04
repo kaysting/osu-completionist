@@ -1,5 +1,6 @@
 #profile .banner {
     min-height: 100px;
+    max-height: 250px;
     aspect-ratio: 4 / 1;
     background-size: cover;
     background-position: center;
@@ -89,7 +90,7 @@
     }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 800px) {
     #profile .basics {
         padding: 8px 16px;
         flex-direction: column;
@@ -100,6 +101,7 @@
         justify-content: center;
         align-items: center;
         margin-top: -8px;
+        flex-shrink: 0;
     }
 
     #profile .basics .flags {

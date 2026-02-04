@@ -101,6 +101,10 @@ router.get('/', async (req, res) => {
             title: 'API Documentation',
             description: 'Learn how to use the osu!complete API!'
         },
+        topbar: {
+            title: 'API Docs',
+            icon: 'code'
+        },
         html
     });
 });

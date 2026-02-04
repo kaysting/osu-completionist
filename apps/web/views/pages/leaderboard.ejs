@@ -1,7 +1,7 @@
 <link rel="stylesheet" href="/assets/css/leaderboard.css" />
 <div id="leaderboard" class="flex col gap-16">
     <%- include('../partials/statSettings') %>
-    <div id="leaderboardContent" class="card flex col gap-12">
+    <section id="leaderboardContent" class="card flex col gap-12">
         <%- include('../partials/pagination') %>
         <div class="entries flex col gap-4">
             <% for (const entry of leaderboard) { %>
@@ -72,5 +72,5 @@
             <% } %>
         </div>
         <%- include('../partials/pagination') %>
-    </div>
+    </section>
 </div>

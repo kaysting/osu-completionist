@@ -35,7 +35,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
 
     // Check category
     if (!statCategories.definitions.find(cat => cat.id === category)) {
-        return res.redirect(`/u/${req.user.id}/osu-ranked`);
+        return res.redirect(`/u/${req.user.id}`);
     }
 
     // Update session variables
@@ -278,6 +278,10 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
             title,
             description: `${req.user.name} has passed ${utils.formatNumber(stats.percentage_completed, 2)}% of beatmaps in this category. Click to view more of their completionist stats!`,
             image: `${env.BASE_URL}/renders/profile-meta?category=${category}&user_id=${req.user.id}`
+        },
+        topbar: {
+            icon: 'person',
+            title: `${req.user.name} - ${categoryName}`
         },
         user: {
             ...user,

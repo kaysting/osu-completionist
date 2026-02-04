@@ -97,11 +97,14 @@ function initTriangleBackground(canvas, userConfig = {}) {
 
     // Handle Resize
     function resize() {
-        // Set actual canvas size to viewport
-        w = canvas.width = window.innerWidth;
-        h = canvas.height = window.innerHeight;
+        // FIX: Measure the parent element instead of the whole window
+        const parent = canvas.parentElement;
 
-        // Re-init triangles to adjust density for new size
+        // Set the canvas resolution to match the parent's actual display size
+        w = canvas.width = parent.clientWidth;
+        h = canvas.height = parent.clientHeight;
+
+        // Re-init triangles to adjust density for the new size
         initTriangles();
     }
 

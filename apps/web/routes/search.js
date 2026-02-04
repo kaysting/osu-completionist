@@ -10,10 +10,14 @@ router.get('/', (req, res) => {
     const maps = searchBeatmaps(query, null, query ? null : 'date_desc', null, limits, 0);
     res.render('layout', {
         page: 'search',
-        title: 'Search tracked completionists and maps',
+        title: 'Search players and maps',
         meta: {
-            title: `Search tracked completionists and maps`,
+            title: `Search tracked players and maps`,
             description: `Find who or what you're looking for using natural text or filtered searches.`
+        },
+        topbar: {
+            icon: 'search',
+            title: 'Search players and maps'
         },
         me: req.me,
         user_results: users,

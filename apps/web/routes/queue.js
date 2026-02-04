@@ -12,6 +12,10 @@ router.get('/', (req, res) => {
             title: 'Import queue',
             description: `${results.in_progress.length} users are currently being imported and ${results.waiting.length} users are waiting in the queue.`
         },
+        topbar: {
+            icon: 'autorenew',
+            title: 'Import queue'
+        },
         results,
         me: req.me
     });

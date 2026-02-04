@@ -1,8 +1,8 @@
-<div id="statSettings" class="flex flex-wrap justify-center">
+<section id="statSettings" class="flex flex-wrap justify-center">
     <% const button = (key, label, includes, icon, title, isActiveOverride, alwaysFilled = false) => { const isActive =
     typeof isActiveOverride === 'boolean' ? isActiveOverride : category.includes(includes); %>
     <button
-        data-reload-selectors="#statSettings,#profileContent,#leaderboardContent,#recommended"
+        data-reload-selectors="#content"
         data-reload-url="<%= category_navigation[key] %>"
         data-reload-replace-address="true"
         class="btn <%= isActive ? 'primary' : '' %>"
@@ -34,4 +34,4 @@
         if (!category.includes('osu-')) { %> <% button('toggleConverts', 'Include converts', 'converts',
         'compare_arrows', 'Should converts be included in stats?') %> <% } %>
     </div>
-</div>
+</section>

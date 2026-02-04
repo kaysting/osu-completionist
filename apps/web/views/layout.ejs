@@ -8,10 +8,12 @@
         <meta
             property="og:title"
             content="<%= locals?.meta?.title || 'osu! completionist tracker and leaderboard' %>" />
-        <% const defaultDescription = `Track your osu! completionist progress across all game modes, ranked, loved, and
-        convert maps, and compare your progress with others!`; %>
-        <meta name="description" content="<%= locals?.meta?.description || defaultDescription %>" />
-        <meta property="og:description" content="<%= locals?.meta?.description || defaultDescription %>" />
+        <meta
+            name="description"
+            content="<%= locals?.meta?.description || 'Track your osu! completion progress across all game modes, ranked, loved, and convert maps, and compare your progress with others!' %>" />
+        <meta
+            property="og:description"
+            content="<%= locals?.meta?.description || 'Track your osu! completion progress across all game modes, ranked, loved, and convert maps, and compare your progress with others!' %>" />
         <meta
             property="og:image"
             content="<%= locals?.meta?.image || locals?.meta?.thumbnail || asset('/assets/images/promo.png') %>" />
@@ -36,131 +38,163 @@
         <script src="<%= asset('/assets/js/index.js') %>"></script>
     </head>
 
-    <body data-page="<%= page %>">
-        <canvas id="bgCanvas"></canvas>
-        <div id="topbar">
-            <div class="container">
-                <div class="top">
-                    <button class="btn text square" id="navToggleMenu">
-                        <span class="icon filled"></span>
+    <body>
+        <!-- Topmost wrapper, centers the sidebar and page content horizontally -->
+        <div class="flex justify-center">
+            <!-- Sidebar -->
+            <script>
+                function openSidebar() {
+                    document.querySelector('#sidebar').classList.add('open');
+                }
+                function closeSidebar() {
+                    document.querySelector('#sidebar').classList.remove('open');
+                }
+            </script>
+            <nav id="sidebar" class="flex col">
+                <div class="top flex align-center justify-center gap-16">
+                    <button id="btnCloseSidebar" class="btn text square" onClick="closeSidebar()">
+                        <span class="icon">close</span>
                     </button>
-                    <a id="logo" href="/" class="btn text">
-                        <div class="text">
-                            <span class="white">osu!</span>
-                            <span class="green">complete</span>
-                        </div>
-                    </a>
-                    <div class="title">
-                        <%= (() =>{ switch (page) { case 'home': return 'home'; case 'search': return 'search'; case
-                        'leaderboard': return 'leaderboard'; case 'queue': return 'import queue'; case 'recommended':
-                        return 'play next'; case 'profile': return 'profile'; default: return
-                        locals?.title.toLowerCase() || ''; } })() %>
+                    <div class="logo full">
+                        <span class="white">osu!</span>
+                        <span class="green">complete</span>
+                    </div>
+                    <div class="logo short">
+                        <span class="white">o!</span>
+                        <span class="green">c</span>
                     </div>
                 </div>
-                <div class="left">
-                    <a
-                        id="navSearch"
-                        class="btn <%= page == 'search' ? 'text bright' : 'text muted' %>"
-                        href="/search"
-                        title="Search tracked players and beatmaps">
-                        <span class="icon filled">search</span>
-                        <span class="label">search</span>
+                <div class="scroll flex col gap-4 flex-grow">
+                    <a href="/" class="btn item page <%= page == 'home' ? 'active' : '' %>">
+                        <span class="icon">home</span>
+                        <span class="label">Home</span>
                     </a>
-                    <a
-                        id="navLeaderboard"
-                        class="btn <%= page == 'leaderboard' ? 'text bright' : 'text muted' %>"
-                        href="/leaderboard<%= locals?.category ? `/${locals.category}` : '' %>"
-                        title="View top completionists per category">
-                        <span class="icon filled">leaderboard</span>
-                        <span class="label">leaderboard</span>
+                    <a href="/search" class="btn item page <%= page == 'search' ? 'active' : '' %>">
+                        <span class="icon">search</span>
+                        <span class="label">Search players and maps</span>
+                    </a>
+                    <a href="/leaderboard" class="btn item page <%= page == 'leaderboard' ? 'active' : '' %>">
+                        <span class="icon">leaderboard</span>
+                        <span class="label">Leaderboard</span>
                     </a>
                     <% if (me) { %>
                     <a
-                        id="navRecommended"
-                        class="btn <%= page == 'recommended' ? 'text bright' : 'text muted' %>"
-                        href="/recommended<%= locals?.category ? `/${locals.category}` : '' %>"
-                        title="View and filter the maps you haven't passed yet">
+                        class="btn item page <%= page == 'recommended' ? 'active' : '' %>"
+                        href="/recommended<%= locals?.category ? `/${locals.category}` : '' %>">
                         <span class="icon filled">cards_star</span>
-                        <span class="label">play next</span>
+                        <span class="label">Play next</span>
                     </a>
                     <% } %>
-                    <a
-                        id="navQueue"
-                        class="btn <%= page == 'queue' ? 'text bright' : 'text muted' %>"
-                        href="/queue"
-                        title="View the user import queue">
-                        <span class="icon filled">autorenew</span>
-                        <span class="label">queue</span>
+                    <a href="/queue" class="btn item page <%= page == 'queue' ? 'active' : '' %>">
+                        <span class="icon">autorenew</span>
+                        <span class="label">Import queue</span>
                     </a>
-                    <a
-                        id="navFaq"
-                        class="btn <%= locals?.title?.toLowerCase() == 'faq' ? 'text bright' : 'text muted' %>"
-                        href="/faq"
-                        title="See frequently asked questions">
-                        <span class="icon filled">help</span>
-                        <span class="label">faq</span>
+                    <div class="separator"></div>
+                    <a href="/discord" class="btn item" target="_blank" rel="noopener noreferrer">
+                        <span class="icon">chat</span>
+                        <span class="label">osu!complete Discord</span>
                     </a>
+                    <a href="/faq" class="btn item page <%= locals?.title?.toLowerCase() == 'faq' ? 'active' : '' %>">
+                        <span class="icon">help</span>
+                        <span class="label">FAQs</span>
+                    </a>
+                    <div class="separator"></div>
                     <a
-                        id="navDiscord"
-                        class="btn text muted"
-                        href="/discord"
-                        target="_blank"
-                        title="Join the Discord server to stay up to date with development and chat with other completionists">
-                        <span class="icon filled">chat</span>
-                        <span class="label">discord</span>
+                        href="/changelog"
+                        class="btn item page <%= locals?.title?.toLowerCase() == 'changelog' ? 'active' : '' %>">
+                        <span class="icon">update</span>
+                        <span class="label">Changelog</span>
+                    </a>
+                    <a href="/github" class="btn item" target="_blank">
+                        <span class="icon">code</span>
+                        <span class="label">Source code on GitHub</span>
                     </a>
                 </div>
-                <div class="right">
-                    <% if (!me) { %>
-                    <a id="navLogin" class="btn text muted" href="/auth/login">
-                        <span class="icon filled">person</span>
-                        <span class="label">sign in</span>
+                <div class="bottom flex col gap-4 flex-no-shrink">
+                    <div class="separator"></div>
+                    <% if (me) { %>
+                    <a href="/u/<%= me.id %>" class="btn item page <%= me.id == locals?.user?.id ? 'active' : '' %>">
+                        <img src="<%= me.avatar_url %>" class="icon" />
+                        <span class="label"><%= me.name %></span>
+                    </a>
+                    <a href="/auth/logout" class="btn item">
+                        <span class="icon">logout</span>
+                        <span class="label">Sign out</span>
                     </a>
                     <% } else { %>
-                    <a
-                        id="navProfile"
-                        class="btn text dynamic"
-                        href="/u/<%= me.id %><%= locals?.category ? `/${locals.category}` : '' %>"
-                        title="View your profile">
-                        <img src="<%= me.avatar_url %>" class="icon" style="width: 32px; height: 32px" />
-                        <span><%= me.name %></span>
-                    </a>
-                    <a id="navLogout" href="/auth/logout" class="btn text danger" title="Sign out">
-                        <span class="icon filled">logout</span>
+                    <a href="/auth/login" class="btn item">
+                        <span class="icon">person</span>
+                        <span class="label">Sign in with osu!</span>
                     </a>
                     <% } %>
                 </div>
+            </nav>
+
+            <!-- Main content wrapper -->
+            <div id="content">
+                <canvas id="bgCanvas"></canvas>
+
+                <!-- Topbar -->
+                <div id="topbar" class="flex gap-16 align-center">
+                    <button id="btnOpenSidebar" class="btn text square" onClick="openSidebar()">
+                        <span class="icon">menu</span>
+                    </button>
+                    <div class="logo">
+                        <span class="white">o!</span>
+                        <span class="green">c</span>
+                    </div>
+                    <div class="pageSep separator"></div>
+                    <div class="page flex gap-12 align-center flex-grow">
+                        <div class="icon flex-no-shrink"><%= locals?.topbar?.icon %></div>
+                        <h1 class="title"><%= locals?.topbar?.title %></h1>
+                    </div>
+                </div>
+
+                <!-- Script to initialize and handle topbar scrolled state -->
+                <script>
+                    function initTopbar() {
+                        const topbar = document.getElementById('topbar');
+                        document.addEventListener('scroll', () => {
+                            if (window.scrollY > 8) {
+                                topbar.classList.add('scrolled');
+                            } else {
+                                topbar.classList.remove('scrolled');
+                            }
+                        });
+                    }
+                    initTopbar();
+                </script>
+
+                <!-- Dynamic page content -->
+                <main data-page="<%= page %>"><%- include('pages/' + page) %></main>
+
+                <div id="bottomShadow"></div>
+
+                <!-- Static footer -->
+                <footer id="footer">
+                    <p>
+                        osu!complete &copy;
+                        <a href="https://kaysting.dev">Kayla Kersting</a>
+                        2026
+                        <br />
+                        <a href="/tos">Terms of Service</a>
+                        &bullet;
+                        <a href="/privacy">Privacy Policy</a>
+                        <br />
+                        Running commit
+                        <a
+                            href="https://github.com/kaysting/osu-completionist/commit/<%= locals?.git?.hash %>"
+                            target="_blank"
+                            rel="noopener noreferrer">
+                            <%= locals?.git?.hash %>
+                        </a>
+                        deployed <%= dayjs(locals?.git?.date).utc().format('YYYY-MM-DD HH:mm:ss [UTC]') %>
+                    </p>
+                </footer>
             </div>
         </div>
-        <main>
-            <%- include('pages/' + page) %>
-            <div id="footer">
-                <p>
-                    osu!complete &copy;
-                    <a href="https://kaysting.dev">Kayla Kersting</a>
-                    2026
-                    <br />
-                    <a href="/tos">Terms of Service</a>
-                    &bullet;
-                    <a href="/privacy">Privacy Policy</a>
-                    &bullet;
-                    <a href="/changelog">Changelog</a>
-                    &bullet;
-                    <a href="https://github.com/kaysting/osu-completion" target="_blank" rel="noopener noreferrer">
-                        GitHub
-                    </a>
-                    <br />
-                    Running commit
-                    <a
-                        href="https://github.com/kaysting/osu-completionist/commit/<%= locals?.git?.hash %>"
-                        target="_blank"
-                        rel="noopener noreferrer">
-                        <%= locals?.git?.hash %>
-                    </a>
-                    deployed <%= dayjs(locals?.git?.date).utc().format('YYYY-MM-DD HH:mm:ss [UTC]') %>
-                </p>
-            </div>
-        </main>
+
+        <!-- Safely load data into JSON scripts so it can be accessed on the client side -->
         <script id="data-changelog" type="application/json">
             <% const changelogHtml = includeMarkdown('views/markdown/changelog.md') %>
             <%- JSON.stringify(changelogHtml) %>
@@ -168,43 +202,9 @@
         <script id="data-notice" type="application/json">
             <%- JSON.stringify(includeMarkdown('views/markdown/notice.md')) %>
         </script>
+
         <script>
             // We do this stuff inline so there isn't a delay on load
-
-            const topbar = document.getElementById('topbar');
-            const btnToggleMenu = document.getElementById('navToggleMenu');
-
-            // Handle topbar scrolled state
-            document.addEventListener('scroll', () => {
-                if (window.scrollY > 20) {
-                    topbar.classList.add('scrolled');
-                } else {
-                    topbar.classList.remove('scrolled');
-                }
-            });
-
-            // Handle topbar overflowing state
-            const topbarResizeObserver = new ResizeObserver(() => {
-                topbar.classList.remove('overflowing');
-                if (topbar.scrollWidth > topbar.clientWidth) {
-                    topbar.classList.add('overflowing');
-                } else {
-                    topbar.classList.remove('open');
-                    topbar.style.height = '';
-                }
-            });
-            topbarResizeObserver.observe(topbar);
-
-            // Handle menu toggling
-            btnToggleMenu.addEventListener('click', () => {
-                if (topbar.classList.contains('open')) {
-                    topbar.classList.remove('open');
-                    topbar.style.height = '';
-                } else {
-                    topbar.classList.add('open');
-                    topbar.style.height = 'auto';
-                }
-            });
 
             // Collect info for dev notice and changelog
             const devMsgVersion = 2;
@@ -214,8 +214,7 @@
             const currentChangelogVersion = `<%= utils.sha256(changelogHtml) %>`;
             const seenChangelogVersion = localStorage.getItem('changelogVersion');
 
-            // Show dev notice if we haven't seen it yet
-            if (!hasSeenDevNotice) {
+            function showDevNotice() {
                 const devNoticeHtml = JSON.parse(document.getElementById('data-notice').textContent);
                 const dialog = showPopup(
                     'Welcome to the osu!complete beta!',
@@ -242,8 +241,7 @@
                 );
             }
 
-            // Show changelog if it's new and we've seen the dev notice already
-            if (hasSeenDevNotice && seenChangelogVersion !== currentChangelogVersion) {
+            function showChangelog() {
                 const dialog = showPopup('Changelog', changelogHtml, [{ label: 'Close' }], {
                     width: 800,
                     height: 900,
@@ -252,6 +250,16 @@
                     }
                 });
                 dialog.setAttribute('data-nosnippet', '');
+            }
+
+            // Show dev notice if we haven't seen it yet
+            if (!hasSeenDevNotice) {
+                showDevNotice();
+            }
+
+            // Show changelog if it's new and we've seen the dev notice already
+            if (hasSeenDevNotice && seenChangelogVersion !== currentChangelogVersion) {
+                showChangelog();
             }
         </script>
     </body>

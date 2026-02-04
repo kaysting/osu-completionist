@@ -1,5 +1,5 @@
 <link rel="stylesheet" href="/assets/css/search.css" />
-<div id="search" class="card flex col gap-8">
+<section id="search" class="card flex col gap-8">
     <form class="flex gap-8" data-reload-selectors="#results">
         <div class="textbox medium hasIcon flex-grow">
             <span class="icon">search</span>
@@ -12,12 +12,12 @@
                 value="<%= query %>" />
         </div>
     </form>
-    <div id="results" class="results card lighter padded flex col gap-16">
+    <section id="results" class="results card lighter padded flex col gap-16">
         <div>
             <% if (query) { %>
-            <span class="header">Players (<%= n(user_results.total_matches) %>)</span>
+            <h2 class="header">Players (<%= n(user_results.total_matches) %>)</h2>
             <% } else { %>
-            <span class="header">Recently active players</span>
+            <h2 class="header">Recently active players</h2>
             <% } %>
         </div>
         <% if (user_results.total_matches) { %>
@@ -29,9 +29,9 @@
         <% } %>
         <div>
             <% if (query) { %>
-            <span class="header">Beatmaps (<%= n(map_results.total_matches) %>)</span>
+            <h2 class="header">Beatmaps (<%= n(map_results.total_matches) %>)</h2>
             <% } else { %>
-            <span class="header">Recently ranked beatmaps</span>
+            <h2 class="header">Recently ranked beatmaps</h2>
             <% } %>
         </div>
         <% if (map_results.total_matches) { %>
@@ -42,5 +42,5 @@
         <% } else { %>
         <div class="maps empty">No beatmaps matched your search.</div>
         <% } %>
-    </div>
-</div>
+    </section>
+</section>

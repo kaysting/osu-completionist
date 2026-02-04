@@ -76,6 +76,10 @@ app.use((req, res, next) => {
         res.status(number).render('layout', {
             title: title || number,
             page: 'error',
+            topbar: {
+                icon: 'error',
+                title: `Error ${number}`
+            },
             number,
             message,
             me: req.me

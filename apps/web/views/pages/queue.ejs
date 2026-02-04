@@ -1,6 +1,6 @@
-<div id="queue" class="card padded flex col gap-16" data-reload-interval="30">
+<section id="queue" class="card padded flex col gap-16" data-reload-interval="30">
     <div>
-        <span class="header">In progress (<%= results.in_progress.length %>)</span>
+        <h2 class="header">In progress (<%= results.in_progress.length %>)</h2>
     </div>
     <% if (results.in_progress.length) { %>
     <div class="userCardContainer">
@@ -11,7 +11,7 @@
     <div class="empty">No users are being imported at this time.</div>
     <% } %>
     <div>
-        <span class="header">Queued (<%= results.waiting.length %>)</span>
+        <h2 class="header">Queued (<%= results.waiting.length %>)</h2>
     </div>
     <% if (results.waiting.length) { %>
     <div class="userCardContainer">
@@ -20,4 +20,4 @@
     <% } else { %>
     <div class="empty">The update queue is empty.</div>
     <% } %>
-</div>
+</section>

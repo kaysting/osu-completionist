@@ -43,7 +43,7 @@
     <% if (maps) { %>
     <div>
         <% const countLeft = stats.count_total - stats.count_completed %>
-        <span class="header">maps remaining (<%= n(countLeft) %>)</span>
+        <h3 class="header">maps remaining (<%= n(countLeft) %>)</h3>
     </div>
     <div class="flex col gap-8">
         <% if (maps.length > 0) { %>

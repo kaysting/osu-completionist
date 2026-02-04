@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="/assets/css/home.css" />
 <div id="home">
-    <div class="header flex col gap-16 align-center">
+    <section class="header flex col gap-16 align-center">
         <div class="logo">
             <span class="white">osu!</span>
             <span class="green">complete</span>
@@ -10,22 +10,22 @@
         <% } else { %>
         <div class="slogan">A modern, feature-rich osu! completionist tracker and leaderboard</div>
         <% } %>
-    </div>
-    <div class="actions relative flex col gap-12 align-center">
+    </section>
+    <section class="actions relative flex col gap-12 align-center">
         <div class="buttons flex gap-12 flex-wrap justify-center">
             <a href="/leaderboard" class="btn large">
                 <span class="icon filled">leaderboard</span>
-                leaderboard
+                Leaderboard
             </a>
             <% if (me) { %>
             <a href="/u/<%= me.id %>" class="btn large primary">
                 <span class="icon filled">person</span>
-                my profile
+                My profile
             </a>
             <% } else { %>
             <a href="/auth/login" class="btn large primary">
                 <span class="icon filled">person</span>
-                sign in with osu!...
+                Sign in with osu!...
             </a>
             <% } %>
         </div>
@@ -37,8 +37,8 @@
             </div>
             <button type="submit" class="btn medium primary">Go</button>
         </form>
-    </div>
-    <div class="stats flex flex-wrap justify-center align-center">
+    </section>
+    <section class="stats flex flex-wrap justify-center align-center">
         <div class="card flex col gap-8">
             <div class="value"><%= utils.formatNumber(stats.users) %></div>
             <div class="label">tracked players</div>
@@ -55,10 +55,11 @@
             <div class="value"><%= utils.formatNumber(stats.xp) %></div>
             <div class="label">total completion xp earned</div>
         </div>
-    </div>
+    </section>
 </div>
 <script src="/assets/js/triangles-bg.js"></script>
 <script>
+    /*
     initTriangleBackground(document.getElementById('bgCanvas'), {
         triColor: 'hsl(140, 30%, 50%)',
         bgColor1: 'hsl(220, 20%, 10%)',
@@ -69,4 +70,5 @@
         maxSize: 150,
         opacity: 0.3
     });
+    */
 </script>

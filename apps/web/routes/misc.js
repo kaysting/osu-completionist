@@ -12,6 +12,10 @@ router.use('/tos', (req, res) => {
         meta: {
             title: 'Terms of Service',
             description: 'View the osu!complete terms of service.'
+        },
+        topbar: {
+            icon: 'contract',
+            title: 'Terms of Service'
         }
     });
 });
@@ -22,6 +26,10 @@ router.use('/privacy', (req, res) => {
         meta: {
             title: 'Privacy Policy',
             description: 'View the osu!complete privacy policy.'
+        },
+        topbar: {
+            icon: 'contract',
+            title: 'Privacy Policy'
         }
     });
 });
@@ -32,6 +40,10 @@ router.use('/faq', (req, res) => {
         meta: {
             title: 'FAQ',
             description: 'View our frequently asked questions.'
+        },
+        topbar: {
+            icon: 'help',
+            title: 'Frequently Asked Questions'
         }
     });
 });
@@ -44,6 +56,10 @@ router.use('/changelog', (req, res) => {
         meta: {
             title: 'Changelog',
             description: 'Check out the changelog to learn about recent significant changes.'
+        },
+        topbar: {
+            icon: 'update',
+            title: 'Changelog'
         }
     });
 });
