@@ -119,6 +119,7 @@ body {
     font-family: 'Torus', sans-serif;
     font-size: 15px;
     line-height: 1;
+    scrollbar-color: var(--c-base-30) transparent;
 }
 
 h1,
