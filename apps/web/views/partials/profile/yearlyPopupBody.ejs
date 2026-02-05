@@ -7,7 +7,9 @@
     <div class="top flex col gap-8">
         <div class="flex row">
             <div class="year flex-grow"><%= stats.year %></div>
-            <div class="percent"><%= n(stats.time_percentage_completed, 2) %>%</div>
+            <div class="percent" title="This percentage is time-based">
+                <%= n(stats.time_percentage_completed, 2) %>%
+            </div>
         </div>
         <div
             class="bar"
