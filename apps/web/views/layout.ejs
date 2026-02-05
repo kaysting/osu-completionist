@@ -54,15 +54,15 @@
                 }
             </script>
             <nav id="sidebar" class="flex col">
-                <div class="top flex align-center justify-center gap-16">
+                <div class="top flex align-center justify-center gap-16 flex-no-shrink">
                     <button id="btnCloseSidebar" class="btn text square" onClick="closeSidebar()">
                         <span class="icon">close</span>
                     </button>
-                    <div class="logo full">
+                    <div class="logo full flex-no-shrink">
                         <span class="white">osu!</span>
                         <span class="green">complete</span>
                     </div>
-                    <div class="logo short">
+                    <div class="logo short flex-no-shrink">
                         <span class="white">o!</span>
                         <span class="green">c</span>
                     </div>
@@ -138,39 +138,46 @@
             <!-- Main content wrapper -->
             <div id="content">
                 <!-- Topbar -->
-                <div id="topbar" class="flex gap-16 align-center">
-                    <button id="btnOpenSidebar" class="btn text square" onClick="openSidebar()">
-                        <span class="icon">menu</span>
-                    </button>
-                    <div class="logo">
-                        <span class="white">o!</span>
-                        <span class="green">c</span>
+                <div id="topbar" class="flex gap-16">
+                    <div class="flex gap-16 align-center flex-grow">
+                        <button id="btnOpenSidebar" class="btn text square" onClick="openSidebar()">
+                            <span class="icon">menu</span>
+                        </button>
+                        <div class="logo">
+                            <span class="white">o!</span>
+                            <span class="green">c</span>
+                        </div>
+                        <div class="pageSep separator"></div>
+                        <div class="page flex gap-12 align-center flex-grow">
+                            <div class="icon flex-no-shrink"><%= locals?.topbar?.icon %></div>
+                            <h1 class="title"><%= locals?.topbar?.title %></h1>
+                        </div>
                     </div>
-                    <div class="pageSep separator"></div>
-                    <div class="page flex gap-12 align-center flex-grow">
-                        <div class="icon flex-no-shrink"><%= locals?.topbar?.icon %></div>
-                        <h1 class="title"><%= locals?.topbar?.title %></h1>
-                    </div>
+                    <% if (locals?.category_navigation) { %> <%- include('./partials/categorySelector') %> <% } %>
                 </div>
 
                 <!-- Script to initialize and handle topbar scrolled state -->
                 <script>
                     function initTopbar() {
                         const topbar = document.getElementById('topbar');
-                        document.addEventListener('scroll', () => {
+                        const checkScroll = () => {
                             if (window.scrollY > 8) {
                                 topbar.classList.add('scrolled');
                             } else {
                                 topbar.classList.remove('scrolled');
                             }
-                        });
+                        };
+                        document.addEventListener('scroll', checkScroll);
+                        checkScroll();
                     }
                     initTopbar();
                 </script>
 
-                <!-- Dynamic page content -->
                 <main>
+                    <!-- Dynamic page content -->
                     <%- include('pages/' + page) %>
+
+                    <!-- Bottom shadow element that caps the bottom of the content to make it look round -->
                     <div id="bottomShadow"></div>
                 </main>
 

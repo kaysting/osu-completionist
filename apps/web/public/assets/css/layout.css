@@ -36,12 +36,12 @@
     padding: 24px 16px;
 }
 
-#sidebar .top .logo {
+#sidebar .logo {
     font-size: 24px;
     margin-top: -5px;
 }
 
-#sidebar .top .logo.short {
+#sidebar .logo.short {
     display: none;
 }
 
@@ -184,9 +184,88 @@
     display: none;
 }
 
+.categorySelector {
+    gap: 4px 24px;
+}
+
+.categorySelector .btn {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    padding: 0px;
+    --btnBg: transparent;
+    --btnFg: var(--c-base-55);
+    --btnBgHover: var(--c-base-40);
+    --btnFgHover: var(--c-base-80);
+}
+
+.categorySelector .btn.white,
+.categorySelector .btn.green,
+.categorySelector .btn.pink,
+.categorySelector .btn.yellow {
+    --btnBg: var(--c-base-25);
+}
+
+.categorySelector .btn.white {
+    --btnFg: white;
+    --btnFgHover: white;
+}
+
+.categorySelector .btn.green {
+    --btnFg: hsl(120, 80%, 70%);
+    --btnFgHover: hsl(120, 80%, 80%);
+}
+
+.categorySelector .btn.pink {
+    --btnFg: hsl(340, 80%, 70%);
+    --btnFgHover: hsl(340, 80%, 80%);
+}
+
+.categorySelector .btn.yellow {
+    --btnFg: hsl(40, 80%, 70%);
+    --btnFgHover: hsl(40, 80%, 80%);
+}
+
+.categorySelector .btn span.icon {
+    font-size: 24px;
+}
+
+.categorySelector .btn .badge {
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    padding: 1px 2px;
+    font-weight: bold;
+    color: var(--c-base-10);
+    background: var(--btnFg);
+    border-radius: 4px;
+}
+
+.categorySelector .btn:hover .badge {
+    background: var(--btnFgHover);
+}
+
+.categorySelector .separator {
+    height: 16px;
+    width: 1px;
+    /* background: var(--c-base-60); */
+    background: transparent !important;
+    margin: 0px 8px;
+}
+
 @media (max-width: 1300px) and (min-width: 800px) {
     body {
         --sidebarClosedWidth: 86px;
+    }
+
+    #sidebar .logo.full {
+        display: none;
+    }
+
+    #sidebar .logo.short {
+        display: flex;
     }
 
     @media (hover: hover) {
@@ -208,12 +287,12 @@
             width: var(--sidebarClosedWidth);
         }
 
-        #sidebar:not(:hover) .logo.full {
-            display: none;
+        #sidebar:hover .logo.full {
+            display: flex;
         }
 
-        #sidebar:not(:hover) .logo.short {
-            display: flex;
+        #sidebar:hover .logo.short {
+            display: none;
         }
 
         #sidebar .btn .label,
@@ -236,14 +315,14 @@
         #sidebar {
             width: var(--sidebarClosedWidth);
         }
+    }
+}
 
-        #sidebar .logo.full {
-            display: none;
-        }
-
-        #sidebar .logo.short {
-            display: flex;
-        }
+@media (max-width: 900px) {
+    #topbar {
+        flex-direction: column;
+        gap: 8px;
+        justify-content: center;
     }
 }
 

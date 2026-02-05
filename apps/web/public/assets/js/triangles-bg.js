@@ -97,25 +97,54 @@ function initTriangleBackground(canvas, userConfig = {}) {
 
     // Handle Resize
     function resize() {
-        // FIX: Measure the parent element instead of the whole window
-        const parent = canvas.parentElement;
+        // Measure the parent element instead of the whole window so the canvas fits its container
+        const parent = canvas.parentElement || document.body;
+        const rect = parent.getBoundingClientRect();
 
-        // Set the canvas resolution to match the parent's actual display size
-        w = canvas.width = parent.clientWidth;
-        h = canvas.height = parent.clientHeight;
+        // Use CSS pixels for logical width/height and scale the backing store for devicePixelRatio
+        const cssWidth = Math.max(0, rect.width);
+        const cssHeight = Math.max(0, rect.height);
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+
+        // Ensure the canvas displays at the correct CSS size
+        canvas.style.width = cssWidth + 'px';
+        canvas.style.height = cssHeight + 'px';
+
+        // Set the internal resolution to match device pixels for crisp rendering
+        canvas.width = Math.round(cssWidth * dpr);
+        canvas.height = Math.round(cssHeight * dpr);
+
+        // Store logical sizes (in CSS pixels) used for layout/density calculations
+        w = cssWidth;
+        h = cssHeight;
+
+        // Reset any transforms and scale drawing operations so 1 unit == 1 CSS pixel
+        // Using setTransform clears previous scale so repeated calls are safe
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         // Re-init triangles to adjust density for the new size
         initTriangles();
     }
 
+    // Debounced resize handler (uses rAF to avoid thrashing during continuous resize)
+    let resizeRaf = null;
+    function onResize() {
+        if (resizeRaf) cancelAnimationFrame(resizeRaf);
+        resizeRaf = requestAnimationFrame(() => {
+            resize();
+            resizeRaf = null;
+        });
+    }
+
     // Start everything
-    window.addEventListener('resize', resize);
+    window.addEventListener('resize', onResize);
     resize(); // Trigger initial size calc
     animate();
 
     // Return cleanup function if needed (e.g. for React useEffect)
     return () => {
-        window.removeEventListener('resize', resize);
+        window.removeEventListener('resize', onResize);
+        if (resizeRaf) cancelAnimationFrame(resizeRaf);
         cancelAnimationFrame(animationId);
     };
 }

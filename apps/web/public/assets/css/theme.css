@@ -65,9 +65,13 @@ body {
     --c-base-30: hsl(var(--base-hue), var(--base-sat), 30%);
     --c-base-35: hsl(var(--base-hue), var(--base-sat), 35%);
     --c-base-40: hsl(var(--base-hue), var(--base-sat), 40%);
+    --c-base-45: hsl(var(--base-hue), var(--base-sat), 45%);
+    --c-base-50: hsl(var(--base-hue), var(--base-sat), 50%);
+    --c-base-55: hsl(var(--base-hue), var(--base-sat), 55%);
     --c-base-60: hsl(var(--base-hue), var(--base-sat), 60%);
     --c-base-65: hsl(var(--base-hue), var(--base-sat), 65%);
-    --c-base-75: hsl(var(--base-hue), var(--base-sat), 75%);
+    --c-base-70: hsl(var(--base-hue), var(--base-sat), 70%);
+    --c-base-80: hsl(var(--base-hue), var(--base-sat), 80%);
     --c-base-90: hsl(var(--base-hue), var(--base-sat), 90%);
     --c-base-100: white;
 
@@ -401,8 +405,8 @@ img {
 }
 
 .btn {
-    --btnBg: var(--c-base-25);
-    --btnBgHover: var(--c-base-35);
+    --btnBg: var(--c-base-30);
+    --btnBgHover: var(--c-base-40);
     --btnFg: hsl(220, 20%, 85%);
     --btnFgHover: white;
     height: 32px;
@@ -473,7 +477,7 @@ img {
     --btnFg: var(--c-base-60);
 }
 
-.btn.text.accent {
+.btn.accent {
     --btnFg: var(--c-accent-60);
 }
 
@@ -502,7 +506,7 @@ img {
 }
 
 .btn.small .icon {
-    font-size: 16px;
+    --size: 16px;
 }
 
 .btn.small.square {
@@ -517,7 +521,7 @@ img {
 }
 
 .btn.medium .icon {
-    font-size: 22px;
+    --size: 22px;
 }
 
 .btn.medium.square {
@@ -533,7 +537,7 @@ img {
 }
 
 .btn.large .icon {
-    font-size: 28px;
+    --size: 28px;
 }
 
 .btn.large.square {
@@ -542,25 +546,39 @@ img {
 }
 
 .btn .icon {
+    --size: 20px;
     font-family: 'Material Symbols Rounded';
     font-variation-settings: 'FILL' 0;
     font-weight: 300;
-    font-size: 20px;
+    font-size: var(--size);
     line-height: 1;
     flex-shrink: 0;
+}
+
+.btn img.icon {
+    width: var(--size);
+    height: var(--size);
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+/* Thanks Gemini */
+.btn img.icon.mask {
+    font-family: sans-serif;
+    background-color: currentColor;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: center;
+    mask-position: center;
+    content: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
 }
 
 .btn .label {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-}
-
-.btn img.icon {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-    border-radius: 4px;
 }
 
 .btn .icon.filled {

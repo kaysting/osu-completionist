@@ -1,0 +1,107 @@
+<div class="categorySelector flex-no-shrink flex align-center justify-center flex-wrap">
+    <% const includeRanked = !!category.match(/-ranked/); const includeLoved = !!category.match(/-loved/); const
+    includeConverts = !!category.match(/-converts/); %>
+    <!-- Modes -->
+    <div class="modes flex flex-wrap justify-center gap-4">
+        <div class="flex gap-4">
+            <button
+                class="btn <%= category.match(/^global/) ? 'white' : '' %>"
+                title="All modes"
+                data-reload-selectors="#content"
+                data-reload-url="<%= category_navigation.global %>"
+                data-reload-replace-address="true">
+                <span class="icon">globe</span>
+            </button>
+            <button
+                class="btn <%= category.match(/^osu/) ? 'white' : '' %>"
+                title="osu!standard"
+                data-reload-selectors="#content"
+                data-reload-url="<%= category_navigation.osu %>"
+                data-reload-replace-address="true">
+                <img src="/assets/ruleset-icons/osu.svg" class="icon mask" />
+            </button>
+            <button
+                class="btn <%= category.match(/^taiko/) ? 'white' : '' %>"
+                title="osu!taiko"
+                data-reload-selectors="#content"
+                data-reload-url="<%= category_navigation.taiko %>"
+                data-reload-replace-address="true">
+                <img src="/assets/ruleset-icons/taiko.svg" class="icon mask" />
+            </button>
+            <button
+                class="btn <%= category.match(/^catch/) ? 'white' : '' %>"
+                title="osu!catch"
+                data-reload-selectors="#content"
+                data-reload-url="<%= category_navigation.catch %>"
+                data-reload-replace-address="true">
+                <img src="/assets/ruleset-icons/fruits.svg" class="icon mask" />
+            </button>
+            <button
+                class="btn <%= category.match(/^mania(?!.*(?:4k|7k|otherkeys))/) ? 'white' : '' %>"
+                title="osu!mania (all keys)"
+                data-reload-selectors="#content"
+                data-reload-url="<%= category_navigation.mania %>"
+                data-reload-replace-address="true">
+                <img src="/assets/ruleset-icons/mania.svg" class="icon mask" />
+            </button>
+        </div>
+        <div class="flex gap-4">
+            <button
+                class="btn <%= category.match(/^mania.*4k/) ? 'white' : '' %>"
+                title="osu!mania (4K)"
+                data-reload-selectors="#content"
+                data-reload-url="<%= category_navigation.mania4k %>"
+                data-reload-replace-address="true">
+                <img src="/assets/ruleset-icons/mania.svg" class="icon mask" />
+                <span class="badge">4K</span>
+            </button>
+            <button
+                class="btn <%= category.match(/^mania.*7k/) ? 'white' : '' %>"
+                title="osu!mania (7K)"
+                data-reload-selectors="#content"
+                data-reload-url="<%= category_navigation.mania7k %>"
+                data-reload-replace-address="true">
+                <img src="/assets/ruleset-icons/mania.svg" class="icon mask" />
+                <span class="badge">7K</span>
+            </button>
+            <button
+                class="btn <%= category.match(/^mania.*otherkeys/) ? 'white' : '' %>"
+                title="osu!mania (not 4K or 7K)"
+                data-reload-selectors="#content"
+                data-reload-url="<%= category_navigation.maniaOther %>"
+                data-reload-replace-address="true">
+                <img src="/assets/ruleset-icons/mania.svg" class="icon mask" />
+                <span class="badge">other</span>
+            </button>
+        </div>
+    </div>
+    <!-- Includes -->
+    <div class="flex gap-4">
+        <button
+            class="btn <%= includeRanked ? 'green' : '' %>"
+            title="Ranked and approved maps: <%= includeRanked ? 'Included' : 'Excluded' %>"
+            data-reload-selectors="#content"
+            data-reload-url="<%= category_navigation.toggleRanked || '' %>"
+            data-reload-replace-address="true">
+            <span class="icon">check_circle</span>
+        </button>
+        <button
+            class="btn <%= includeLoved ? 'pink' : '' %>"
+            title="Loved maps: <%= includeLoved ? 'Included' : 'Excluded' %>"
+            data-reload-selectors="#content"
+            data-reload-url="<%= category_navigation.toggleLoved || '' %>"
+            data-reload-replace-address="true">
+            <span class="icon">favorite</span>
+        </button>
+        <% if (!category.match(/^osu/)) { %>
+        <button
+            class="btn <%= includeConverts ? 'yellow' : '' %>"
+            title="Converts: <%= includeConverts ? 'Included' : 'Excluded' %>"
+            data-reload-selectors="#content"
+            data-reload-url="<%= category_navigation.toggleConverts || '' %>"
+            data-reload-replace-address="true">
+            <span class="icon">swap_horizontal_circle</span>
+        </button>
+        <% } %>
+    </div>
+</div>

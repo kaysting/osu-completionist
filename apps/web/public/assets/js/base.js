@@ -313,13 +313,24 @@ const initImageLoadStates = (parent = document) => {
     });
 };
 
+// Handle applying svg icon image masks
+const initSvgIconMasks = () => {
+    document.querySelectorAll('img.icon.mask').forEach(img => {
+        const src = img.getAttribute('src');
+        img.style.webkitMaskImage = `url(${src})`;
+        img.style.maskImage = `url(${src})`;
+    });
+};
+
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
     initCustomTooltips();
     initImageLoadStates();
+    initSvgIconMasks();
 });
 
 // Re-initialize on page update
 document.addEventListener('page:updated', e => {
     initImageLoadStates();
+    initSvgIconMasks();
 });
