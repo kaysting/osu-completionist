@@ -1,3 +1,11 @@
+[data-page="home"] #bottomShadow {
+    display: none;
+}
+
+[data-page="home"] #topbar {
+    background: transparent;
+}
+
 #home {
     flex-grow: 1;
     display: flex;

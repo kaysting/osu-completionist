@@ -38,7 +38,10 @@
         <script src="<%= asset('/assets/js/index.js') %>"></script>
     </head>
 
-    <body>
+    <body data-page="<%= page %>">
+        <!-- Background canvas for triangles if initialized -->
+        <canvas id="bgCanvas"></canvas>
+
         <!-- Topmost wrapper, centers the sidebar and page content horizontally -->
         <div class="flex justify-center">
             <!-- Sidebar -->
@@ -134,8 +137,6 @@
 
             <!-- Main content wrapper -->
             <div id="content">
-                <canvas id="bgCanvas"></canvas>
-
                 <!-- Topbar -->
                 <div id="topbar" class="flex gap-16 align-center">
                     <button id="btnOpenSidebar" class="btn text square" onClick="openSidebar()">
@@ -168,7 +169,7 @@
                 </script>
 
                 <!-- Dynamic page content -->
-                <main data-page="<%= page %>">
+                <main>
                     <%- include('pages/' + page) %>
                     <div id="bottomShadow"></div>
                 </main>
