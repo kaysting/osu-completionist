@@ -125,14 +125,6 @@
     border-radius: 8px;
 }
 
-#content {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 8px;
-}
-
 #topbar {
     position: sticky;
     top: 8px;
@@ -279,6 +271,15 @@
     #topbar #openMenu {
         display: flex;
     }
+}
+
+#content {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px;
 }
 
 main {

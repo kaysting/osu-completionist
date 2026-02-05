@@ -168,9 +168,10 @@
                 </script>
 
                 <!-- Dynamic page content -->
-                <main data-page="<%= page %>"><%- include('pages/' + page) %></main>
-
-                <div id="bottomShadow"></div>
+                <main data-page="<%= page %>">
+                    <%- include('pages/' + page) %>
+                    <div id="bottomShadow"></div>
+                </main>
 
                 <!-- Static footer -->
                 <footer id="footer">
