@@ -186,7 +186,7 @@
 
 @media (max-width: 1300px) and (min-width: 800px) {
     body {
-        --sidebarClosedWidth: 90px;
+        --sidebarClosedWidth: 86px;
     }
 
     @media (hover: hover) {
@@ -216,12 +216,19 @@
             display: flex;
         }
 
+        #sidebar .btn .label,
+        #sidebar .btn .icon:last-child {
+            transition: 0.1s ease-in-out;
+        }
+
         #sidebar:not(:hover) .btn .label {
             visibility: hidden;
+            opacity: 0;
         }
 
         #sidebar:not(:hover) .btn .icon:last-child {
             visibility: hidden;
+            opacity: 0;
         }
     }
 
