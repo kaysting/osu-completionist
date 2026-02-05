@@ -991,7 +991,7 @@ img {
 .beatmapCard .stats {
     font-size: 14px;
     font-weight: 600;
-    color: var(--c-base-75);
+    color: var(--c-base-70);
 }
 
 .beatmapCard .time {
