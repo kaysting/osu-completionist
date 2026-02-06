@@ -1,6 +1,6 @@
 ### Introducing the new navigation system and categories!
 
-Happy February!
+Happy February and thanks so much for 1,000 users!!
 
 Recently, you might have noticed the new sidebar navigation style that replaced the topbar nav. This allows for us to show more useful navigation links and information at a glance while ensuring everything is accessible and responsive to all screen sizes.
 
@@ -16,6 +16,8 @@ You'll notice four buttons next to the mode selectors (or just two with osu!stan
 Specifically, the new categories introduced are **loved only** and **converts only**.
 
 Note that these new categories will have unpopulated history graphs since they haven't existed until now.
+
+**VERY IMPORTANT:** Some category IDs have changed, invalidating old ones. Check any bookmarks, external profile links, and dynamic renders to make sure they aren't broken!
 
 If you find any bugs or have suggestions with these new features, please feel free to [join the Discord server](/discord) and talk to Kayla.
 
