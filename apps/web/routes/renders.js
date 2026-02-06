@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const express = require('express');
 const dbHelpers = require('#api/read.js');
-const statsCategories = require('#config/statCategories.js');
+const statCategories = require('#config/statCategories.js');
 const utils = require('#utils');
 const imageRenderer = require('#lib/ImageRenderer.js');
 
@@ -76,22 +76,23 @@ router.get('/:template/html', async (req, res) => {
     const data = {
         query: req.query
     };
+    const category = statCategories.validateCategoryId(req.query?.category) || '';
     if (requiredParams.includes('user_id')) {
         data.user = dbHelpers.getUserProfile(req.query.user_id);
-        data.stats = dbHelpers.getUserCompletionStats(req.query.user_id, req.query.category);
+        data.stats = dbHelpers.getUserCompletionStats(req.query.user_id, category);
         data.percentageColor = utils.percentageToColor(data.stats.percentage_completed / 100);
         if (requiredData.includes('yearly')) {
-            data.yearly = dbHelpers.getUserYearlyCompletionStats(req.query.user_id, req.query.category);
+            data.yearly = dbHelpers.getUserYearlyCompletionStats(req.query.user_id, category);
         }
         if (requiredData.includes('stats')) {
-            data.stats = dbHelpers.getUserCompletionStats(req.query.user_id, req.query.category);
+            data.stats = dbHelpers.getUserCompletionStats(req.query.user_id, category);
         }
     }
     if (requiredParams.includes('category')) {
-        data.categoryName = statsCategories.getCategoryName(req.query.category);
+        data.categoryName = statCategories.getCategoryName(category);
     }
     if (requiredData.includes('leaderboard')) {
-        data.leaderboard = dbHelpers.getLeaderboard(req.query.category, 10);
+        data.leaderboard = dbHelpers.getLeaderboard(category, 10);
     }
     res.render(`pages/renders/${template}`, data);
 });

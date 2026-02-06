@@ -9,22 +9,21 @@ const path = require('path');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-    const category = req?.session?.category || 'osu-ranked';
+    const category = req?.me?.default_category || 'osu-ranked';
     res.redirect(`/recommended/${category}`);
 });
 
 router.get('/:category', (req, res) => {
-    const category = req.params.category.toLowerCase();
+    const category = statCategories.validateCategoryId(req.params.category);
     const query = req.query.q?.trim() || '';
     const sort = req.query.sort || '';
     const page = parseInt(req.query.p) || 1;
     const limit = 96;
     const offset = (page - 1) * limit;
     // Check category
-    if (!statCategories.definitions.find(cat => cat.id === category)) {
-        return res.redirect('/recommended/osu-ranked');
+    if (!category) {
+        return res.redirect('/recommended');
     }
-    req.session.category = category;
     // Get results
     const results = searchBeatmaps(query, category, sort, req.me?.id, limit, offset);
     // Define sort types

@@ -26,7 +26,7 @@ router.get('/:id/reimport', async (req, res) => {
 
 router.get('/:id/:category', ensureUserExists, (req, res) => {
     const user = req.user;
-    const category = req.params.category.toLowerCase();
+    const category = statCategories.validateCategoryId(req.params.category);
     const yearlyType = utils.ensureOneOf(req.query.yearly_type || req.session.yearlyType, ['maps', 'xp'], 'maps');
     const selectors = req.headers['x-reload-selectors'] || '';
     const year = req.query.year;
@@ -34,12 +34,11 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
     const sort = req.query.sort || 'date_asc';
 
     // Check category
-    if (!statCategories.definitions.find(cat => cat.id === category)) {
+    if (!category) {
         return res.redirect(`/u/${req.user.id}/all-ranked-specifics`);
     }
 
     // Update session variables
-    req.session.category = category;
     req.session.yearlyType = yearlyType;
 
     const getUpdateStatus = () => {

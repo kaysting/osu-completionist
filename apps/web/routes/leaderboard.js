@@ -1,9 +1,7 @@
 const express = require('express');
 const statCategories = require('#config/statCategories.js');
 
-const { rulesetNameToKey, rulesetKeyToName } = require('#utils');
 const { getLeaderboard } = require('#api/read.js');
-const utils = require('#utils');
 
 const router = express.Router();
 
@@ -14,15 +12,14 @@ router.get('/', (req, res) => {
 
 router.get('/:category', (req, res) => {
     // Get params
-    const category = req.params.category.toLowerCase();
+    const category = statCategories.validateCategoryId(req.params.category);
     const page = parseInt(req.query.p) || 1;
     const limit = 50;
     const offset = (page - 1) * limit;
     // Check category
-    if (!statCategories.definitions.find(cat => cat.id === category)) {
+    if (!category) {
         return res.redirect('/leaderboard/osu-ranked');
     }
-    req.session.category = category;
     // Get leaderboard data
     const { leaderboard, total_players } = getLeaderboard(category, limit, offset);
     // Calculate total page count

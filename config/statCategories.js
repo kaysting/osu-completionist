@@ -113,6 +113,48 @@ for (const mode of ['all', 'osu', 'taiko', 'catch', 'mania']) {
     }
 }
 
+/**
+ * Validates a category ID. This function attempts to migrate old category IDs to their current representations, then checks if the provided category is valid.
+ * @param {string} categoryId Source category ID
+ * @returns A valid category ID or `null` if invalid.
+ */
+const validateCategoryId = categoryId => {
+    let result = (categoryId || '')?.toLowerCase();
+    const migrationMap = {
+        'mania-ranked-converts': 'mania-ranked-specifics-converts',
+        'mania-ranked-converts-4k': 'mania-ranked-specifics-converts-4k',
+        'mania-ranked-converts-7k': 'mania-ranked-specifics-converts-7k',
+        'mania-ranked-converts-otherkeys': 'mania-ranked-specifics-converts-otherkeys',
+        'mania-ranked-loved-converts': 'mania-ranked-loved-specifics-converts',
+        'mania-ranked-loved-converts-4k': 'mania-ranked-loved-specifics-converts-4k',
+        'mania-ranked-loved-converts-7k': 'mania-ranked-loved-specifics-converts-7k',
+        'mania-ranked-loved-converts-otherkeys': 'mania-ranked-loved-specifics-converts-otherkeys',
+        'mania-ranked': 'mania-ranked-specifics',
+        'mania-ranked-4k': 'mania-ranked-specifics-4k',
+        'mania-ranked-7k': 'mania-ranked-specifics-7k',
+        'mania-ranked-otherkeys': 'mania-ranked-specifics-otherkeys',
+        'mania-ranked-loved': 'mania-ranked-loved-specifics',
+        'mania-ranked-loved-4k': 'mania-ranked-loved-specifics-4k',
+        'mania-ranked-loved-7k': 'mania-ranked-loved-specifics-7k',
+        'mania-ranked-loved-otherkeys': 'mania-ranked-loved-specifics-otherkeys',
+        'taiko-ranked-converts': 'taiko-ranked-specifics-converts',
+        'taiko-ranked-loved-converts': 'taiko-ranked-loved-specifics-converts',
+        'taiko-ranked': 'taiko-ranked-specifics',
+        'taiko-ranked-loved': 'taiko-ranked-loved-specifics',
+        'catch-ranked-converts': 'catch-ranked-specifics-converts',
+        'catch-ranked-loved-converts': 'catch-ranked-loved-specifics-converts',
+        'catch-ranked': 'catch-ranked-specifics',
+        'catch-ranked-loved': 'catch-ranked-loved-specifics',
+        'global-ranked-converts': 'all-ranked-specifics-converts',
+        'global-ranked-loved-converts': 'all-ranked-loved-specifics-converts',
+        'global-ranked': 'all-ranked-specifics',
+        'global-ranked-loved': 'all-ranked-loved-specifics'
+    };
+    result = migrationMap[result] || result;
+    if (!definitions.find(d => d.id === result)) return null;
+    return result;
+};
+
 const getCategoryNavPaths = (basePath, categoryId, fullQueryString) => {
     // Extract category details
     const split = categoryId.split('-');
@@ -214,6 +256,7 @@ if (require.main === module) {
 
 module.exports = {
     definitions,
+    validateCategoryId,
     getCategoryNavPaths,
     categoryToSql,
     getCategoryName
