@@ -114,13 +114,14 @@ for (const mode of ['all', 'osu', 'taiko', 'catch', 'mania']) {
 }
 
 /**
- * Validates a category ID. This function attempts to migrate old category IDs to their current representations, then checks if the provided category is valid.
+ * Validates a category ID. This function establishes aliases for old and incomplete IDs, mapping them to currently valid ones, then checks if the provided category is valid.
  * @param {string} categoryId Source category ID
  * @returns A valid category ID or `null` if invalid.
  */
 const validateCategoryId = categoryId => {
     let result = (categoryId || '')?.toLowerCase();
-    const migrationMap = {
+    const aliases = {
+        // Migrations
         'mania-ranked-converts': 'mania-ranked-specifics-converts',
         'mania-ranked-converts-4k': 'mania-ranked-specifics-converts-4k',
         'mania-ranked-converts-7k': 'mania-ranked-specifics-converts-7k',
@@ -148,9 +149,16 @@ const validateCategoryId = categoryId => {
         'global-ranked-converts': 'all-ranked-specifics-converts',
         'global-ranked-loved-converts': 'all-ranked-loved-specifics-converts',
         'global-ranked': 'all-ranked-specifics',
-        'global-ranked-loved': 'all-ranked-loved-specifics'
+        'global-ranked-loved': 'all-ranked-loved-specifics',
+        // Aliases
+        all: 'all-ranked-specifics',
+        global: 'all-ranked-specifics',
+        osu: 'osu-ranked',
+        taiko: 'taiko-ranked-specifics',
+        catch: 'catch-ranked-specifics',
+        mania: 'mania-ranked-specifics'
     };
-    result = migrationMap[result] || result;
+    result = aliases[result] || result;
     if (!definitions.find(d => d.id === result)) return null;
     return result;
 };
