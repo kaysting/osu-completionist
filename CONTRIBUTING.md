@@ -22,4 +22,6 @@ This project will continue to use Node.js, Express, EJS, vanilla JS, and vanilla
 
 Use your IDE (likely VSCode) to your advantage! Install the Prettier extension and enable **format on save** in your VSC settings to ensure all code in your PR is nicely formatted and readable.
 
-Also leave comments wherever needed so the rest of us (and future you) know what you wrote. Basic etiquette.
+This project comes with a `.prettierrc` file that should tell your IDE exactly how to format source code automatically.
+
+Also leave comments wherever needed so the rest of us (and future you) know what you your code does/should be doing. Basic etiquette.
