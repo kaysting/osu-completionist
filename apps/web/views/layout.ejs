@@ -81,9 +81,7 @@
                         <span class="label">Leaderboard</span>
                     </a>
                     <% if (me) { %>
-                    <a
-                        class="btn item page <%= page == 'recommended' ? 'active' : '' %>"
-                        href="/recommended<%= locals?.category ? `/${locals.category}` : '' %>">
+                    <a href="/recommended" class="btn item page <%= page == 'recommended' ? 'active' : '' %>">
                         <span class="icon filled">cards_star</span>
                         <span class="label">Play next</span>
                     </a>
