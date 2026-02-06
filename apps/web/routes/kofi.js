@@ -1,6 +1,7 @@
 const env = require('#env');
 const utils = require('#utils');
 const express = require('express');
+const db = require('#db');
 
 const router = express.Router();
 
@@ -19,10 +20,19 @@ router.post('/webhook', async (req, res) => {
             return res.end(`Invalid verification token.`);
         }
     }
+
+    // Respond quickly
+    res.status(200).send(`Received!`);
+
+    // Collect and save donation data
     const transactionId = data.kofi_transaction_id;
     const amount = data.amount;
-    console.log({ amount, transactionId });
-    res.status(200).send(`Received!`);
+    const currency = data.currency;
+    const email = data.email;
+    db.prepare(
+        `INSERT INTO donations (time_received, transaction_id, email, amount, currency) VALUES (?, ?, ?, ?, ?)`
+    ).run(Date.now(), transactionId, email, amount, currency);
+    utils.log(`Received ${amount} ${currency} Ko-fi donation from ${email}`);
 });
 
 module.exports = router;
