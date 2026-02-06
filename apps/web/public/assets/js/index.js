@@ -148,7 +148,12 @@ const renderGraph = (canvasElement, opts) => {
                 y: opts.showY ? { ...axisOptions, beginAtZero: true } : { display: false }
             },
             layout: {
-                padding: opts.showX || opts.showY ? 4 : 0
+                padding: {
+                    top: 5,
+                    bottom: opts.showX ? 4 : 0,
+                    left: opts.showY ? 4 : 0,
+                    right: opts.showY ? 4 : 0
+                }
             }
         }
     });
