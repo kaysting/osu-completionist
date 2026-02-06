@@ -20,7 +20,7 @@ const getStats = () => {
             SUM(seconds) AS secs,
             SUM(count) AS passes
         FROM user_category_stats
-        WHERE category = 'global-ranked-loved-converts' AND user_id > 0`
+        WHERE category = 'all-ranked-loved-specifics-converts' AND user_id > 0`
         )
         .get();
     stats.xp = apiRead.secsToXp(totalStats.secs);
