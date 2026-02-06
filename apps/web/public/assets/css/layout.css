@@ -202,8 +202,9 @@
 .categorySelector .btn.white,
 .categorySelector .btn.green,
 .categorySelector .btn.pink,
+.categorySelector .btn.blue,
 .categorySelector .btn.yellow {
-    --btnBg: var(--c-base-25);
+    --btnBg: var(--c-base-30);
 }
 
 .categorySelector .btn.white {
@@ -224,6 +225,11 @@
 .categorySelector .btn.yellow {
     --btnFg: hsl(40, 80%, 70%);
     --btnFgHover: hsl(40, 80%, 80%);
+}
+
+.categorySelector .btn.blue {
+    --btnFg: hsl(210, 80%, 70%);
+    --btnFgHover: hsl(210, 80%, 80%);
 }
 
 .categorySelector .btn span.icon {

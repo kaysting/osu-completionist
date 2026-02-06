@@ -1,14 +1,14 @@
 <div class="categorySelector flex-no-shrink flex align-center justify-center flex-wrap">
     <% const includeRanked = !!category.match(/-ranked/); const includeLoved = !!category.match(/-loved/); const
-    includeConverts = !!category.match(/-converts/); %>
+    includeConverts = !!category.match(/-converts/); const includeSpecifics = !!category.match(/-specifics/); %>
     <!-- Modes -->
     <div class="modes flex flex-wrap justify-center gap-4">
         <div class="flex gap-4">
             <button
-                class="btn <%= category.match(/^global/) ? 'white' : '' %>"
+                class="btn <%= category.match(/^all/) ? 'white' : '' %>"
                 title="All modes"
                 data-reload-selectors="#content"
-                data-reload-url="<%= category_navigation.global %>"
+                data-reload-url="<%= category_navigation.all %>"
                 data-reload-replace-address="true">
                 <span class="icon">globe</span>
             </button>
@@ -95,8 +95,16 @@
         </button>
         <% if (!category.match(/^osu/)) { %>
         <button
+            class="btn <%= includeSpecifics ? 'blue' : '' %>"
+            title="Specifics: <%= includeSpecifics ? 'Included' : 'Excluded' %>\nSpecifics are maps made specifically for a certain mode."
+            data-reload-selectors="#content"
+            data-reload-url="<%= category_navigation.toggleSpecifics || '' %>"
+            data-reload-replace-address="true">
+            <span class="icon">target</span>
+        </button>
+        <button
             class="btn <%= includeConverts ? 'yellow' : '' %>"
-            title="Converts: <%= includeConverts ? 'Included' : 'Excluded' %>"
+            title="Converts: <%= includeConverts ? 'Included' : 'Excluded' %>\nConverts are maps converted from osu!standard to another mode."
             data-reload-selectors="#content"
             data-reload-url="<%= category_navigation.toggleConverts || '' %>"
             data-reload-replace-address="true">

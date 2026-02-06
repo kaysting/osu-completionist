@@ -4,7 +4,9 @@
         <%- include('../partials/pagination') %>
         <div class="entries flex col gap-4">
             <% for (const entry of leaderboard) { %>
-            <a class="entry relative rounded-12 overflow-hidden flex row align-center" href="/u/<%= entry.user.id %>">
+            <a
+                class="entry relative rounded-12 overflow-hidden flex row align-center"
+                href="/u/<%= entry.user.id %>/<%= category %>">
                 <div class="rank"><%= `#${entry.stats.rank}` %></div>
                 <div class="content relative rounded-12 overflow-hidden flex align-center flex-grow">
                     <div class="profile relative rounded-12 overflow-hidden flex gap-16 align-center flex-grow">

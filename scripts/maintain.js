@@ -203,9 +203,13 @@ const options = [
         args: [{ name: 'path_to_dump_folder' }]
     },
     {
-        f: apiWrite.updateAllUserCategoryStats,
+        f: userId => {
+            if (!userId) apiWrite.updateAllUserCategoryStats();
+            else apiWrite.updateUserCategoryStats(parseInt(userId));
+        },
         name: `updatestats`,
-        description: `Recalculate category stats for all users, including totals.`
+        description: `Recalculate category stats for all users and totals or for a specific user.`,
+        args: [{ name: 'user_id' }]
     },
     {
         f: async userId => {

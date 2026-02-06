@@ -9,7 +9,7 @@ const apiRead = require('#api/read.js');
 const router = express.Router();
 
 router.get('/:id', ensureUserExists, (req, res) => {
-    res.redirect(`/u/${req.user.id}/${req.user.primary_category}`);
+    res.redirect(`/u/${req.user.id}/${req.user.default_category}`);
 });
 
 router.get('/:id/reimport', async (req, res) => {
@@ -35,7 +35,7 @@ router.get('/:id/:category', ensureUserExists, (req, res) => {
 
     // Check category
     if (!statCategories.definitions.find(cat => cat.id === category)) {
-        return res.redirect(`/u/${req.user.id}`);
+        return res.redirect(`/u/${req.user.id}/all-ranked-specifics`);
     }
 
     // Update session variables

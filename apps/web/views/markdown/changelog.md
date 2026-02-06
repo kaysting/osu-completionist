@@ -1,3 +1,24 @@
+### Introducing the new navigation system and categories!
+
+Happy February!
+
+Recently, you might have noticed the new sidebar navigation style that replaced the topbar nav. This allows for us to show more useful navigation links and information at a glance while ensuring everything is accessible and responsive to all screen sizes.
+
+We also introduced a new category selector that lives in the top bar and stays pinned to the top of the screen when you scroll. This icon-based selector is more visually appealing than the previous category selection buttons and it allowed us to implement some new categories!
+
+You'll notice four buttons next to the mode selectors (or just two with osu!standard selected). These are all toggles for including/excluding ranked statuses and converts/specifics:
+
+- **Check mark (green):** Toggle including ranked and approved maps.
+- **Heart (pink):** Toggle including loved maps.
+- **Target (blue):** Toggle specifics in modes other than standard. These are maps that were made specifically for a certain mode (not converts).
+- **Circle with arrows (yellow):** Toggle converts in modes other than standard. These are maps that were converted from standard to a certain mode.
+
+Specifically, the new categories introduced are **loved only** and **converts only**.
+
+Note that these new categories will have unpopulated history graphs since they haven't existed until now.
+
+If you find any bugs or have suggestions with these new features, please feel free to [join the Discord server](/discord) and talk to Kayla.
+
 ### Added a dynamic render for primary category stats
 
 Another great addition to your osu! me! section, we now offer dynamic renders for the main stats of a selected category.

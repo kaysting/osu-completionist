@@ -2,53 +2,112 @@ const utils = require('#utils');
 
 const definitions = [];
 
-for (const mode of ['global', 'osu', 'taiko', 'catch', 'mania']) {
-    for (const includeLoved of [false, true]) {
-        for (const includeConverts of [false, true]) {
-            if (mode === 'osu' && includeConverts) {
-                // standard has no converts
-                continue;
-            }
-            const definition = {};
-            definition.id = [mode, 'ranked', includeLoved ? 'loved' : '', includeConverts ? 'converts' : '']
-                .filter(Boolean)
-                .join('-');
-            definition.filters = [];
-            if (mode !== 'global') {
-                definition.filters.push({
-                    field: 'mode',
-                    equals: mode == 'catch' ? 'fruits' : mode
-                });
-            }
-            definition.filters.push({
-                field: 'status',
-                in: includeLoved ? ['ranked', 'approved', 'loved'] : ['ranked', 'approved']
-            });
-            if (!includeConverts) {
-                definition.filters.push({
-                    field: 'is_convert',
-                    equals: 0
-                });
-            }
-            definitions.push(definition);
-            // Add specific keycount categories for mania
-            if (mode === 'mania') {
-                for (const keyCount of [4, 7]) {
-                    const maniaKeyCountDefinition = JSON.parse(JSON.stringify(definition));
-                    maniaKeyCountDefinition.id += `-${keyCount}k`;
-                    maniaKeyCountDefinition.filters.push({
-                        field: 'cs',
-                        equals: keyCount
+// There's gotta be a better way to do this than nesting 5 for loops inside each other
+// but we need all permutations of these variables
+for (const mode of ['all', 'osu', 'taiko', 'catch', 'mania']) {
+    for (const includeRanked of [false, true]) {
+        for (const includeLoved of [false, true]) {
+            // Skip instances where we aren't including ranked or loved
+            if (!includeRanked && !includeLoved) continue;
+
+            for (const includeConverts of [false, true]) {
+                for (const includeSpecifics of [false, true]) {
+                    // Skip instances where we aren't including specifics or converts
+                    if (!includeConverts && !includeSpecifics) continue;
+
+                    // Skip standard when converts are involved
+                    if (mode === 'osu' && (includeConverts || !includeSpecifics)) {
+                        continue;
+                    }
+
+                    // Initialize definition object
+                    const definition = {
+                        filters: []
+                    };
+
+                    // Build id
+                    const idParts = [mode];
+                    if (includeRanked) idParts.push('ranked');
+                    if (includeLoved) idParts.push('loved');
+                    if (mode !== 'osu') {
+                        if (includeSpecifics) idParts.push('specifics');
+                        if (includeConverts) idParts.push('converts');
+                    }
+                    definition.id = idParts.join('-');
+
+                    // Build name
+                    if (mode == 'all') definition.name = 'All modes';
+                    else definition.name = utils.rulesetKeyToName(utils.rulesetNameToKey(mode), true);
+                    if (mode == 'mania') definition.name += ' all keys';
+                    if (includeRanked && includeLoved) definition.name += ' (ranked and loved';
+                    else if (includeRanked) definition.name += ' (ranked';
+                    else if (includeLoved) definition.name += ' (loved';
+                    if (mode == 'osu') {
+                        if (includeRanked && includeLoved) definition.name += ')';
+                        else definition.name += ' only)';
+                    } else {
+                        if (includeSpecifics && includeConverts) definition.name += ' specifics and converts';
+                        else if (includeSpecifics) definition.name += ' specifics';
+                        else if (includeConverts) definition.name += ' converts';
+                        if (includeRanked && includeLoved) definition.name += ')';
+                        else definition.name += ' only)';
+                    }
+
+                    // Add mode filter
+                    if (mode !== 'all') {
+                        definition.filters.push({
+                            field: 'mode',
+                            equals: mode == 'catch' ? 'fruits' : mode
+                        });
+                    }
+
+                    // Add status filter
+                    const statuses = [];
+                    if (includeRanked) statuses.push('ranked', 'approved');
+                    if (includeLoved) statuses.push('loved');
+                    definition.filters.push({
+                        field: 'status',
+                        in: statuses
                     });
-                    definitions.push(maniaKeyCountDefinition);
+
+                    // Add converts filter
+                    if (!includeConverts) {
+                        definition.filters.push({
+                            field: 'is_convert',
+                            equals: 0
+                        });
+                    } else if (!includeSpecifics) {
+                        definition.filters.push({
+                            field: 'is_convert',
+                            equals: 1
+                        });
+                    }
+
+                    // Save finished definition
+                    definitions.push(definition);
+
+                    // Add specific keycount categories for mania
+                    if (mode === 'mania') {
+                        for (const keyCount of [4, 7]) {
+                            const keyDefinition = JSON.parse(JSON.stringify(definition));
+                            keyDefinition.id += `-${keyCount}k`;
+                            keyDefinition.name = keyDefinition.name.replace('all keys', `${keyCount}K`);
+                            keyDefinition.filters.push({
+                                field: 'cs',
+                                equals: keyCount
+                            });
+                            definitions.push(keyDefinition);
+                        }
+                        const keyDefinition = JSON.parse(JSON.stringify(definition));
+                        keyDefinition.id += `-otherkeys`;
+                        keyDefinition.name = keyDefinition.name.replace(' all keys', `, not 4K or 7K`);
+                        keyDefinition.filters.push({
+                            field: 'cs',
+                            notIn: [4, 7]
+                        });
+                        definitions.push(keyDefinition);
+                    }
                 }
-                const maniaOtherDefinition = JSON.parse(JSON.stringify(definition));
-                maniaOtherDefinition.id += `-otherkeys`;
-                maniaOtherDefinition.filters.push({
-                    field: 'cs',
-                    notIn: [4, 7]
-                });
-                definitions.push(maniaOtherDefinition);
             }
         }
     }
@@ -58,29 +117,39 @@ const getCategoryNavPaths = (basePath, categoryId, fullQueryString) => {
     // Extract category details
     const split = categoryId.split('-');
     const mode = split[0];
+    const includesRanked = split.includes('ranked');
     const includesLoved = split.includes('loved');
+    const includesSpecifics = split.includes('specifics') || mode == 'osu';
     const includesConverts = split.includes('converts');
-    const keys = categoryId.match(/-(\d+k|otherkeys)$/)?.[1];
+    const specificKeys = categoryId.match(/-(\d+k|otherkeys)$/)?.[1];
+
+    // Build category id segments
+    // For the inverted segments, we check if their counterpart is also false so we can re-add it
+    const ranked = includesRanked ? '-ranked' : '';
     const loved = includesLoved ? '-loved' : '';
     const converts = includesConverts ? '-converts' : '';
-    const lovedInvert = includesLoved ? '' : '-loved';
-    const convertsInvert = includesConverts ? '' : '-converts';
-    let segmentKeycount = '';
-    if (keys) {
-        segmentKeycount = `-${keys}`;
-    }
+    const specifics = includesSpecifics ? '-specifics' : '';
+    const rankedInvert = includesRanked ? (includesLoved ? '' : '-loved') : '-ranked';
+    const lovedInvert = includesLoved ? (includesRanked ? '' : '-ranked') : '-loved';
+    const specificsInvert = includesSpecifics ? (includesConverts ? '' : '-converts') : '-specifics';
+    const convertsInvert = includesConverts ? (includesSpecifics ? '' : '-specifics') : '-converts';
+    const keycount = specificKeys ? `-${specificKeys}` : '';
     const query = fullQueryString ? fullQueryString : '';
+
+    // Build paths
     const paths = {
-        global: `${basePath}/global-ranked${loved}${converts}${query}`,
-        osu: `${basePath}/osu-ranked${loved}${query}`,
-        taiko: `${basePath}/taiko-ranked${loved}${converts}${query}`,
-        catch: `${basePath}/catch-ranked${loved}${converts}${query}`,
-        mania: `${basePath}/mania-ranked${loved}${converts}${query}`,
-        mania4k: `${basePath}/mania-ranked${loved}${converts}-4k${query}`,
-        mania7k: `${basePath}/mania-ranked${loved}${converts}-7k${query}`,
-        maniaOther: `${basePath}/mania-ranked${loved}${converts}-otherkeys${query}`,
-        toggleConverts: `${basePath}/${mode}-ranked${loved}${convertsInvert}${segmentKeycount}${query}`,
-        toggleLoved: `${basePath}/${mode}-ranked${lovedInvert}${converts}${segmentKeycount}${query}`
+        all: `${basePath}/${['all', ranked, loved, specifics, converts, query].filter(Boolean).join('')}`,
+        osu: `${basePath}/${['osu', ranked, loved, query].filter(Boolean).join('')}`,
+        taiko: `${basePath}/${['taiko', ranked, loved, specifics, converts, query].filter(Boolean).join('')}`,
+        catch: `${basePath}/${['catch', ranked, loved, specifics, converts, query].filter(Boolean).join('')}`,
+        mania: `${basePath}/${['mania', ranked, loved, specifics, converts, query].filter(Boolean).join('')}`,
+        mania4k: `${basePath}/${['mania', ranked, loved, specifics, converts, '-4k', query].filter(Boolean).join('')}`,
+        mania7k: `${basePath}/${['mania', ranked, loved, specifics, converts, '-7k', query].filter(Boolean).join('')}`,
+        maniaOther: `${basePath}/${['mania', ranked, loved, specifics, converts, '-otherkeys', query].filter(Boolean).join('')}`,
+        toggleRanked: `${basePath}/${[mode, rankedInvert, loved, mode == 'osu' ? '' : specifics, converts, keycount, query].filter(Boolean).join('')}`,
+        toggleLoved: `${basePath}/${[mode, ranked, lovedInvert, mode == 'osu' ? '' : specifics, converts, keycount, query].filter(Boolean).join('')}`,
+        toggleConverts: `${basePath}/${[mode, ranked, loved, specifics, convertsInvert, keycount, query].filter(Boolean).join('')}`,
+        toggleSpecifics: `${basePath}/${[mode, ranked, loved, specificsInvert, converts, keycount, query].filter(Boolean).join('')}`
     };
     return paths;
 };
@@ -130,45 +199,16 @@ const categoryToSql = (categoryId, tablePrefix = 'map') => {
 };
 
 const getCategoryName = categoryId => {
-    const segments = [];
-    // Extract category details
-    const split = categoryId.split('-');
-    const mode = split[0];
-    const includesLoved = split.includes('loved');
-    const includesConverts = split.includes('converts');
-    const keyCount = categoryId.match(/-(\d+k|otherkeys)$/)?.[1];
-    // Build mode name
-    if (mode == 'global') {
-        segments.push('All modes');
-    } else {
-        segments.push(utils.rulesetKeyToName(utils.rulesetNameToKey(mode), true));
-    }
-    // Add mania keycount
-    if (keyCount === 'otherkeys') {
-        segments.push('(not 4K or 7K)');
-    } else if (keyCount) {
-        segments.push(keyCount.toUpperCase());
-    }
-    // Add includes
-    const includes = [];
-    if (includesLoved) {
-        includes.push('ranked and loved');
-    } else {
-        includes.push('ranked only');
-    }
-    if (includesConverts) {
-        includes.push('with converts');
-    }
-    segments.push(`(${includes.join(', ')})`);
-    // Combine and return
-    return segments.join(' ');
+    const def = definitions.find(d => d.id === categoryId);
+    if (!def) return 'Unknown category';
+    return def.name;
 };
 
 // If not required from another module, output the definitions
 if (require.main === module) {
     console.log(
         `Registered ${definitions.length} stat category definitions:`,
-        definitions.map(d => `${d.id}: ${getCategoryName(d.id)}`).join('\n')
+        definitions.map(d => `${d.id}: ${d.name}`).join('\n')
     );
 }
 
