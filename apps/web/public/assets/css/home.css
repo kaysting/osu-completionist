@@ -1,7 +1,3 @@
-[data-page="home"] #bottomShadow {
-    display: none;
-}
-
 [data-page="home"] #topbar:not(.scrolled) {
     background: transparent;
 }
