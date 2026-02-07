@@ -5,6 +5,7 @@
     <btn
         data-reload-selectors="#leaderboard"
         data-reload-url="<%= pagination.basePath %>?p=<%= num %>"
+        data-reload-replace-address="true"
         class="btn <%= num === pagination.current ? 'primary' : 'text' %>">
         <%= num %>
     </btn>
