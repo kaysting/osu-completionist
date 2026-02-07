@@ -2,6 +2,7 @@ const express = require('express');
 const statCategories = require('#config/statCategories.js');
 
 const { getLeaderboard } = require('#api/read.js');
+const env = require('#env');
 
 const router = express.Router();
 
@@ -39,7 +40,10 @@ router.get('/:category', (req, res) => {
         title,
         meta: {
             title,
-            description: `View the players who have the highest completion in this category!`
+            description: `View the players who have the highest completion in this category!`,
+            canonical: `${env.BASE_URL}/leaderboard/${category}${page ? `?p=${page}` : ''}`,
+            prev: page > 1 ? `${env.BASE_URL}/leaderboard/${category}${page ? `?p=${page - 1}` : ''}` : false,
+            next: page < maxPages ? `${env.BASE_URL}/leaderboard/${category}${page ? `?p=${page + 1}` : ''}` : false
         },
         topbar: {
             title: `Leaderboard - ${categoryName}`,

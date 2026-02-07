@@ -50,6 +50,13 @@
         <link rel="canonical" href="<%= meta.canonical %>" />
         <% } %>
 
+        <!-- Set next and previous for Google if specified -->
+        <% if (locals?.meta?.next) { %>
+        <link rel="next" href="<%= meta.next %>" />
+        <% } %> <% if (locals?.meta?.prev) { %>
+        <link rel="prev" href="<%= meta.prev %>" />
+        <% } %>
+
         <!-- Assets -->
         <link rel="stylesheet" href="<%= asset('/assets/css/theme.css') %>" />
         <link rel="stylesheet" href="<%= asset('/assets/css/utils.css') %>" />
