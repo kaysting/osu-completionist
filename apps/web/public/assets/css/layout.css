@@ -395,6 +395,7 @@ main {
 }
 
 #footer a {
+    color: var(--c-base-50);
     text-decoration: underline;
 }
 
