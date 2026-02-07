@@ -278,7 +278,8 @@ router.get('/:id/:category{/:categoryOld}', ensureUserExists, (req, res) => {
         meta: {
             title,
             description: `${req.user.name} has passed ${utils.formatNumber(stats.percentage_completed, 2)}% of beatmaps in this category. Click to view more of their completionist stats!`,
-            image: `${env.BASE_URL}/renders/profile-meta?category=${category}&user_id=${req.user.id}`
+            image: `${env.BASE_URL}/renders/profile-meta?category=${category}&user_id=${req.user.id}`,
+            canonical: `${env.BASE_URL}/u/${req.user.id}/${req.user.default_category}`
         },
         topbar: {
             icon: 'person',

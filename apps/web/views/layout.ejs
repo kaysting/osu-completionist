@@ -3,30 +3,54 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <!-- Theme -->
+        <meta name="theme-color" content="#6EF79C" />
+        <link rel="icon" type="image/png" href="<%= asset('/assets/images/icon.png') %>" />
+
+        <!-- Page and (potentially) search engine title -->
         <title><%= `${locals.title ? locals.title + ' - ' : ''}` %>osu!complete</title>
-        <meta property="og:site_name" content="osu!complete" />
-        <meta
-            property="og:title"
-            content="<%= locals?.meta?.title || 'osu! completionist tracker and leaderboard' %>" />
+
+        <!-- Search engine description -->
         <meta
             name="description"
             content="<%= locals?.meta?.description || 'Track your osu! completion progress across all game modes, ranked, loved, and convert maps, and compare your progress with others!' %>" />
+
+        <!-- Meta embed site name -->
+        <meta property="og:site_name" content="osu!complete" />
+
+        <!-- Meta embed title -->
+        <meta
+            property="og:title"
+            content="<%= locals?.meta?.title || 'osu! completionist tracker and leaderboard' %>" />
+
+        <!-- Meta embed description -->
         <meta
             property="og:description"
             content="<%= locals?.meta?.description || 'Track your osu! completion progress across all game modes, ranked, loved, and convert maps, and compare your progress with others!' %>" />
+
+        <!-- Meta image -->
+        <!-- We use OpenGraph and Twitter tags here because some sites prefer one over the other -->
         <meta
             property="og:image"
             content="<%= locals?.meta?.image || locals?.meta?.thumbnail || asset('/assets/images/promo.png') %>" />
         <meta
             name="twitter:image"
             content="<%= locals?.meta?.image || locals?.meta?.thumbnail || asset('/assets/images/promo.png') %>" />
+
+        <!-- If a thumbnail isn't supplied, we assume the image is meant to be big and set its dimensions here -->
         <% if (!locals?.meta?.thumbnail) { %>
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta name="twitter:card" content="summary_large_image" />
         <% } %>
-        <meta name="theme-color" content="#6EF79C" />
-        <link rel="icon" type="image/png" href="<%= asset('/assets/images/icon.png') %>" />
+
+        <!-- Set canonical link for Google if specified -->
+        <% if (locals?.meta?.canonical) { %>
+        <link rel="canonical" href="<%= meta.canonical %>" />
+        <% } %>
+
+        <!-- Assets -->
         <link rel="stylesheet" href="<%= asset('/assets/css/theme.css') %>" />
         <link rel="stylesheet" href="<%= asset('/assets/css/utils.css') %>" />
         <link rel="stylesheet" href="<%= asset('/assets/css/layout.css') %>" />

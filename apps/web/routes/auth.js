@@ -65,7 +65,7 @@ router.get('/callback', async (req, res) => {
                         author: {
                             name: userEntry.name,
                             icon_url: userEntry.avatar_url,
-                            url: `${env.HTTPS ? 'https' : 'http'}://${env.HOST}/u/${userEntry.id}`
+                            url: `${env.BASE_URL}/u/${userEntry.id}`
                         },
                         title: `Registered as our ${utils.ordinalSuffix(userCount)} user!`,
                         color: 0xa3f5a3
