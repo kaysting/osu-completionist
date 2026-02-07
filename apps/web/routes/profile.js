@@ -24,7 +24,7 @@ router.get('/:id/reimport', async (req, res) => {
     res.redirect(`/u/${req.params.id}`);
 });
 
-router.get('/:id/:category/{:categoryOld}', ensureUserExists, (req, res) => {
+router.get('/:id/:category{/:categoryOld}', ensureUserExists, (req, res) => {
     const user = req.user;
     const category = statCategories.validateCategoryId(
         req.params.category + (req.params.categoryOld ? `-${req.params.categoryOld}` : '')
