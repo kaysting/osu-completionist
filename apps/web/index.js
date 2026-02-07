@@ -172,7 +172,7 @@ app.use('/u', require('./routes/profile'));
 app.use('/search', require('./routes/search'));
 app.use('/auth', require('./routes/auth'));
 app.use('/recommended', require('./routes/recommended'));
-app.use('/queue', require('./routes/queue'));
+app.use('/activity', require('./routes/activity'));
 app.use('/renders', require('./routes/renders'));
 app.use('/api', require('./routes/apiDocs'));
 app.use('/', require('./routes/misc'));

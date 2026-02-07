@@ -1,0 +1,63 @@
+<!-- prettier-ignore -->
+<% /*
+
+{
+    category: string,
+    rank: number,
+    user: User entry
+    stats: [
+        { key: string, value: string, ?primary: boolean, ?wide: boolean }
+    ],
+    ?bar: {
+        percent: float,
+        color: string
+    }
+}
+
+*/ %>
+<a
+    class="leaderboardEntry relative rounded-12 overflow-hidden flex row align-center <%= locals?.stats?.length < 3 ? 'short' : 'long' %>"
+    href="/u/<%= user.id %>/<%= locals?.category ? category : '' %>">
+    <div class="rank"><%= `#${rank}` %></div>
+    <div class="content relative rounded-12 overflow-hidden flex align-center flex-grow">
+        <div class="profile relative rounded-12 overflow-hidden flex gap-16 align-center flex-grow">
+            <img src="<%= user.banner_url %>" class="banner absolute w-full h-full object-cover" loading="lazy" />
+            <div class="dimming absolute w-full h-full"></div>
+            <img
+                src="<%= user.avatar_url %>"
+                class="avatar relative rounded-12 object-cover flex-no-shrink"
+                loading="lazy" />
+            <div class="text relative flex col gap-4 flex-grow">
+                <div class="flags flex gap-8 align-center">
+                    <div class="country flex gap-4 align-center" title="<%= user.country.name %>">
+                        <img src="<%= user.country.flag_url %>" class="flag rounded-4 flex-no-shrink" loading="lazy" />
+                    </div>
+                    <% if (user.team.name) { %>
+                    <div class="team flex gap-4 align-center" title="<%= user.team.name %>">
+                        <img src="<%= user.team.flag_url %>" class="flag rounded-4 flex-no-shrink" loading="lazy" />
+                    </div>
+                    <% } %>
+                </div>
+                <div class="name text-shadow-sm overflow-hidden text-ellipsis"><%= user.name %></div>
+            </div>
+        </div>
+        <div class="statsCont flex col flex-no-shrink">
+            <div class="stats flex row flex-wrap">
+                <% for (const entry of locals?.stats || []) { %>
+                <div class="stat flex col gap-2 <%= entry.primary ? 'primary' : '' %> <%= entry.wide ? 'wide' : '' %>">
+                    <div class="name"><%= entry.key %></div>
+                    <div class="value primary"><%= entry.value %></div>
+                </div>
+                <% } %>
+            </div>
+            <% if (locals?.bar) { %>
+            <div class="bar relative w-full rounded-4">
+                <div
+                    class="filling absolute h-full rounded-4"
+                    style="width: <%= bar.percent %>%; background: <%= bar.color %>"></div>
+            </div>
+            <% } %>
+        </div>
+    </div>
+    <div class="overlay absolute w-full h-full"></div>
+</a>

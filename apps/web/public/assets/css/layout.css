@@ -382,6 +382,7 @@ main {
     flex-direction: column;
     animation: fadeInUp 0.3s ease forwards;
     flex-grow: 1;
+    container-type: inline-size;
 }
 
 #footer {
@@ -528,5 +529,10 @@ img.loaded {
 
 .empty {
     font-size: 16px;
+    color: var(--c-base-65);
+}
+
+.pagination .dots {
+    height: 32px;
     color: var(--c-base-65);
 }

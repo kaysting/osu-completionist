@@ -1,0 +1,58 @@
+#activity>.head,
+#activity>.head .logo {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--c-base-90);
+}
+
+#activity>.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 500px), 1fr));
+    gap: 8px;
+}
+
+#activity>.grid>.card {
+    padding: 16px 0px;
+    max-height: 500px;
+    overflow: hidden;
+    container-type: inline-size;
+}
+
+#activity>.grid>.card>.scroll {
+    padding: 0px 12px;
+}
+
+#activity>.grid>.card>.scroll {
+    overflow-y: auto;
+    height: 100%;
+}
+
+#activity .stickyHeaderCont {
+    position: sticky;
+    top: 0px;
+    padding-bottom: 16px;
+    background: var(--c-base-15);
+    z-index: 2;
+}
+
+#passFeed .pass {
+    padding: 6px 8px;
+    border-radius: 8px;
+}
+
+#passFeed .pass:nth-child(odd) {
+    background: var(--c-base-18);
+}
+
+#passFeed .pass .rulesetIcon {
+    --size: 18px;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+#passFeed .pass span {
+    line-height: 1.2;
+    font-size: 14px;
+}

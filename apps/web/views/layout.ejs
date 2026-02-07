@@ -58,8 +58,8 @@
         <% } %>
 
         <!-- Assets -->
-        <link rel="stylesheet" href="<%= asset('/assets/css/theme.css') %>" />
         <link rel="stylesheet" href="<%= asset('/assets/css/utils.css') %>" />
+        <link rel="stylesheet" href="<%= asset('/assets/css/theme.css') %>" />
         <link rel="stylesheet" href="<%= asset('/assets/css/layout.css') %>" />
         <script src="<%= asset('/assets/js/base.js') %>"></script>
         <script src="<%= asset('/assets/js/partial.js') %>"></script>
@@ -111,16 +111,16 @@
                         <span class="icon">leaderboard</span>
                         <span class="label">Leaderboard</span>
                     </a>
+                    <a href="/activity" class="btn item page <%= page == 'activity' ? 'active' : '' %>">
+                        <span class="icon">ssid_chart</span>
+                        <span class="label">Activity & Queue</span>
+                    </a>
                     <% if (me) { %>
                     <a href="/recommended" class="btn item page <%= page == 'recommended' ? 'active' : '' %>">
                         <span class="icon filled">cards_star</span>
                         <span class="label">Play next</span>
                     </a>
                     <% } %>
-                    <a href="/queue" class="btn item page <%= page == 'queue' ? 'active' : '' %>">
-                        <span class="icon">autorenew</span>
-                        <span class="label">Import queue</span>
-                    </a>
                     <div class="separator"></div>
                     <a href="/discord" class="btn item" target="_blank" rel="noopener noreferrer">
                         <span class="icon">forum</span>

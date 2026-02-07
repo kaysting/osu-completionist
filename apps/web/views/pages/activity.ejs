@@ -1,0 +1,120 @@
+<link rel="stylesheet" href="/assets/css/activity.css" />
+<div id="activity" class="flex col gap-24" data-reload-on-show="true">
+    <h2 class="head flex justify-center text-center gap-8 flex-wrap">
+        <div class="logo">
+            <span class="white">osu!</span>
+            <span class="green">complete</span>
+        </div>
+        <span>Activity</span>
+    </h2>
+    <div class="grid">
+        <div class="card">
+            <section id="queue" class="scroll flex col gap-16" data-reload-interval="30">
+                <div class="flex col">
+                    <div class="stickyHeaderCont">
+                        <h2 class="header">In progress (<%= queue.in_progress.length %>)</h2>
+                    </div>
+                    <% if (queue.in_progress.length) { %>
+                    <div class="userCardContainer">
+                        <!-- prettier-ignore -->
+                        <% for (const user of queue.in_progress) { %>
+                            <% if (!user) continue; %>
+                            <%- include('../partials/userCard', { user }) %>
+                        <% } %>
+                    </div>
+                    <% } else { %>
+                    <div class="empty">No users are being imported at this time.</div>
+                    <% } %>
+                </div>
+                <div class="flex col">
+                    <div class="stickyHeaderCont">
+                        <h2 class="header">Queued (<%= queue.waiting.length %>)</h2>
+                    </div>
+                    <% if (queue.waiting.length) { %>
+                    <div class="userCardContainer">
+                        <!-- prettier-ignore -->
+                        <% for (const user of queue.waiting) { %>
+                            <%- include('../partials/userCard', { user }) %>
+                        <% } %>
+                    </div>
+                    <% } else { %>
+                    <div class="empty">The import queue is empty.</div>
+                    <% } %>
+                </div>
+            </section>
+        </div>
+        <div class="card">
+            <section class="scroll flex col-rev">
+                <div id="passFeed" class="flex col-rev gap-2" data-reload-interval="15">
+                    <% for (const pass of passes) { %>
+                    <div class="pass flex gap-8 align-center">
+                        <img
+                            class="rulesetIcon"
+                            src="/assets/ruleset-icons/<%= pass.beatmap.mode %>.svg"
+                            class="ruleset flex-no-shrink"
+                            style="background: <%= pass.beatmap.difficulty_color.bg %>"
+                            title="<%= pass.beatmap.stars.toFixed(2) %> stars" />
+                        <span>
+                            <strong><a href="/u/<%= pass.user.id %>"><%= pass.user.name %></a></strong>
+                            passed
+                            <strong>
+                                <%= `${pass.beatmap.beatmapset.artist} - ${pass.beatmap.beatmapset.title}
+                                [${pass.beatmap.name}]` %>
+                            </strong>
+                            for
+                            <strong><%= pass.beatmap.xp %> cxp</strong>
+                        </span>
+                    </div>
+                    <% } %>
+                </div>
+                <div class="stickyHeaderCont">
+                    <h2 class="header">Live pass feed</h2>
+                </div>
+            </section>
+        </div>
+        <div class="card">
+            <section class="scroll flex col">
+                <div class="stickyHeaderCont">
+                    <h2 class="header">Most completion in the past day</h2>
+                </div>
+                <div id="dailyLeaderboard" class="flex col gap-4" data-reload-interval="60">
+                    <!-- prettier-ignore -->
+                    <% for (const entry of leaderboardDaily) { %>
+                        <%-
+                            include('../partials/leaderboardEntry', { 
+                                user: entry.user, 
+                                rank: entry.rank,
+                                stats: [
+                                    { key: 'cxp earned', value: n(entry.xp), primary: true },
+                                    { key: 'new passes', value: n(entry.count) }
+                                ]
+                            })
+                        %>
+                    <% } %>
+                </div>
+            </section>
+        </div>
+        <div class="card">
+            <section class="scroll flex col">
+                <div class="stickyHeaderCont">
+                    <h2 class="header">Most completion in the past month</h2>
+                </div>
+                <div id="monthlyLeaderboard" class="flex col gap-4" data-reload-interval="60">
+                    <!-- prettier-ignore -->
+                    <% for (const entry of leaderboardMonthly) { %>
+                        <%-
+                            include('../partials/leaderboardEntry', { 
+                                user: entry.user, 
+                                rank: entry.rank,
+                                stats: [
+                                    { key: 'cxp earned', value: n(entry.xp), primary: true },
+                                    { key: 'new passes', value: n(entry.count) }
+                                ]
+                            })
+                        %>
+                    <% } %>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
