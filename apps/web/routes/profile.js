@@ -24,9 +24,11 @@ router.get('/:id/reimport', async (req, res) => {
     res.redirect(`/u/${req.params.id}`);
 });
 
-router.get('/:id/:category', ensureUserExists, (req, res) => {
+router.get('/:id/:category/{:categoryOld}', ensureUserExists, (req, res) => {
     const user = req.user;
-    const category = statCategories.validateCategoryId(req.params.category);
+    const category = statCategories.validateCategoryId(
+        req.params.category + (req.params.categoryOld ? `-${req.params.categoryOld}` : '')
+    );
     const yearlyType = utils.ensureOneOf(req.query.yearly_type || req.session.yearlyType, ['maps', 'xp'], 'maps');
     const selectors = req.headers['x-reload-selectors'] || '';
     const year = req.query.year;
