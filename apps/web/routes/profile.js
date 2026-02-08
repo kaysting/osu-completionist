@@ -5,6 +5,7 @@ const { ensureUserExists } = require('../middleware.js');
 const utils = require('#utils');
 const updater = require('#api/write.js');
 const apiRead = require('#api/read.js');
+const apiWrite = require('#api/write.js');
 
 const router = express.Router();
 
@@ -22,6 +23,28 @@ router.get('/:id/reimport', async (req, res) => {
     }
     await updater.queueUserForImport(req.params.id, true);
     res.redirect(`/u/${req.params.id}`);
+});
+
+router.get('/:id/:category/set-default', ensureUserExists, (req, res) => {
+    // Get user and category
+    const user = req.user;
+    const category = statCategories.validateCategoryId(req.params.category);
+
+    // Give up if category is invalid
+    if (!category) {
+        return res.redirect(`/u/${req.user.id}`);
+    }
+
+    // Give up if this isn't the user's own profile
+    if (req?.me?.id !== user.id) {
+        return res.redirect(`/u/${req.user.id}/${category}`);
+    }
+
+    // Update default category
+    apiWrite.overrideUserDefaultCategory(user.id, category);
+
+    // Send back to profile
+    res.redirect(`/u/${req.user.id}/${category}`);
 });
 
 router.get('/:id/:category{/:categoryOld}', ensureUserExists, (req, res) => {

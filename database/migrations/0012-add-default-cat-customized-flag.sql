@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN is_default_category_auto INTEGER NOT NULL DEFAULT 1

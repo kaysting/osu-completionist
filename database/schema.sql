@@ -30,6 +30,8 @@ CREATE TABLE
 		last_login_time integer not null default 0,
 		api_key text,
 		has_full_import integer default 0,
+		default_category TEXT NOT NULL DEFAULT 'osu-ranked',
+		is_default_category_auto INTEGER NOT NULL DEFAULT 1,
 		PRIMARY KEY ("id")
 	);
 
@@ -200,3 +202,16 @@ CREATE TABLE
 		name_short TEXT NOT NULL,
 		flag_url TEXT
 	);
+
+CREATE TABLE
+	donations (
+		time_received TEXT NOT NULL,
+		transaction_id TEXT NOT NULL,
+		email TEXT,
+		amount REAL NOT NULL,
+		currency TEXT NOT NULL,
+		is_claimed INTEGER NOT NULL DEFAULT 0,
+		user_id TEXT
+	);
+
+CREATE INDEX idx_user_passes_covering ON user_passes (time_passed DESC, user_id, map_id, mode);

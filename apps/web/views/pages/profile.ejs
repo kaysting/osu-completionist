@@ -28,6 +28,13 @@
                         });
                     });
                 </script>
+                <!-- Show set default category button if the current one isn't the default -->
+                <% if (user.default_category !== category) { %>
+                <a href="/u/<%= user.id %>/<%= category %>/set-default" class="btn translucent">
+                    <span class="icon filled">star</span>
+                    <span>Set category as default</span>
+                </a>
+                <% } %>
             </div>
         </div>
         <div class="basics overflow-hidden flex gap-16 align-center">
