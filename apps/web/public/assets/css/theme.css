@@ -1227,7 +1227,7 @@ img {
 
 .leaderboardEntry.highlight {
     border: 2px solid hsl(190, 80%, 50%);
-    background: hsl(190, 80%, 30%);
+    background: linear-gradient(135deg, hsl(190, 80%, 30%), var(--c-base-10));
 }
 
 .leaderboardEntry>.overlay {
