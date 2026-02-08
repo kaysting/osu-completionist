@@ -25,3 +25,9 @@ Use your IDE (likely VSCode) to your advantage! Install the Prettier extension a
 This project comes with a `.prettierrc` file that should tell your IDE exactly how to format source code automatically.
 
 Also leave comments wherever needed so the rest of us (and future you) know what you your code does/should be doing. Basic etiquette.
+
+### Test your code
+
+Please test your code before you submit a PR to ensure your changes are functional.
+
+You can find development environment setup instructions on the project readme. Use these instructions to get a local server and/or updater running so you can test your code live.
