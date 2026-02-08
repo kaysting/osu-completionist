@@ -1,8 +1,8 @@
 const express = require('express');
 const { getQueuedUsers, getAllRecentPasses, getRecentActivityLeaderboard, getAnalyticsData } = require('#api/read.js');
 
-const ONE_DAY_AGO = Date.now() - 1000 * 60 * 60 * 24;
-const ONE_MONTH_AGO = Date.now() - 1000 * 60 * 60 * 24 * 30;
+const getOneDayAgo = () => Date.now() - 1000 * 60 * 60 * 24;
+const getOneMonthAgo = () => Date.now() - 1000 * 60 * 60 * 24 * 30;
 const CATEGORY = 'all-ranked-loved-specifics-converts';
 
 const router = express.Router();
@@ -12,8 +12,8 @@ let leaderboardMonthly = [];
 let lastCacheUpdate = 0;
 
 const cacheData = () => {
-    leaderboardDaily = getRecentActivityLeaderboard(CATEGORY, 50, ONE_DAY_AGO);
-    leaderboardMonthly = getRecentActivityLeaderboard(CATEGORY, 50, ONE_MONTH_AGO);
+    leaderboardDaily = getRecentActivityLeaderboard(CATEGORY, 50, getOneDayAgo());
+    leaderboardMonthly = getRecentActivityLeaderboard(CATEGORY, 50, getOneMonthAgo());
     lastCacheUpdate = Date.now();
 };
 cacheData();
@@ -24,7 +24,7 @@ router.get('/', (req, res) => {
 
     // Get data
     const queue = getQueuedUsers();
-    const passes = getAllRecentPasses(CATEGORY, 100, 0, ONE_DAY_AGO);
+    const passes = getAllRecentPasses(CATEGORY, 100, 0, getOneDayAgo());
     const analytics = getAnalyticsData(90);
 
     // Render
