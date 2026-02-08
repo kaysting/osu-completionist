@@ -46,6 +46,10 @@
         <div class="card">
             <section class="scroll flex col-rev">
                 <div id="passFeed" class="flex col-rev gap-2" data-reload-interval="15">
+                    <% if (passes.length == 0) { %>
+                    <div class="empty">No data.</div>
+                    <% } %>
+                    <!-- prettier-ignore -->
                     <% for (const pass of passes) { %>
                     <div class="pass flex gap-8 align-center <%= me?.id == pass.user.id ? 'highlight' : '' %>">
                         <img
@@ -72,12 +76,15 @@
                 </div>
             </section>
         </div>
-        <div class="card">
+        <div class="card flex col gap-16">
+            <div class="hpad">
+                <h2 class="header">Most completion in the past day</h2>
+            </div>
             <section class="scroll flex col">
-                <div class="stickyHeaderCont">
-                    <h2 class="header">Most completion in the past day</h2>
-                </div>
                 <div id="dailyLeaderboard" class="flex col gap-4" data-reload-interval="60">
+                    <% if (leaderboardDaily.length == 0) { %>
+                    <div class="empty">No data.</div>
+                    <% } %>
                     <!-- prettier-ignore -->
                     <% for (const entry of leaderboardDaily) { %>
                         <%-
@@ -95,12 +102,15 @@
                 </div>
             </section>
         </div>
-        <div class="card">
+        <div class="card flex col gap-16">
+            <div class="hpad">
+                <h2 class="header">Most completion in the past month</h2>
+            </div>
             <section class="scroll flex col">
-                <div class="stickyHeaderCont">
-                    <h2 class="header">Most completion in the past month</h2>
-                </div>
                 <div id="monthlyLeaderboard" class="flex col gap-4" data-reload-interval="60">
+                    <% if (leaderboardMonthly.length == 0) { %>
+                    <div class="empty">No data.</div>
+                    <% } %>
                     <!-- prettier-ignore -->
                     <% for (const entry of leaderboardMonthly) { %>
                         <%-

@@ -18,7 +18,8 @@
     container-type: inline-size;
 }
 
-#activity>.grid>.card>.scroll {
+#activity>.grid>.card>.scroll,
+#activity>.grid>.card>.hpad {
     padding: 0px 12px;
 }
 
@@ -60,4 +61,12 @@
 #passFeed .pass span {
     line-height: 1.2;
     font-size: 14px;
+}
+
+#activity .leaderboardEntry.highlight {
+    position: sticky;
+    top: 0px;
+    bottom: 0px;
+    z-index: 2;
+    box-shadow: 0px 0px 0px 4px var(--c-base-15);
 }
