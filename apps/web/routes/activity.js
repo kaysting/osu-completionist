@@ -36,7 +36,7 @@ router.get('/', (req, res) => {
             description: `${queue.in_progress.length} users are currently being imported and ${queue.waiting.length} users are waiting in the queue.`
         },
         topbar: {
-            icon: 'autorenew',
+            icon: 'ssid_chart',
             title: 'Activity & Queue'
         },
         queue,
