@@ -1,4 +1,4 @@
-# To-do:
+# Project to-do list
 
 - [ ] Fully functional API
     - [ ] Custom element for showing endpoint details clearly and responsively
