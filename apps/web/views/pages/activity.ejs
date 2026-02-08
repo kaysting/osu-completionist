@@ -52,7 +52,7 @@
                     <!-- prettier-ignore -->
                     <% for (const pass of passes) { %>
                     <div class="pass flex gap-8 align-center <%= me?.id == pass.user.id ? 'highlight' : '' %>">
-                        <span class="time" data-timestamp="<%= pass.time_passed %>" data-format="H:mm"></span>
+                        <span class="time" data-timestamp="<%= pass.time_passed %>" data-format="HH:mm"></span>
                         <img
                             class="rulesetIcon"
                             src="/assets/ruleset-icons/<%= pass.beatmap.mode %>.svg"
