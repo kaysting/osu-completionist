@@ -19,6 +19,8 @@
 - [ ] Create a unified beatmap search page and use it for play next
 - [ ] Allow switching monthly graph to cxp
 
+**Completed**
+
 - [x] Add client local time timestamps to pass feed
 - [x] Add ability to specify ms timestamps and format as data attributes and have the client parse them and add titles
 - [x] Embeddable renders suitable for osu bios
