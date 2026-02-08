@@ -55,6 +55,8 @@
     color: var(--c-base-60);
     font-weight: 600;
     flex-shrink: 0;
+    width: 40px;
+    text-align: center;
 }
 
 #passFeed .pass .rulesetIcon {
