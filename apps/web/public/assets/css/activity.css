@@ -50,6 +50,13 @@
     background: linear-gradient(135deg, hsl(190, 80%, 15%), transparent);
 }
 
+#passFeed .pass .time {
+    font-size: 12px;
+    color: var(--c-base-60);
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
 #passFeed .pass .rulesetIcon {
     --size: 18px;
     width: var(--size);

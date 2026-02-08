@@ -57,14 +57,25 @@
         <link rel="prev" href="<%= meta.prev %>" />
         <% } %>
 
-        <!-- Assets -->
+        <!-- CSS -->
         <link rel="stylesheet" href="<%= asset('/assets/css/utils.css') %>" />
         <link rel="stylesheet" href="<%= asset('/assets/css/theme.css') %>" />
         <link rel="stylesheet" href="<%= asset('/assets/css/layout.css') %>" />
-        <script src="<%= asset('/assets/js/base.js') %>"></script>
-        <script src="<%= asset('/assets/js/partial.js') %>"></script>
+
+        <!-- Libraries -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.8.1/dist/socket.io.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/advancedFormat.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/relativeTime.js"></script>
+        <script>
+            dayjs.extend(window.dayjs_plugin_advancedFormat);
+            dayjs.extend(window.dayjs_plugin_relativeTime);
+        </script>
+
+        <!-- Scripts -->
+        <script src="<%= asset('/assets/js/base.js') %>"></script>
+        <script src="<%= asset('/assets/js/partial.js') %>"></script>
         <script src="<%= asset('/assets/js/socket.js') %>"></script>
         <script src="<%= asset('/assets/js/index.js') %>"></script>
     </head>

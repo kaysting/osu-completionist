@@ -322,15 +322,47 @@ const initSvgIconMasks = () => {
     });
 };
 
+// Update dynamic timestamp elements
+const updateTimestampElements = () => {
+    const els = [...document.querySelectorAll('[data-timestamp]')];
+    els.forEach(el => {
+        // Get timestamp
+        let ts = el.dataset.timestamp;
+
+        // If timestamp is all numbers, parse it as an int
+        if (ts.match(/^\d+$/)) {
+            ts = parseInt(ts);
+        }
+
+        // Get formats and templates
+        const displayFormat = el.dataset.format || `YYYY-MM-DD [at] H:mm`;
+        const displayTemplate = el.dataset.template || `{time}`;
+        const titleFormat = el.dataset.formatTitle || `YYYY-MM-DD [at] H:mm`;
+        const titleTemplate = el.dataset.titleTemplate || `{time}`;
+
+        // Update element
+        try {
+            const date = dayjs(ts);
+            el.title = titleTemplate.replace('{time}', date.format(titleFormat));
+            el.innerText = displayTemplate.replace('{time}', date.format(displayFormat));
+        } catch (error) {
+            console.error(`Failed to update dynamic timestamp element:`, el, error);
+        }
+    });
+};
+setInterval(updateTimestampElements, 1000);
+
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
     initCustomTooltips();
     initImageLoadStates();
     initSvgIconMasks();
+    updateTimestampElements();
 });
 
 // Re-initialize on page update
 document.addEventListener('page:updated', e => {
     initImageLoadStates();
     initSvgIconMasks();
+    updateTimestampElements();
 });
