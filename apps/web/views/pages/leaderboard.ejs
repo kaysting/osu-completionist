@@ -18,7 +18,8 @@
                         bar: {
                             percent: entry.stats.percentage_completed,
                             color: entry.stats.percentage_completed_color
-                        }
+                        },
+                        highlight: me?.id == entry.user.id
                     })
                 %>
             <% } %>

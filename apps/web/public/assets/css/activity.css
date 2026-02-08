@@ -44,6 +44,11 @@
     background: var(--c-base-18);
 }
 
+#passFeed .pass.highlight {
+    border: 2px solid hsl(190, 80%, 50%);
+    background: linear-gradient(135deg, hsl(190, 80%, 15%), transparent);
+}
+
 #passFeed .pass .rulesetIcon {
     --size: 18px;
     width: var(--size);

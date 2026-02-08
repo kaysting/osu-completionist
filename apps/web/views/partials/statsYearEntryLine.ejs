@@ -1,8 +1,25 @@
-<% let percent = map_percentage_completed; let unit = 'maps'; let completed = count_completed; let total = count_total;
-let color = map_completed_color; if (yearlyType == 'xp') { percent = time_percentage_completed; unit = 'cxp'; completed
-= xp; total = xp_total; color = time_completed_color; } let tooltip = [ `${n(map_percentage_completed, 2)}% maps passed
-(${n(count_completed)} / ${n(count_total)})`, `${n(time_percentage_completed, 2)}% cxp earned (${n(xp)} /
-${n(xp_total)})`, `Click to view more details...` ].join('\\n') %>
+<!-- prettier-ignore -->
+<%
+    let percent = map_percentage_completed;
+    let unit = 'maps';
+    let completed = count_completed;
+    let total = count_total;
+    let color = map_completed_color;
+
+    if (yearlyType == 'xp') {
+        percent = time_percentage_completed;
+        unit = 'cxp';
+        completed = xp;
+        total = xp_total;
+        color = time_completed_color;
+    }
+
+    let tooltip = [
+        `${n(map_percentage_completed, 2)}% maps passed (${n(count_completed)} / ${n(count_total)})`,
+        `${n(time_percentage_completed, 2)}% cxp earned (${n(xp)} / ${n(xp_total)})`,
+        `Click to view more details...`
+    ].join('\n');
+%>
 
 <button class="btn yearlyStatsEntry rounded-4 flex gap-8 align-center" data-year="<%= year %>">
     <div class="year left flex-no-shrink"><%= year %></div>

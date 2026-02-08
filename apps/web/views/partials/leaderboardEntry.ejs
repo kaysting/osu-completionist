@@ -16,7 +16,7 @@
 
 */ %>
 <a
-    class="leaderboardEntry relative rounded-12 overflow-hidden flex row align-center <%= locals?.stats?.length < 3 ? 'short' : 'long' %>"
+    class="leaderboardEntry relative rounded-12 overflow-hidden flex row align-center <%= locals?.stats?.length < 3 ? 'short' : 'long' %> <%= locals?.highlight ? 'highlight' : '' %>"
     href="/u/<%= user.id %>/<%= locals?.category ? category : '' %>">
     <div class="rank"><%= `#${rank}` %></div>
     <div class="content relative rounded-12 overflow-hidden flex align-center flex-grow">

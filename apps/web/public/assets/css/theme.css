@@ -1225,6 +1225,11 @@ img {
     text-shadow: 0px 1px 2px var(--shadow-md);
 }
 
+.leaderboardEntry.highlight {
+    border: 2px solid hsl(190, 80%, 50%);
+    background: hsl(190, 80%, 30%);
+}
+
 .leaderboardEntry>.overlay {
     top: 0px;
     left: 0px;

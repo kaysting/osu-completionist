@@ -47,7 +47,7 @@
             <section class="scroll flex col-rev">
                 <div id="passFeed" class="flex col-rev gap-2" data-reload-interval="15">
                     <% for (const pass of passes) { %>
-                    <div class="pass flex gap-8 align-center">
+                    <div class="pass flex gap-8 align-center <%= me?.id == pass.user.id ? 'highlight' : '' %>">
                         <img
                             class="rulesetIcon"
                             src="/assets/ruleset-icons/<%= pass.beatmap.mode %>.svg"
@@ -87,7 +87,8 @@
                                 stats: [
                                     { key: 'cxp earned', value: n(entry.xp), primary: true },
                                     { key: 'new passes', value: n(entry.count) }
-                                ]
+                                ],
+                                highlight: me?.id == entry.user.id
                             })
                         %>
                     <% } %>
@@ -109,7 +110,8 @@
                                 stats: [
                                     { key: 'cxp earned', value: n(entry.xp), primary: true },
                                     { key: 'new passes', value: n(entry.count) }
-                                ]
+                                ],
+                                highlight: me?.id == entry.user.id
                             })
                         %>
                     <% } %>
