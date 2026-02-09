@@ -928,6 +928,7 @@ img {
 }
 
 .beatmapCard .left .controls {
+    height: 100%;
     padding: 0px;
     padding-right: 16px;
     --btnBg: hsla(220, 20%, 15%, 0.5);
