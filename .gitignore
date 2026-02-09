@@ -3,6 +3,7 @@
 /apps/web/cache
 /apps/web/public/robots.txt
 /apps/web/public/sitemap.xml
+/temp
 *.db*
 .*
 

@@ -128,52 +128,54 @@ const dumpSchema = () => {
     cp.execSync(`sqlite3 "${env.DB_PATH}" .schema > "${schemaPath}"`);
 };
 
-const downloadDump = async () => {
-    try {
-        // Determine path and create output directory
-        const date = dayjs().set('date', 1);
-        const outputDir = path.resolve(env.ROOT, 'temp', `dump_${date.format('YYYY-MM-DD')}`);
-        if (fs.existsSync(outputDir)) fs.rmSync(outputDir, { recursive: true, force: true });
-        fs.mkdirSync(outputDir, { recursive: true });
-        console.log(`Output directory: ${outputDir}`);
-        console.log(`Downloading and extracting dump, this might take a bit...`);
+const downloadDump = () =>
+    new Promise(async (resolve, reject) => {
+        try {
+            // Determine path and create output directory
+            const date = dayjs().set('date', 1);
+            const outputDir = path.resolve(env.ROOT, 'temp', `dump_${date.format('YYYY-MM-DD')}`);
+            if (fs.existsSync(outputDir)) fs.rmSync(outputDir, { recursive: true, force: true });
+            fs.mkdirSync(outputDir, { recursive: true });
+            console.log(`Output directory: ${outputDir}`);
+            console.log(`Downloading and extracting dump, this might take a bit...`);
 
-        // Start download and get stream
-        let lastDownloadLog = Date.now();
-        const stream = await axios({
-            method: 'GET',
-            url: `https://data.ppy.sh/${date.format('YYYY_MM_DD')}_performance_osu_top_1000.tar.bz2`,
-            responseType: 'stream',
-            onDownloadProgress: e => {
-                const percent = ((e.loaded / e.total) * 100).toFixed(2);
-                if (Date.now() - lastDownloadLog > 1000) {
-                    const loadedM = Math.floor(e.loaded / (1024 * 1024));
-                    const totalM = Math.floor(e.total / (1024 * 1024));
-                    console.log(`Download progress: ${percent}% (${loadedM}MB / ${totalM}MB)`);
-                    lastDownloadLog = Date.now();
+            // Start download and get stream
+            let lastDownloadLog = Date.now();
+            const stream = await axios({
+                method: 'GET',
+                url: `https://data.ppy.sh/${date.format('YYYY_MM_DD')}_performance_osu_top_1000.tar.bz2`,
+                responseType: 'stream',
+                onDownloadProgress: e => {
+                    const percent = ((e.loaded / e.total) * 100).toFixed(2);
+                    if (Date.now() - lastDownloadLog > 1000) {
+                        const loadedM = Math.floor(e.loaded / (1024 * 1024));
+                        const totalM = Math.floor(e.total / (1024 * 1024));
+                        console.log(`Download progress: ${percent}% (${loadedM}MB / ${totalM}MB)`);
+                        lastDownloadLog = Date.now();
+                    }
                 }
-            }
-        });
+            });
 
-        // Pipe download stream through bz2 and tar extractors
-        const extraction = stream.data.pipe(bz2()).pipe(
-            tar.x({
-                cwd: outputDir,
-                strip: 1
-            })
-        );
+            // Pipe download stream through bz2 and tar extractors
+            const extraction = stream.data.pipe(bz2()).pipe(
+                tar.x({
+                    cwd: outputDir,
+                    strip: 1
+                })
+            );
 
-        // Handle extraction events
-        extraction.on('finish', () => {
-            console.log('Done!');
-        });
-        extraction.on('error', err => {
-            console.error('Error during extraction:', err);
-        });
-    } catch (error) {
-        return console.error('Error during download:', error.message);
-    }
-};
+            // Handle extraction events
+            extraction.on('finish', () => {
+                console.log('Done!');
+                resolve();
+            });
+            extraction.on('error', err => {
+                console.error('Error during extraction:', err);
+            });
+        } catch (error) {
+            return console.error('Error during download:', error.message);
+        }
+    });
 
 const options = [
     {
