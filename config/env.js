@@ -57,11 +57,6 @@ env.GITHUB_FEED_DISCORD_CHANNEL_ID = process.env.GITHUB_FEED_DISCORD_CHANNEL_ID;
 env.MILESTONE_FEED_DISCORD_CHANNEL_ID = process.env.MILESTONE_FEED_DISCORD_CHANNEL_ID;
 env.ERROR_LOGS_DISCORD_CHANNEL_ID = process.env.ERROR_LOGS_DISCORD_CHANNEL_ID;
 
-// Check db existence
-if (!fs.existsSync(env.DB_PATH)) {
-    throw new Error(`Database file not found at path: ${env.DB_PATH}`);
-}
-
 // Validate required env vars
 const requiredVars = ['OSU_CLIENT_ID', 'OSU_CLIENT_SECRET', 'OSU_AUTH_REDIRECT_URI'];
 for (const v of requiredVars) {
