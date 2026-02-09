@@ -1,2 +1,0 @@
-ALTER TABLE donations ADD COLUMN is_claimed INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE donations ADD COLUMN user_id TEXT;

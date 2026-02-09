@@ -13,65 +13,67 @@ db.pragma('journal_mode = WAL');
 db.pragma('busy_timeout = 15000');
 db.pragma('synchronous = NORMAL');
 
-// Initialize with schema if needed
-const schemaFile = path.join(__dirname, 'schema.sql');
-const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';").all();
-if (fs.existsSync(schemaFile) && !tables.find(t => t.name === 'users')) {
-    utils.log('Initializing database from schema.sql...');
-    const schema = fs.readFileSync(schemaFile, 'utf8');
-    db.transaction(() => {
-        db.exec(schema);
-    })();
-}
+// Function to apply migrations
+const applyMigrations = () => {
+    // Make sure migrations dir exists
+    const migrationsDir = path.join(__dirname, 'migrations');
+    if (!fs.existsSync(migrationsDir)) {
+        utils.logError(`Database migrations directory doesn't exist: ${migrationsDir}`);
+        return;
+    }
 
-// Perform migrations
-const migrationsDir = path.join(__dirname, 'migrations');
-const allowMigrationsIn = ['apps/web/index.js'];
-if (!allowMigrationsIn.includes(env.ENTRYPOINT)) {
-    utils.log(`Database migrations aren't allowed from ${env.ENTRYPOINT}.`);
-} else if (fs.existsSync(migrationsDir)) {
     try {
-        utils.log(`Applying database migrations from ${migrationsDir}...`);
         // Get list of migration files
         const fileNames = fs
             .readdirSync(migrationsDir)
             .filter(f => f.endsWith('.sql'))
             .sort();
-        // Create misc table if needed
-        db.prepare(`CREATE TABLE IF NOT EXISTS misc (key TEXT PRIMARY KEY, value TEXT);`).run();
-        // Check if we have a saved last applied migration
-        const latestAppliedMigration =
-            db.prepare(`SELECT value FROM misc WHERE key = 'latest_applied_migration'`).get()?.value || '';
-        if (!latestAppliedMigration) {
-            // Assume all migrations have been applied up to the latest one or a placeholder value
-            const latestMigration = fileNames[fileNames.length - 1] || '0000.sql';
-            db.prepare(`INSERT OR REPLACE INTO misc (key, value) VALUES ('latest_applied_migration', ?);`).run(
-                latestMigration
-            );
-            utils.log(
-                `No saved database migration state found, assuming all migrations through ${latestMigration} have been applied.`
-            );
-        } else {
-            // Process pending migrations inside transaction
-            db.transaction(() => {
-                for (const fileName of fileNames) {
-                    // Skip migrations with names "less than" the latest applied migration
-                    if (fileName <= latestAppliedMigration) continue;
-                    utils.log(`Applying database migration: ${fileName}`);
-                    // Read and apply migration SQL
-                    const sql = fs.readFileSync(path.join(migrationsDir, fileName), 'utf8');
-                    db.exec(sql);
-                    // Update latest applied migration immediately to prevent reapplication on failure
-                    db.prepare(`UPDATE misc SET value = ? WHERE key = 'latest_applied_migration'`).run(fileName);
-                }
-            })();
+
+        // Get the last applied migration
+        // If an error is thrown here, we can assume the misc table doesn't exist,
+        // indicating that the db needs a full init (run through all migrations) anyway
+        let latestAppliedMigration = '';
+        try {
+            latestAppliedMigration =
+                db.prepare(`SELECT value FROM misc WHERE key = 'latest_applied_migration'`).get()?.value || '';
+        } catch (error) {}
+
+        // Get pending migration files
+        const pendingMigrations = fileNames.filter(f => f > latestAppliedMigration);
+        if (pendingMigrations.length == 0) {
+            utils.log(`No new database migrations found`);
+            return;
         }
+        utils.log(`Applying ${pendingMigrations.length} pending database migrations from ${migrationsDir}...`);
+
+        // Process pending migrations inside transaction
+        db.transaction(() => {
+            for (const fileName of pendingMigrations) {
+                // Read and apply migration SQL
+                utils.log(`Applying database migration ${fileName}...`);
+                const sql = fs.readFileSync(path.join(migrationsDir, fileName), 'utf8');
+                db.exec(sql);
+
+                // Update latest applied migration immediately to prevent reapplication on failure after this
+                db.prepare(`INSERT OR REPLACE INTO misc (key, value) VALUES ('latest_applied_migration', ?)`).run(
+                    fileName
+                );
+            }
+        })();
     } catch (error) {
         utils.logError(`Failed to apply database migrations:`, error);
         process.exit(1);
     }
+};
+
+// Apply migrations if we don't have a critical table
+// or if we're running from a script that allows it
+const allowMigrationsIn = ['apps/web/index.js'];
+const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';").all();
+if (!tables.find(t => t.name === 'misc') || allowMigrationsIn.includes(env.ENTRYPOINT)) {
+    applyMigrations();
 } else {
-    utils.log(`Database migrations directory doesn't exist: ${migrationsDir}`);
+    utils.log(`Not applying database migrations.`);
 }
 
 // Generate secrets if not set

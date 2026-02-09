@@ -17,14 +17,14 @@ const getStats = () => {
     const totalStats = db
         .prepare(
             `SELECT
-            SUM(seconds) AS secs,
-            SUM(count) AS passes
-        FROM user_category_stats
-        WHERE category = 'all-ranked-loved-specifics-converts' AND user_id > 0`
+                SUM(seconds) AS secs,
+                SUM(count) AS passes
+            FROM user_category_stats
+            WHERE category = 'all-ranked-loved-specifics-converts' AND user_id > 0`
         )
         .get();
-    stats.xp = apiRead.secsToXp(totalStats.secs);
-    stats.passes = totalStats.passes;
+    stats.xp = apiRead.secsToXp(totalStats.secs || 0);
+    stats.passes = totalStats.passes || 0;
     lastStatRefresh = now;
     return stats;
 };

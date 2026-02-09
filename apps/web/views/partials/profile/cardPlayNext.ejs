@@ -2,12 +2,11 @@
     <div>
         <h2 class="header">what to play next</h2>
     </div>
+    <% if (recommended.length === 0) { %>
+    <div class="empty">Either no recommendations could be made or you've passed all maps in this category.</div>
+    <% } else { %>
     <div class="beatmapCardContainer">
-        <% if (recommended.length === 0) { %>
-        <div class="empty">
-            <p>Either no recommendations could be made or you've passed all maps in this category.</p>
-        </div>
-        <% } %> <% for (const beatmap of recommended) { %> <%- include('../beatmap/card', { beatmap }) %> <% } %>
+        <% for (const beatmap of recommended) { %> <%- include('../beatmap/card', { beatmap }) %> <% } %>
     </div>
     <div class="flex col gap-8">
         <div class="flex gap-8 justify-center">
@@ -35,4 +34,5 @@
             </a>
         </div>
     </div>
+    <% } %>
 </section>
