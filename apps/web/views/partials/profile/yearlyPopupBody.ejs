@@ -47,9 +47,9 @@
         <% const countLeft = stats.count_total - stats.count_completed %>
         <h3 class="header">maps remaining (<%= n(countLeft) %>)</h3>
     </div>
-    <div class="flex col gap-8">
+    <div class="playNext flex col gap-8">
         <% if (maps.length > 0) { %>
-        <div class="flex gap-8 justify-center flex-wrap">
+        <div class="filters flex gap-8 justify-center flex-wrap">
             <a
                 href="/recommended/<%= category %>/surprise?dest=direct&q=<%- encodeURIComponent(query) %>"
                 class="btn primary">
@@ -95,6 +95,13 @@
 
         #yearlyPopupBody .top {
             font-size: 22px;
+            position: sticky;
+            z-index: 2;
+            background: var(--c-base-15);
+            top: -4px;
+            margin-top: -4px;
+            margin-bottom: -12px;
+            padding-bottom: 12px;
         }
 
         #yearlyPopupBody .top .percent {
@@ -139,6 +146,15 @@
             width: var(--percent);
             background: var(--color);
             border-radius: 4px;
+        }
+
+        #yearlyPopupBody .playNext .filters {
+            position: sticky;
+            top: 46px;
+            z-index: 2;
+            background: var(--c-base-15);
+            padding: 8px 0px;
+            margin: -8px 0px;
         }
     </style>
 </div>
