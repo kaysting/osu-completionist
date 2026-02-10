@@ -216,7 +216,7 @@ const options = [
     {
         f: async userId => {
             if (!userId) {
-                return apiWrite.savePassesFromAllUserRecents;
+                return apiWrite.savePassesFromAllUserRecents();
             }
             const user = await apiRead.getUserProfile(userId);
             if (!user?.name) return console.log(`User ${userId} not found`);
