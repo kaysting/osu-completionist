@@ -7,11 +7,13 @@ const dayjs = require('dayjs');
 const axios = require('axios');
 const tar = require('tar');
 const bz2 = require('unbzip2-stream');
+const readline = require('readline');
 const SqlDumpParser = require('#lib/SqlDumpParser.js');
 const db = require('#db');
 const apiRead = require('#api/read.js');
 const apiWrite = require('#api/write.js');
 const utils = require('#utils');
+const printTable = require('#lib/printTable.js');
 
 const importBeatmapsets = async dumpFolder => {
     if (!dumpFolder) dumpFolder = path.resolve(env.ROOT, 'temp', `dump_${dayjs().set('date', 1).format('YYYY-MM-DD')}`);
@@ -177,6 +179,39 @@ const downloadDump = () =>
         }
     });
 
+const sqlite = () =>
+    new Promise(resolve => {
+        console.log(`Query with caution!\n`);
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+            prompt: 'SQLite > ',
+            historySize: 100
+        });
+        rl.on('line', line => {
+            line = line.trim();
+            if (line) {
+                let res = '';
+                try {
+                    res = db.prepare(line).all();
+                } catch (error) {
+                    console.error(`${error}`);
+                }
+                try {
+                    printTable(res);
+                } catch (error) {
+                    console.log(clc.blackBright(`No output`));
+                }
+            }
+            rl.prompt();
+        });
+        rl.on('close', () => {
+            console.log('Bye :3');
+            resolve();
+        });
+        rl.prompt();
+    });
+
 const options = [
     {
         f: readSchema,
@@ -253,6 +288,12 @@ const options = [
         f: apiWrite.generateSitemap,
         name: `makesitemap`,
         description: `Generate and save an updated sitemap.xml.`,
+        args: []
+    },
+    {
+        f: sqlite,
+        name: `sqlite`,
+        description: `Interact with the database.`,
         args: []
     }
 ];
