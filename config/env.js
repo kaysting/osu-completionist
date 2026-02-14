@@ -6,7 +6,7 @@ const env = {};
 
 // Paths
 env.ROOT = path.resolve(__dirname, '..');
-env.ENTRYPOINT = path.relative(env.ROOT, require.main.filename).replace(/\\/g, '/');
+env.ENTRYPOINT = path.relative(env.ROOT, require?.main?.filename || 'REPL').replace(/\\/g, '/');
 
 // Database
 env.DB_PATH = path.resolve(process.env.DB_PATH || path.resolve(env.ROOT, 'database/storage.db'));
