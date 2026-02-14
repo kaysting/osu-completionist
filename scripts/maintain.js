@@ -182,33 +182,104 @@ const downloadDump = () =>
 const sqlite = () =>
     new Promise(resolve => {
         console.log(`Query with caution!\n`);
+
+        // Set up readline
         const rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout,
             prompt: 'SQLite > ',
             historySize: 100
         });
+
+        // Listen for inputs
         rl.on('line', line => {
             line = line.trim();
-            if (line) {
-                let res = '';
-                try {
-                    res = db.prepare(line).all();
-                } catch (error) {
-                    console.error(`${error}`);
-                }
-                try {
-                    printTable(res);
-                } catch (error) {
-                    console.log(clc.blackBright(`No output`));
-                }
+            if (!line) {
+                return rl.prompt();
             }
+
+            // Handle dot commands
+            if (line.startsWith('.')) {
+                try {
+                    const args = line.split(' ');
+                    switch (args[0]) {
+                        case '.tables': {
+                            const tables = db
+                                .prepare(
+                                    `SELECT name as "Table Name" 
+                                    FROM sqlite_master 
+                                    WHERE type='table' AND name NOT LIKE 'sqlite_%'
+                                    ORDER BY name;`
+                                )
+                                .all();
+                            printTable(tables);
+                            break;
+                        }
+                        case '.cols':
+                        case '.columns': {
+                            const tableName = args[1];
+                            const cols = db.prepare(`PRAGMA table_info('${tableName}')`).all();
+
+                            if (cols.length === 0) {
+                                throw new Error(`No columns were returned for table ${tableName}`);
+                            } else {
+                                const entries = cols.map(c => ({
+                                    Name: c.name,
+                                    Type: c.type,
+                                    NotNull: c.notnull ? 'YES' : 'NO',
+                                    PK: c.pk ? 'YES' : 'NO',
+                                    Default: c.dflt_value
+                                }));
+                                printTable(entries);
+                            }
+                            break;
+                        }
+                        case '.help': {
+                            printTable([
+                                { Command: '.help', Description: `Print this list` },
+                                { Command: '.tables', Description: `List tables` },
+                                {
+                                    Command: '.cols <table>, .columns <table>',
+                                    Description: `List the columns in a table`
+                                }
+                            ]);
+                            break;
+                        }
+                        default: {
+                            throw new Error('Unrecognized dot command');
+                        }
+                    }
+                } catch (error) {
+                    console.error(error.toString());
+                }
+                return rl.prompt();
+            }
+
+            // Execute SQL
+            let res = '';
+            try {
+                res = db.prepare(line).all();
+            } catch (error) {
+                console.error(error.toString());
+            }
+
+            // Output results
+            try {
+                printTable(res);
+            } catch (error) {
+                console.log(clc.blackBright(`No output`));
+            }
+
+            // Prompt recursively
             rl.prompt();
         });
+
+        // Handle close
         rl.on('close', () => {
             console.log('Bye :3');
             resolve();
         });
+
         rl.prompt();
     });
 
